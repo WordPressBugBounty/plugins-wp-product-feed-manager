@@ -1,0 +1,1 @@
+# plugins-wp-product-feed-manager
