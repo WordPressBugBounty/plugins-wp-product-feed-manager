@@ -1,10 +1,10 @@
-( function( $ ) {
+( function() {
 	//shorthand for ready event.
-	$( function() {
-		$( 'div[data-dismissible] button.notice-dismiss' ).click(
+	jQuery( function() {
+		jQuery( 'div[data-dismissible] button.notice-dismiss' ).click(
 			function( event ) {
 				event.preventDefault();
-				var $this = $( this );
+				var $this = jQuery( this );
 
 				var attr_value, option_name, dismissible_length, data;
 
@@ -22,9 +22,9 @@
 				};
 
 				// We can also pass the url value separately from ajax url for front end AJAX implementations
-				$.post( ajaxurl, data );
+				jQuery.post( ajaxurl, data );
 			}
 		);
 	});
 
-} )( jQuery );
+} )();

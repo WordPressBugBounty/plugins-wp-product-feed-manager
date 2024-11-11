@@ -4,7 +4,6 @@
  * WPPFM Register Scripts Class.
  *
  * @package WP Product Feed Manager/Classes
- * @version 4.3.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -14,13 +13,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 
 	/**
-	 * Register Scripts Class
+	 * Register Scripts Class.
 	 */
 	class WPPFM_Register_Scripts {
 
-		// @private storage of scripts version
+		// @private storage of scripts version.
 		private $_version_stamp;
-		// @private register minified scripts
+		// @private register minified scripts.
 		private $_js_min;
 
 		public function __construct() {
@@ -33,7 +32,7 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 			add_action( 'admin_enqueue_scripts', array( $this, 'wppfm_register_required_scripts' ) );
 			add_action( 'admin_enqueue_scripts', array( $this, 'wppfm_register_required_nonce' ) );
 
-			// load the correct hooks for the specific page.
+			// Load the correct hooks for the specific page.
 			switch( $page_param ) {
 				case 'wppfm-feed-editor-page':
 					add_action( 'admin_enqueue_scripts', array( $this, 'wppfm_register_required_feed_editor_page_scripts' ) );
@@ -53,7 +52,7 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 					break;
 			}
 
-			if ( 'full' === WPPFM_PLUGIN_VERSION_ID ) {
+			if ( 'full' === WPPFM_PLUGIN_VERSION_ID || 'woo-full' === WPPFM_PLUGIN_VERSION_ID ) {
 				add_action( 'admin_enqueue_scripts', array( $this, 'wppfm_register_full_version_channels' ) );
 			} else {
 				add_action( 'admin_enqueue_scripts', array( $this, 'wppfm_register_google_only_version_channels' ) );
@@ -64,11 +63,11 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 		 * Registers all required JavaScripts for the feed manager pages.
 		 */
 		public function wppfm_register_required_scripts() {
-			// enqueue notice handling script
+			// Enqueue notice handling script.
 			wp_enqueue_script( 'wppfm_message-handling-script', WPPFM_PLUGIN_URL . '/includes/user-interface/js/wppfm_msg_events' . $this->_js_min . '.js', array( 'jquery' ), $this->_version_stamp, true );
 			wp_enqueue_script( 'wppfm_notice-handling-script', WPPFM_PLUGIN_URL . '/includes/user-interface/js/wppfm-promotion-notice' . $this->_js_min . '.js', array( 'jquery' ), $this->_version_stamp, true );
 
-			// do not load the other scripts unless a wppfm page is on
+			// Do not load the other scripts unless a wppfm page is on.
 			if ( ! wppfm_on_own_main_plugin_page() ) {
 				return;
 			}
@@ -76,7 +75,7 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 			wp_register_style( 'wp-product-feed-manager-main', WPPFM_PLUGIN_URL . '/css/wppfm-main' . $this->_js_min . '.css', '', $this->_version_stamp, 'screen' );
 			wp_enqueue_style( 'wp-product-feed-manager-main' );
 
-			// embed the JavaScript file that makes the Ajax requests
+			// Embed the JavaScript file that makes the Ajax requests.
 			wp_enqueue_script( 'wppfm_business-logic-script', WPPFM_PLUGIN_URL . '/includes/application/js/wppfm_logic' . $this->_js_min . '.js', array( 'jquery' ), $this->_version_stamp, true );
 			wp_enqueue_script( 'wppfm_form-support-script', WPPFM_PLUGIN_URL . '/includes/user-interface/js/wppfm_support' . $this->_js_min . '.js', array( 'jquery' ), $this->_version_stamp, true );
 			wp_enqueue_script( 'wppfm_form-support-events-listener-script', WPPFM_PLUGIN_URL . '/includes/user-interface/js/wppfm_support-form-events' . $this->_js_min . '.js', array( 'jquery' ), $this->_version_stamp, true );
@@ -96,7 +95,7 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 		 * Generate the required nonce's.
 		 */
 		public function wppfm_register_required_nonce() {
-			// make a unique nonce for all Ajax requests
+			// Make a unique nonce for all Ajax requests.
 			wp_localize_script(
 				'wppfm_data-handling-script',
 				'myAjaxNonces',
@@ -145,7 +144,7 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 		 * Registers all required JavaScripts for the feed manager Settings page.
 		 */
 		public function wppfm_register_required_settings_page_scripts() {
-			// enqueue notice handling script
+			// Enqueue notice handling script.
 			wp_enqueue_script( 'wppfm_message-handling-script', WPPFM_PLUGIN_URL . '/includes/user-interface/js/wppfm_msg_events' . $this->_js_min . '.js', array( 'jquery' ), $this->_version_stamp, true );
 
 			wp_enqueue_script( 'wppfm_backup-list-script', WPPFM_PLUGIN_URL . '/includes/user-interface/js/wppfm_backup-list' . $this->_js_min . '.js', array( 'jquery' ), $this->_version_stamp, true );
@@ -159,12 +158,12 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 		 * Generate the nonce's for the Settings page.
 		 */
 		public function wppfm_register_required_settings_page_nonce() {
-			// make a unique nonce for all Ajax requests
+			// Make a unique nonce for all Ajax requests.
 			wp_localize_script(
 				'wppfm_data-handling-script',
 				'myAjaxNonces',
 				array(
-					// URL to wp-admin/admin-ajax.php to process the request
+					// URL to wp-admin/admin-ajax.php to process the request.
 					'ajaxurl'                      => admin_url( 'admin-ajax.php' ),
 					// generate the required nonce's
 					'setAutoFeedFixNonce'          => wp_create_nonce( 'myajax-auto-feed-fix-nonce' ),
@@ -192,14 +191,14 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 		 * Registers all required JavaScripts for the feed manager Settings page.
 		 */
 		public function wppfm_register_required_support_page_scripts() {
-			// enqueue notice handling script
+			// Enqueue notice handling script.
 		}
 
 		/**
 		 * Generate the nonce's for the Settings page.
 		 */
 		public function wppfm_register_required_support_page_nonce() {
-			// make a unique nonce for all Ajax requests
+			// Make a unique nonce for all Ajax requests.
 			wp_localize_script(
 				'wppfm_data-handling-script',
 				'myAjaxNonces',
@@ -207,6 +206,11 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 			);
 		}
 
+		/**
+		 * Registers the scripts for the installed channels in case of a full version.
+		 *
+		 * @return void
+		 */
 		public function wppfm_register_full_version_channels() {
 			if ( ! wppfm_on_own_main_plugin_page() ) {
 				return;
@@ -222,6 +226,11 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 			}
 		}
 
+		/**
+		 * Registers the Google channel scripts in case of a Google only version.
+		 *
+		 * @return void
+		 */
 		public function wppfm_register_google_only_version_channels() {
 			if ( ! wppfm_on_own_main_plugin_page() ) {
 				return;
@@ -232,7 +241,7 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 		}
 	}
 
-	// End of WPPFM_Register_Scripts class
+	// End of WPPFM_Register_Scripts class/
 
 endif;
 

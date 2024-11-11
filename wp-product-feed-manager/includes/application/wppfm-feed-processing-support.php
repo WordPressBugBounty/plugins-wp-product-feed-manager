@@ -1,20 +1,26 @@
 <?php
 
 /**
+ * WP Product Processing Support Trait.
+ *
  * @package WP Product Feed Manager/Application/Functions
- * @version 1.4.0
  */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 trait WPPFM_Processing_Support {
 
 	protected $_selected_number;
 
 	/**
-	 * Returns the correct category for this specific product
+	 * Returns the correct category for this specific product, based on the selection in the Category Mapping table.
+	 * This function supports the Yoast Primary Category.
 	 *
-	 * @param string $id
-	 * @param string $main_category
-	 * @param string $category_mapping
+	 * @param string $id               the id of the product.
+	 * @param string $main_category    the selected Default Category.
+	 * @param object $category_mapping containing the selected categories from the Category Mapping table.
 	 *
 	 * @return string
 	 */
@@ -22,18 +28,18 @@ trait WPPFM_Processing_Support {
 		$result                 = false;
 		$support_class          = new WPPFM_Feed_Support();
 		$yoast_primary_category = WPPFM_Taxonomies::get_primary_cat( $id );
-		$yoast_cat_is_selected  = $yoast_primary_category ? $support_class->category_is_selected( $yoast_primary_category[0]->term_id, $category_mapping ) : false;
+		$yoast_cat_is_selected  = $yoast_primary_category ? $support_class->selected_category_id( $yoast_primary_category[0]->term_id, $category_mapping ) : false;
 
 		$product_categories = $yoast_primary_category && false !== $yoast_cat_is_selected ? $yoast_primary_category :
 			wp_get_post_terms( $id, 'product_cat', array( 'taxonomy' => 'product_cat' ) ); // get the categories from a specific product in the shop
 
 		if ( $product_categories && ! is_wp_error( $product_categories ) ) {
-			// loop through each category
+			// Loop through each category.
 			foreach ( $product_categories as $category ) {
-				// check if this category is selected in the category mapping
-				$shop_category_id = $support_class->category_is_selected( $category->term_id, $category_mapping );
+				// Check if this category is selected in the category mapping.
+				$shop_category_id = $support_class->selected_category_id( $category->term_id, $category_mapping );
 
-				// only add this product when at least one of the categories is selected in the category mapping
+				// Only add this product when at least one of the categories is selected in the category mapping.
 				if ( false !== $shop_category_id ) {
 					//phpcs: ignore
 					switch ( $category_mapping[ $shop_category_id ]->feedCategories ) {
@@ -49,16 +55,16 @@ trait WPPFM_Processing_Support {
 							$result = $category_mapping[ $shop_category_id ]->feedCategories;
 					}
 
-					// found a selected category so now return the result
-					return $result; // fixed ticket #1117
+					// Found a selected category so now return the result.
+					return $result; // Fixed ticket #1117.
 
-				} else { // if this product was not selected in the category mapping, it is possible it has been filtered in so map to the default category
+				} else { // If this product was not selected in the category mapping, it is possible it has been filtered in, so map it to the default category.
 					$result = $main_category;
 				}
 			}
 		} else {
 			if ( is_wp_error( $product_categories ) ) {
-				echo wppfm_handle_wp_errors_response(
+				wppfm_handle_wp_errors_response(
 					$product_categories,
 					sprintf(
 						/* translators: %s: link to the support page */
@@ -78,12 +84,12 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
-	 * Checks if this product has been filtered out of the feed
+	 * Checks if this product has been filtered out of the feed, based on a filter selection.
 	 *
-	 * @param string $feed_filter_strings
-	 * @param array $product_data
+	 * @param string $feed_filter_strings the feed filter string.
+	 * @param array  $product_data        an array with product data.
 	 *
-	 * @return boolean
+	 * @return boolean true if the product is filtered out.
 	 */
 	protected function is_product_filtered( $feed_filter_strings, $product_data ) {
 		if ( $feed_filter_strings ) {
@@ -93,10 +99,17 @@ trait WPPFM_Processing_Support {
 		}
 	}
 
-	protected function get_meta_parent_ids( $feed_id ) {
+	/**
+	 * Gets the parent ids of a specific product.
+	 *
+	 * @param string $product_id the product id for which to look for parent ids.
+	 *
+	 * @return array with the parent ids.
+	 */
+	protected function get_product_parent_ids( $product_id ) {
 		$queries_class = new WPPFM_Queries();
 
-		$query_result = $queries_class->get_meta_parents( $feed_id );
+		$query_result = $queries_class->get_product_parents( $product_id );
 		$ids          = array();
 
 		foreach ( $query_result as $result ) {
@@ -107,11 +120,11 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
-	 * return an array with source column names from an attribute string
+	 * Extracts the column names of the selected sources, from a string that describes the selections for a specific feed attribute.
 	 *
-	 * @param string $value_string
+	 * @param string $value_string a string containing the source, condition and change value parameters.
 	 *
-	 * @return array
+	 * @return array with the source column names.
 	 */
 	protected function get_source_columns_from_attribute_value( $value_string ) {
 		$source_columns = array();
@@ -139,11 +152,11 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
-	 * return an array with condition column names from an attribute string
+	 * Extracts the column names of the selected conditions, from a string that describes the selections for a specific feed attribute.
 	 *
-	 * @param string $value_string
+	 * @param string $value_string a string containing the source, condition and change value parameters.
 	 *
-	 * @return array
+	 * @return array with the condition column names.
 	 */
 	protected function get_condition_columns_from_attribute_value( $value_string ) {
 		$condition_columns = array();
@@ -164,11 +177,11 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
-	 * return an array with query column names from an attribute string
+	 * Extracts the column names of the selected queries, from a string that describes the selections for a specific feed attribute.
 	 *
-	 * @param string $value_string
+	 * @param string $value_string a string containing the source, condition and change value parameters.
 	 *
-	 * @return array
+	 * @return array with the query column names.
 	 */
 	protected function get_queries_columns_from_attribute_value( $value_string ) {
 		$query_columns = array();
@@ -189,11 +202,11 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
-	 * extract a column name from a string
+	 * Extract a column name from a string.
 	 *
-	 * @param string $string
+	 * @param string $string containing the column name.
 	 *
-	 * @return string
+	 * @return string with the column name.
 	 */
 	protected function get_names_from_string( $string ) {
 		$condition_string_array = explode( '#', $string );
@@ -202,11 +215,11 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
-	 * split the combined string into single combination items
+	 * Split the combined string into single combination items.
 	 *
-	 * @param string $combined_string
+	 * @param string $combined_string the combined string.
 	 *
-	 * @return array
+	 * @return array containing the combination items.
 	 */
 	public function get_combined_sources_from_combined_string( $combined_string ) {
 		$result                = array();
@@ -225,18 +238,18 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
-	 * Gets the metadata from a specific field
+	 * Gets the meta-data element of a specific attribute from the attribute's list.
 	 *
-	 * @param string $field
-	 * @param stdClass $attributes
+	 * @param string   $attribute  the feed attribute name.
+	 * @param stdClass $attributes the attribute's list.
 	 *
-	 * @return stdClass attribute
+	 * @return stdClass attribute class with metadata from the attribute.
 	 */
-	protected function get_meta_data_from_specific_field( $field, $attributes ) {
+	protected function get_meta_data_from_specific_attribute( $attribute, $attributes ) {
 		$i = 0;
 
 		while ( true ) {
-			if ( $attributes[ $i ]->fieldName !== $field ) {
+			if ( $attributes[ $i ]->fieldName !== $attribute ) {
 				$i ++;
 				if ( $i > 1000 ) {
 					break;
@@ -252,21 +265,21 @@ trait WPPFM_Processing_Support {
 	/**
 	 * Generate the value of a field based on what the user has selected in filters, combined data, static data, e.g.,
 	 *
-	 * @param array $product_data
-	 * @param stdClass $field_meta_data
-	 * @param string $main_category_feed_title
-	 * @param string $row_category
-	 * @param string $feed_language
-	 * @param string $feed_currency
-	 * @param array $relation_table
+	 * @param array    $product_data             contains the product data.
+	 * @param stdClass $attribute_meta_data      the meta-data of the product attribute.
+	 * @param string   $main_category_feed_title the main category title.
+	 * @param string   $row_category             the processed Default Category for this product.
+	 * @param string   $feed_language            selected language for the feed.
+	 * @param string   $feed_currency            selected currency for the feed.
+	 * @param array    $relation_table           a table containing the relation between attribute names and their db field names.
 	 *
-	 * @return array Returns a key=>value array of a specific product field where the key contains the field name and the value the field value
+	 * @return array returns a key=>value array of a specific product field where the key contains the field name and the value the field value.
 	 */
-	protected function process_product_field( $product_data, $field_meta_data, $main_category_feed_title, $row_category, $feed_language, $feed_currency, $relation_table ) {
+	protected function process_product_field( $product_data, $attribute_meta_data, $main_category_feed_title, $row_category, $feed_language, $feed_currency, $relation_table ) {
 
 		//@noinspection PhpVariableNameInspection
-		$product_object[ $field_meta_data->fieldName ] = $this->get_correct_field_value(
-			$field_meta_data,
+		$product_object[ $attribute_meta_data->fieldName ] = $this->get_correct_field_value(
+			$attribute_meta_data,
 			$product_data,
 			$main_category_feed_title,
 			$row_category,
@@ -279,22 +292,22 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
-	 * Processes a single field of a single product in the feed
+	 * Processes a single field of a single field in the feed.
 	 *
-	 * @param stdClass $field_meta_data containing the meta-data of the field
-	 * @param array $product_data containing the product data of the field
-	 * @param string $main_category_feed_title main category title
-	 * @param string $row_category complete category string
-	 * @param string $feed_language language of the feed
-	 * @param string $feed_currency currency of the feed
-	 * @param array $relation_table table with the shop and merchant category relations
+	 * @param stdClass $field_meta_data          containing the meta-data of the field.
+	 * @param array    $product_data             contains the product data.
+	 * @param string   $main_category_feed_title main category title.
+	 * @param string   $row_category             the processed Default Category for this product.
+	 * @param string   $feed_language            selected language for the feed.
+	 * @param string   $feed_currency            selected currency for the feed.
+	 * @param array    $relation_table           a table containing the relation between attribute names and their db field names.
 	 *
-	 * @return string
+	 * @return string containing the end value for the field.
 	 */
 	protected function get_correct_field_value( $field_meta_data, $product_data, $main_category_feed_title, $row_category, $feed_language, $feed_currency, $relation_table ) {
 		$this->_selected_number = 0;
 
-		// do not process category strings, but only fields that are requested
+		// Do not process category strings, but only fields that are requested.
 		//phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 		if ( property_exists( $field_meta_data, 'fieldName' )
 			&& $field_meta_data->fieldName !== $main_category_feed_title
@@ -309,10 +322,10 @@ trait WPPFM_Processing_Support {
 				//phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 				$advised_source = property_exists( $field_meta_data, 'advisedSource' ) ? $field_meta_data->advisedSource : '';
 
-				// get the end value depending on the filter settings
+				// Get the end value depending on the filter settings.
 				$end_row_value = $this->get_correct_end_row_value( $value_object->m, $product_data, $advised_source );
 
-			} else { // no queries, edit values or alternative sources for this field
+			} else { // No queries, edit values or alternative sources for this field.
 
 				//phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 				if ( property_exists( $field_meta_data, 'advisedSource' ) && '' !== $field_meta_data->advisedSource ) {
@@ -322,13 +335,13 @@ trait WPPFM_Processing_Support {
 					$support_class = new WPPFM_Feed_Support();
 					//phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 					$source_title = $field_meta_data->fieldName;
-					$db_title     = $support_class->find_relation( $source_title, $relation_table );
+					$db_title     = $support_class->get_db_column_title( $source_title, $relation_table );
 				}
 
 				$end_row_value = array_key_exists( $db_title, $product_data ) ? $product_data[ $db_title ] : '';
 			}
 
-			// change value if requested
+			// Change value if requested.
 			if ( property_exists( $field_meta_data, 'value' ) && '' !== $field_meta_data->value && property_exists( $value_object, 'v' ) ) {
 				$pos = $this->_selected_number;
 
@@ -350,18 +363,27 @@ trait WPPFM_Processing_Support {
 		return $end_row_value;
 	}
 
-	protected function get_correct_end_row_value( $value, $product_data, $advised_source ) {
+	/**
+	 * Processes the selected source data of an attribute to get the end value for the attribute row that goes into the feed.
+	 *
+	 * @param object $source_selections object with a string that describes the source selection.
+	 * @param array  $product_data      main product data.
+	 * @param string $advised_source    the advised source for this attribute. Empty of no advised source is active.
+	 *
+	 * @return string the end row value.
+	 */
+	private function get_correct_end_row_value( $source_selections, $product_data, $advised_source ) {
 		$end_row_value = '';
-		$nr_values     = count( $value ); // added @since 1.9.4
+		$nr_values     = count( (array)$source_selections ); // added @since 1.9.4
 		$value_counter = 1; // added @since 1.9.4
 
-		foreach ( $value as $filter ) {
-			if ( true === $this->get_filter_status( $filter, $product_data ) ) {
+		foreach ( $source_selections as $source_selection ) {
+			if ( true === $this->get_filter_status( $source_selection, $product_data ) ) {
 
-				$end_row_value = $this->get_row_source_data( $filter, $product_data, $advised_source );
+				$end_row_value = $this->get_row_source_data( $source_selection, $product_data, $advised_source );
 				break;
 			} else {
-				// no "or else" value seems to be selected
+				// No "or else" value seems to be selected.
 				if ( $value_counter >= $nr_values ) {
 					return $end_row_value;
 				} // added @since 1.9.4
@@ -372,9 +394,9 @@ trait WPPFM_Processing_Support {
 			$value_counter ++; // added @since 1.9.4
 		}
 
-		// not found a condition that was correct, so let's take the "for all other products" data to fetch the correct row_value
+		// Not found a condition that was correct, so let's take the "for all other products" data to fetch the correct row_value.
 		if ( '' === $end_row_value ) {
-			$end_row_value = $this->get_row_source_data( end( $value ), $product_data, $advised_source );
+			$end_row_value = $this->get_row_source_data( end( $source_selections ), $product_data, $advised_source );
 		}
 
 		return $end_row_value;
@@ -383,9 +405,9 @@ trait WPPFM_Processing_Support {
 	/**
 	 * Removes links from the post-content and post-excerpts in a product data array.
 	 *
-	 * @since 2.6.0
+	 * @param array $product_data reference to the product data.
 	 *
-	 * @param $product_data array
+	 * @since 2.6.0.
 	 */
 	protected function remove_links_from_product_data_description( &$product_data ) {
 		$pattern     = '#<a.*?>(.*?)</a>#i'; // link pattern
@@ -400,21 +422,36 @@ trait WPPFM_Processing_Support {
 		}
 	}
 
-	protected function get_filter_status( $filter, $product_data ) {
-		if ( ! empty( $filter ) && property_exists( $filter, 'c' ) ) {
-			// check if the query is true for this field
-			return $this->filter_result( $filter->c, $product_data );
+	/**
+	 * Checks if the filter on this attribute excludes the product from the feed.
+	 *
+	 * @param object $source_selection containing the source title and a filter string.
+	 * @param array  $product_data     with the product data.
+	 *
+	 * @return bool true if the filter does not exclude the product.
+	 */
+	private function get_filter_status( $source_selection, $product_data ) {
+		if ( ! empty( $source_selection ) && property_exists( $source_selection, 'c' ) ) {
+			// Check if the query is true for this field.
+			return $this->filter_result( $source_selection->c, $product_data );
 		} else {
-			// apparently there is no condition, so the result is always true
+			// Apparently there is no condition, so the result is always true.
 			return true;
 		}
 	}
 
-	protected function filter_result( $conditions, $product_data ) {
+	/**
+	 * Handles an array with conditions and checks if they are true for a specific product.
+	 *
+	 * @param array $conditions   the array with conditions.
+	 * @param array $product_data the product data.
+	 *
+	 * @return bool true if the condition is true for the specific product.
+	 */
+	private function filter_result( $conditions, $product_data ) {
 		$query_results = array();
 		$support_class = new WPPFM_Feed_Support();
 
-		// run each query on the data
 		foreach ( $conditions as $condition ) {
 			$condition_string = $support_class->get_query_string_from_query_object( $condition );
 
@@ -425,19 +462,18 @@ trait WPPFM_Processing_Support {
 			$query_results[] = $query_split[0] . '#' . $row_result;
 		}
 
-		// return the final filter result, based on the specific results
-		return $this->connect_query_results( $query_results );
+		return $this->combined_filter_result( $query_results );
 	}
 
 	/**
 	 * Receives an array with condition results and generates a single end result based on the "and" or "or"
-	 * connection between the conditions
+	 * connection between the conditions.
 	 *
 	 * @param array $results
 	 *
-	 * @return boolean
+	 * @return bool returns true if the combined filter (with "and" or "or" conditions) is true. False if not.
 	 */
-	protected function connect_query_results( $results ) {
+	private function combined_filter_result( $results ) {
 		$and_results = array();
 		$or_results  = array();
 
@@ -485,7 +521,16 @@ trait WPPFM_Processing_Support {
 		return $end_result;
 	}
 
-	protected function get_row_source_data( $filter, $product_data, $advised_source ) {
+	/**
+	 * Reads the source data of a row from the product data.
+	 *
+	 * @param object $filter         contains the filter data.
+	 * @param array  $product_data   with the product data.
+	 * @param string $advised_source advised source if applicable.
+	 *
+	 * @return string with the source data.
+	 */
+	private function get_row_source_data( $filter, $product_data, $advised_source ) {
 		$row_source_data = '';
 
 		if ( ! empty( $filter ) && property_exists( $filter, 's' ) ) {
@@ -495,7 +540,7 @@ trait WPPFM_Processing_Support {
 				if ( 'combined' !== $filter->s->source ) {
 					$row_source_data = array_key_exists( $filter->s->source, $product_data ) ? $product_data[ $filter->s->source ] : '';
 				} else {
-					$row_source_data = $this->generate_combined_string( $filter->s->f, $product_data );
+					$row_source_data = $this->generate_combined_source_output( $filter->s->f, $product_data );
 				}
 			}
 		} else {
@@ -508,20 +553,28 @@ trait WPPFM_Processing_Support {
 		return $row_source_data;
 	}
 
-	protected function generate_combined_string( $combined_sources, $row ) {
-		$source_selectors_array = explode( '|', $combined_sources ); //split the combined source string in an array containing every single source
+	/**
+	 * Returns the end result of a combined string source selector.
+	 *
+	 * @param string $combined_sources a string with the selected combined sources.
+	 * @param array  $product_data     the product data.
+	 *
+	 * @return string containing the output of the combined source selector.
+	 */
+	private function generate_combined_source_output( $combined_sources, $product_data ) {
+		$source_selectors_array = explode( '|', $combined_sources ); // Split the combined source string in an array containing every single source.
 		$values_class           = new WPPFM_Feed_Value_Editors();
-		$separators             = $values_class->combination_separators(); // array with all possible separators
+		$separators             = $values_class->combination_separators(); // Array with all possible separators.
 
-		// if one of the row results is an array, the final output needs to be an array
-		$result_is_array = $this->check_if_any_source_has_array_data( $source_selectors_array, $row );
+		// If one of the row results is an array, the final output needs to be an array.
+		$result_is_array = $this->check_if_any_source_has_array_data( $source_selectors_array, $product_data );
 		$result          = $result_is_array ? array() : '';
 
 		if ( ! $result_is_array ) {
-			$result = $this->make_combined_string( $source_selectors_array, $separators, $row, false );
+			$result = $this->combine_the_outputs( $source_selectors_array, $separators, $product_data, false );
 		} else {
 			for ( $i = 0; $i < count( $result_is_array ); $i ++ ) {
-				$combined_string = $this->make_combined_string( $source_selectors_array, $separators, $row, $i );
+				$combined_string = $this->combine_the_outputs( $source_selectors_array, $separators, $product_data, $i );
 				$result[]        = $combined_string;
 			}
 		}
@@ -530,15 +583,15 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
-	 * Distracts the keys from the $sources string (separated by a #), and it looks if any of these keys
-	 * are linked to an array in the $data_row
+	 * Gets the keys from the $sources string (separated by a #), and it looks if any of these keys
+	 * are linked to an array in the $data_row.
 	 *
-	 * @param array $sources
-	 * @param array $data_row
+	 * @param array $sources      with the source strings.
+	 * @param array $product_data the product data.
 	 *
-	 * @return array|bool from the data_row or false
+	 * @return array|bool from the data_row or false if no array data is found.
 	 */
-	protected function check_if_any_source_has_array_data( $sources, $data_row ) {
+	private function check_if_any_source_has_array_data( $sources, $product_data ) {
 		foreach ( $sources as $source ) {
 			$split_source = explode( '#', $source );
 
@@ -550,8 +603,8 @@ trait WPPFM_Processing_Support {
 				$last_key = array_pop( $split_source );
 			}
 
-			if ( array_key_exists( $last_key, $data_row ) && is_array( $data_row[ $last_key ] ) ) {
-				return $data_row[ $last_key ];
+			if ( array_key_exists( $last_key, $product_data ) && is_array( $product_data[ $last_key ] ) ) {
+				return $product_data[ $last_key ];
 			}
 		}
 
@@ -571,21 +624,21 @@ trait WPPFM_Processing_Support {
 	/**
 	 * Returns an end value from a source that has an edit value input.
 	 *
-	 * @param array $change_parameters  The change parameters including filter parameters if set
-	 * @param string $original_output    The output before the change
-	 * @param array $product_data        An array containing the main data of the selected product
-	 * @param bool $combination_string   True if the source is a combined string
-	 * @param string $feed_language
-	 * @param string $feed_currency
+	 * @param array  $change_parameters  the change parameters including filter parameters if set.
+	 * @param string $original_output    the output before the change.
+	 * @param array  $product_data       the product data.
+	 * @param bool   $combination_string true if the source is a combined string.
+	 * @param string $feed_language      the language of the feed.
+	 * @param string $feed_currency      the feed currency.
 	 *
-	 * @return string|string[]
+	 * @return string the end value.
 	 */
-	protected function get_edited_end_row_value( $change_parameters, $original_output, $product_data, $combination_string, $feed_language, $feed_currency ) {
+	private function get_edited_end_row_value( $change_parameters, $original_output, $product_data, $combination_string, $feed_language, $feed_currency ) {
 		$result_is_filtered = false;
 		$support_class      = new WPPFM_Feed_Support();
 		$final_output       = '';
 
-		// loop through the given change input rules
+		// Loop through the given change input rules.
 		for ( $i = 0; $i < count( $change_parameters ); $i ++ ) {
 			if ( property_exists( $change_parameters[ $i ], 'q' ) ) {
 				$filter_result = $this->filter_result( $change_parameters[ $i ]->q, $product_data );
@@ -593,7 +646,7 @@ trait WPPFM_Processing_Support {
 				$filter_result = true;
 			}
 
-			// Only change the value if the filter is true
+			// Only change the value if the filter is true.
 			if ( true === $filter_result ) {
 				$combined_data_elements = $combination_string ? $this->get_combined_elements( $product_data, $combination_string ) : '';
 				$final_output           = $support_class->edit_value(
@@ -605,12 +658,12 @@ trait WPPFM_Processing_Support {
 					$feed_currency
 				);
 
-				$original_output = $final_output; // set the new output as the original output for the next change rule
+				$original_output = $final_output; // Set the new output as the original output for the next change rule.
 				$result_is_filtered = true;
 			}
 		}
 
-		// if the rules are all filtered out, the original output needs to be returned
+		// If the rules are all filtered out, the original output needs to be returned.
 		if ( false === $result_is_filtered ) {
 			$final_output = $original_output;
 		}
@@ -618,7 +671,15 @@ trait WPPFM_Processing_Support {
 		return $final_output;
 	}
 
-	protected function get_combined_elements( $product_data, $combination_string ) {
+	/**
+	 * Returns an array with the elements of a combined source selector.
+	 *
+	 * @param array  $product_data       the product data.
+	 * @param string $combination_string the combination data.
+	 *
+	 * @return array with the combined elements.
+	 */
+	private function get_combined_elements( $product_data, $combination_string ) {
 		$result         = array();
 		$found_all_data = true;
 
@@ -659,27 +720,37 @@ trait WPPFM_Processing_Support {
 		}
 	}
 
-	protected function make_combined_string( $source_selectors_array, $separators, $row, $array_pos ) {
+	/**
+	 * Creates a single string with the output from a combined source selection.
+	 *
+	 * @param array    $source_selectors_array contains strings with the combined source selection elements.
+	 * @param array    $separators             contains all possible separators for a combined source.
+	 * @param array    $product_data           the product data.
+	 * @param int|bool $array_pos              the position in the array, if an array is selected as a combined element. False if this is not the case.
+	 *
+	 * @return string contains the combined output of a combined source selection.
+	 */
+	private function combine_the_outputs( $source_selectors_array, $separators, $product_data, $array_pos ) {
 		$combined_string = '';
 
 		foreach ( $source_selectors_array as $source ) {
 			$split_source = explode( '#', $source );
 
-			// get the separator
+			// Get the separator.
 			$separators_id = count( $split_source ) > 1 && 'static' !== $split_source[0] ? $split_source[0] : 0;
 			$sep           = $separators[ $separators_id ];
 
 			$data_key = count( $split_source ) > 1 && 'static' !== $split_source[0] ? $split_source[1] : $split_source[0];
 
-			if ( ( array_key_exists( $data_key, $row ) && $row[ $data_key ] ) || 'static' === $data_key ) {
-				if ( 'static' !== $data_key && ! is_array( $row[ $data_key ] ) ) { // not static and no array
+			if ( ( array_key_exists( $data_key, $product_data ) && $product_data[ $data_key ] ) || 'static' === $data_key ) {
+				if ( 'static' !== $data_key && ! is_array( $product_data[ $data_key ] ) ) { // Not static and no array.
 					$combined_string .= $sep;
-					$combined_string .= $row[ $data_key ];
-				} elseif ( 'static' === $data_key ) { // static inputs
+					$combined_string .= $product_data[ $data_key ];
+				} elseif ( 'static' === $data_key ) { // Static inputs.
 					$static_string    = count( $split_source ) > 2 ? $split_source[2] : $split_source[1];
 					$combined_string .= $sep . $static_string;
-				} else { // array inputs
-					$input_array      = $row[ $data_key ][ $array_pos ];
+				} else { // Array inputs.
+					$input_array      = $product_data[ $data_key ][ $array_pos ];
 					$combined_string .= $sep . $input_array;
 				}
 			}
@@ -689,32 +760,32 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
-	 * get an array with the relations between the WooCommerce fields and the channel fields
+	 * Generates an array with the relations between the WooCommerce fields and the channel fields.
 	 *
-	 * @return array
+	 * @return array with the relations.
 	 */
-	public function get_channel_to_woocommerce_field_relations() {
+	public function channel_to_woocommerce_field_relations() {
 		$relations = array();
 
 		foreach ( $this->_feed->attributes as $attribute ) {
 
-			// get the source name except for the category_mapping field
+			// Get the source name except for the category_mapping field.
 			if ( 'category_mapping' !== $attribute->fieldName ) {
 				$source = $this->get_source_from_attribute( $attribute );
 			}
 
 			if ( ! empty( $source ) ) {
-				// correct Google product category source
+				// Correct Google product category source.
 				if ( 'google_product_category' === $attribute->fieldName ) {
 					$source = 'google_product_category';
 				}
 
-				// correct Google identifier exists source
+				// Correct Google identifier exists source.
 				if ( 'identifier_exists' === $attribute->fieldName ) {
 					$source = 'identifier_exists';
 				}
 
-				// fill the relation array
+				// Fill the relation array.
 				$a           = array(
 					'field' => $attribute->fieldName,
 					'db'    => $source,
@@ -731,13 +802,13 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
-	 * extract the source name from the attribute string
+	 * Extract the source name from the attribute string.
 	 *
-	 * @param object $attribute
+	 * @param object $attribute the attribute.
 	 *
-	 * @return string
+	 * @return string with the source.
 	 */
-	protected function get_source_from_attribute( $attribute ) {
+	private function get_source_from_attribute( $attribute ) {
 
 		$value_source = property_exists( $attribute, 'value' ) ? $this->get_source_from_attribute_value( $attribute->value ) : '';
 
@@ -753,13 +824,13 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
-	 * extract the source value from the attribute string
+	 * Extract the source value from the attribute string.
 	 *
-	 * @param string $value
+	 * @param string $value attribute string.
 	 *
-	 * @return string
+	 * @return string the source value.
 	 */
-	protected function get_source_from_attribute_value( $value ) {
+	private function get_source_from_attribute_value( $value ) {
 		$source = '';
 
 		if ( $value ) {
@@ -776,13 +847,13 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
-	 * get the value
+	 * Extracts the source string from a value string.
 	 *
-	 * @param string $value_string
+	 * @param string $value_string the value string.
 	 *
-	 * @return string
+	 * @return string the source string.
 	 */
-	protected function get_source_string( $value_string ) {
+	private function get_source_string( $value_string ) {
 		$source_string = '';
 
 		if ( ! empty( $value_string ) ) {
@@ -799,30 +870,30 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
-	 * makes an XML string of one product including its variations
+	 * Generates an XML string of one product including its variations.
 	 *
-	 * @param array $data
-	 * @param string $category_name
-	 * @param string $description_name
+	 * @param array  $product_placeholder contains the product data.
+	 * @param string $category_name       field name of the category.
+	 * @param string $description_name    field name of the description.
 	 *
-	 * @return string
+	 * @return string an XML string for the feed.
 	 */
-	protected function convert_data_to_xml( $data, $category_name, $description_name, $channel ) {
-		return $data ? $this->make_xml_string_row( $data, $category_name, $description_name, $channel ) : '';
+	protected function convert_data_to_xml( $product_placeholder, $category_name, $description_name, $channel ) {
+		return $product_placeholder ? $this->make_xml_string_row( $product_placeholder, $category_name, $description_name, $channel ) : '';
 	}
 
 	/**
-	 * makes an XML string for one product
+	 * Generates an XML string for one product.
 	 *
-	 * @param   array   $product            Contains all the data from the product.
-	 * @param   string  $category_name      Selected category name.
-	 * @param   string  $description_name   The name of the description.
-	 * @param   string  $channel            Contains the channel id.
+	 * @param   array  $product_placeholder contains all product data.
+	 * @param   string $category_name       selected category name.
+	 * @param   string $description_name    the name of the description.
+	 * @param   string $channel             contains the channel id.
 	 *
-	 * @return string
+	 * @return string an XML string for the feed.
 	 * @noinspection PhpUndefinedMethodInspection
 	 */
-	protected function make_xml_string_row( $product, $category_name, $description_name, $channel ) {
+	private function make_xml_string_row( $product_placeholder, $category_name, $description_name, $channel ) {
 		$product_node_name              = function_exists( 'wppfm_product_node_name' ) ? wppfm_product_node_name( $channel ) : 'item';
 		$node_pre_tag_name              = function_exists( 'wppfm_get_node_pre_tag' ) ? wppfm_get_node_pre_tag( $channel ) : 'g:';
 		$product_node                   = apply_filters( 'wppfm_xml_product_node_name', $product_node_name, $channel );
@@ -832,15 +903,15 @@ trait WPPFM_Processing_Support {
 		$attributes_repeated_fields     = apply_filters( 'wppfm_attributes_that_are_repeatable', $this->_channel_class->keys_that_can_be_used_more_than_once() );
 		$sub_keys_for_subs_attributes   = apply_filters( 'wppfm_keys_for_sub_attributes', $this->_channel_class->sub_keys_for_sub_tags() );
 
-		$this->_channel_class->add_xml_sub_tags( $product, $sub_keys_for_subs_attributes, $attributes_with_sub_attributes, $node_pre_tag );
+		$this->_channel_class->add_xml_sub_tags( $product_placeholder, $sub_keys_for_subs_attributes, $attributes_with_sub_attributes, $node_pre_tag );
 		$xml_string = "<$product_node>";
 
-		// for each product value item
-		foreach ( $product as $key => $value ) {
+		// For each product value item.
+		foreach ( $product_placeholder as $key => $value ) {
 			if ( ! is_array( $value ) ) {
 				$xml_string .= $this->make_xml_string( $key, $value, $category_name, $description_name, $node_pre_tag, $attributes_with_sub_attributes, $attributes_repeated_fields );
 			} else {
-				$xml_string .= $this->make_array_string( $key, $value, $node_pre_tag, $attributes_with_sub_attributes, $attributes_repeated_fields, $channel );
+				$xml_string .= $this->make_xml_string_from_array( $key, $value, $node_pre_tag, $attributes_with_sub_attributes, $attributes_repeated_fields, $channel );
 			}
 		}
 
@@ -850,64 +921,72 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
-	 * makes a csv string of one product including its variations
+	 * Generates a csv string of one product including its variations.
 	 *
-	 * @param array $data
-	 * @param array $active_fields
-	 * @param string $csv_separator
+	 * @param array  $product_placeholder contains the product data.
+	 * @param array  $active_fields       contains all the active fields.
+	 * @param string $csv_separator       with the csv separator for this csv file.
 	 *
-	 * @return string
+	 * @return string a csv string for the feed.
 	 */
-	protected function convert_data_to_csv( $data, $active_fields, $csv_separator ) {
-		if ( $data ) {
-			if ( count( $data ) > count( $active_fields ) ) {
+	protected function convert_data_to_csv( $product_placeholder, $active_fields, $csv_separator ) {
+		if ( $product_placeholder ) {
+			if ( count( $product_placeholder ) > count( $active_fields ) ) {
 				$support_class = new WPPFM_Feed_Support();
 				$support_class->correct_active_fields_list( $active_fields );
 			}
 
-			// the first row in a csv file should contain the index, the following rows the data
-			return $this->make_comma_separated_string_from_data_array( $data, $active_fields, $this->_feed_data->channel, $csv_separator );
+			// The first row in a csv file should contain the index, the following rows the data.
+			return $this->make_comma_separated_string_from_data_array( $product_placeholder, $active_fields, $this->_feed_data->channel, $csv_separator );
 		} else {
 			return '';
 		}
 	}
 
 	/**
-	 * makes a tab separated string for a tsv file
+	 * Generates a tab separated string for a tsv file.
 	 *
-	 * @param array $data
+	 * @param array $product_placeholder contains the product data.
 	 *
-	 * @return string
+	 * @return string a tsv string for the feed.
 	 */
-	protected function convert_data_to_tsv( $data ) {
-		if ( $data ) {
-			return $this->make_feed_string_from_data_array( $data, "\t" );
-		} else {
-			return '';
-		}
-	}
-
-	protected function convert_data_to_txt( $data, $separator ) {
-		if ( $data ) {
-			return $this->make_feed_string_from_data_array( $data, $separator );
+	protected function convert_data_to_tsv( $product_placeholder ) {
+		if ( $product_placeholder ) {
+			return $this->make_feed_string_from_product_placeholder( $product_placeholder, "\t" );
 		} else {
 			return '';
 		}
 	}
 
 	/**
-	 * takes one row data and converts it to a tab delimited string
+	 * Generates a txt string for a txt file.
 	 *
-	 * @param array $row_data
-	 * @param string $separator
+	 * @param array  $product_placeholder contains the product data.
+	 * @param string $separator           the txt separator.
 	 *
-	 * @return string
+	 * @return string a txt string for the feed.
 	 */
-	protected function make_feed_string_from_data_array( $row_data, $separator ) {
+	protected function convert_data_to_txt( $product_placeholder, $separator ) {
+		if ( $product_placeholder ) {
+			return $this->make_feed_string_from_product_placeholder( $product_placeholder, $separator );
+		} else {
+			return '';
+		}
+	}
+
+	/**
+	 * Takes one row data and converts it to a tab delimited string.
+	 *
+	 * @param array  $product_placeholder contains the product data.
+	 * @param string $separator           the separator.
+	 *
+	 * @return string with the feed string.
+	 */
+	protected function make_feed_string_from_product_placeholder( $product_placeholder, $separator ) {
 		$row_string = '';
 
-		foreach ( $row_data as $row_item ) {
-			$a_row_item     = ! is_array( $row_item ) ? preg_replace( "/\r|\n/", "", $row_item ) : implode( ', ', $row_item );
+		foreach ( $product_placeholder as $row_item ) {
+			$a_row_item     = ! is_array( $row_item ) ? preg_replace( "/[\r\n]/", "", $row_item ) : implode( ', ', $row_item );
 			$clean_row_item = strip_tags( $a_row_item );
 			$row_string    .= $clean_row_item;
 
@@ -927,9 +1006,9 @@ trait WPPFM_Processing_Support {
 	 * @param   string  $channel        Channel id.
 	 * @param   string  $separator      Requested data separator (default ,).
 	 *
-	 * @return string
+	 * @return string comma separated string with row data.
 	 */
-	public function make_comma_separated_string_from_data_array( $row_data, $active_fields, $channel, $separator = ',' ) {
+	private function make_comma_separated_string_from_data_array( $row_data, $active_fields, $channel, $separator = ',' ) {
 		$row_string = '';
 
 		$quotes_not_allowed = wppfm_channel_requires_no_quotes_on_empty_attributes( $channel );
@@ -940,7 +1019,7 @@ trait WPPFM_Processing_Support {
 		// Loop through the active attributes.
 		foreach ( $active_fields as $row_item ) {
 			if ( array_key_exists( $row_item, $row_data ) ) {
-				$clean_row_item = ! is_array( $row_data[ $row_item ] ) ? preg_replace( "/\r|\n/", '', $row_data[ $row_item ] ) : implode( $separator_for_arrays, $row_data[ $row_item ] );
+				$clean_row_item = ! is_array( $row_data[ $row_item ] ) ? preg_replace( "/[\r\n]/", '', $row_data[ $row_item ] ) : implode( $separator_for_arrays, $row_data[ $row_item ] );
 			} else {
 				$clean_row_item = '';
 			}
@@ -957,12 +1036,12 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
-	 * Makes the header string for a csv or tsv file.
+	 * Generates the header string for a csv or tsv file.
 	 *
-	 * @param array $active_fields
-	 * @param string $separator
+	 * @param array  $active_fields array with the active fields.
+	 * @param string $separator     the separator to use for the header.
 	 *
-	 * @return string
+	 * @return string with the header.
 	 */
 	protected function make_custom_header_string( $active_fields, $separator ) {
 		$header = implode( $separator, $active_fields );
@@ -971,24 +1050,27 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
-	 * make an array of product element strings
+	 * Make an array of product element strings.
 	 *
-	 * @param string $key
-	 * @param array $value
-	 * @param string $google_node_pre_tag
+	 * @param string $key                  the node id.
+	 * @param array  $value                the array containing the values for the XML string.
+	 * @param string $google_node_pre_tag  the Google node tag to use.
+	 * @param array  $tags_with_sub_tags   an array with attributes that have sub tags.
+	 * @param array  $tags_repeated_fields an array with attributes that can be used more than once.
+	 * @param string $channel              the channel id.
 	 *
-	 * @return string
+	 * @return string an XML string from an array of product elements.
 	 * @noinspection PhpUndefinedMethodInspection
 	 */
-	protected function make_array_string( $key, $value, $google_node_pre_tag, $tags_with_sub_tags, $tags_repeated_fields, $channel ) {
+	private function make_xml_string_from_array( $key, $value, $google_node_pre_tag, $tags_with_sub_tags, $tags_repeated_fields, $channel ) {
 		$xml_strings = '';
 
 		for ( $i = 0; $i < count( $value ); $i ++ ) {
-			$xml_key      = 'Extra_Afbeeldingen' === $key ? 'Extra_Image_' . ( $i + 1 ) : $key; // required for Beslist.nl
+			$xml_key      = 'Extra_Afbeeldingen' === $key ? 'Extra_Image_' . ( $i + 1 ) : $key; // Required for Beslist.nl
 			$xml_strings .= $this->make_xml_string( $xml_key, $value[ $i ], '', '', $google_node_pre_tag, $tags_with_sub_tags, $tags_repeated_fields );
 		}
 
-		// Specific for the Atalanda channel option key
+		// Specific for the Atalanda channel option key.
 		if ( '38' === $channel && 'option' === $key ) {
 			$xml_strings = '<atalanda:options>' . str_replace( 'g:', 'atalanda:', $xml_strings ) . '</atalanda:options>';
 		}
@@ -1001,20 +1083,19 @@ trait WPPFM_Processing_Support {
 	 *
 	 * Returns an XML node for a product tag and uses the product data to make the node.
 	 *
+	 * @param string $key                   note id.
+	 * @param string $xml_value             note value.
+	 * @param string $category_name         category name.
+	 * @param string $description_name      description name.
+	 * @param string $google_node_pre_tag   pre node tag.
+	 * @param array  $tags_with_sub_tags    array with tags that have a sub tag construction.
+	 * @param array  $tags_repeated_fields  array with tags that are allowed to be placed in the feed more than once
+	 *
 	 * @since 1.1.0
 	 * @since 2.34.0. Added a new line break at the end of each XML row to make a more readable XML feed and prevent large text lines.
-	 *
-	 * @param string $key                   Note id.
-	 * @param string $xml_value             Note value.
-	 * @param string $category_name         Category name.
-	 * @param string $description_name      Description name.
-	 * @param string $google_node_pre_tag   Pre node tag.
-	 * @param array  $tags_with_sub_tags    Array with tags that have a sub tag construction.
-	 * @param array  $tags_repeated_fields  Array with tags that are allowed to be placed in the feed more than once
-	 *
-	 * @return string    Node string in xml format eg. <id>43</id>.
+	 * @return string Node string in xml format eg. <id>43</id>.
 	 */
-	protected function make_xml_string( $key, $xml_value, $category_name, $description_name, $google_node_pre_tag, $tags_with_sub_tags, $tags_repeated_fields ) {
+	private function make_xml_string( $key, $xml_value, $category_name, $description_name, $google_node_pre_tag, $tags_with_sub_tags, $tags_repeated_fields ) {
 		$xml_string     = '';
 		$key            = str_replace( ' ', '_', $key ); // @since 2.40.0
 		$repeated_field = in_array( $key, $tags_repeated_fields, true );
@@ -1032,7 +1113,7 @@ trait WPPFM_Processing_Support {
 			$xml_value = explode( $subtag_sep, $xml_value );
 		}
 
-		// keys to be added in a CDATA bracket to the XML feed
+		// Keys to be added in a CDATA bracket to the XML feed.
 		$cdata_keys = apply_filters ( 'wppfm_cdata_keys', array(
 			$category_name,
 			$description_name,
@@ -1041,7 +1122,7 @@ trait WPPFM_Processing_Support {
 
 		if ( ! is_array( $xml_value ) && ! in_array( $key, $tags_with_sub_tags, true ) ) {
 			if ( in_array( $key, $cdata_keys, true ) ) {
-				$xml_value = $this->convert_to_character_data_string( $xml_value ); // put in a ![CDATA[...]] bracket
+				$xml_value = $this->convert_to_character_data_string( $xml_value ); // Put in a ![CDATA[...]] bracket.
 			} else {
 				$xml_value = $this->convert_to_xml_value( $xml_value );
 			}
@@ -1061,20 +1142,20 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
-	 * Generates a single XML line string
+	 * Generates a single XML line string.
 	 *
+	 * @param string $key                 the key to use.
+	 * @param string $xml_value           the value to use
+	 * @param string $google_node_pre_tag the node pre tag to use.
+	 *
+	 * @since 1.9.0.
+	 * @since 2.13.0 Added the wppfm_xml_element_attribute filter.
+	 * @since 2.38.0 Removed a code part that would replace a - character by a _ character as the - character is not recommended for an XML file. But the Vivino XML channel requires the use of an _ in some of their keys.
+	 * @since 3.8.0 Added the wppfm_xml_key_prefix_per_attribute filter to allow different XML key prefixes in one feed, different per attribute.
 	 * @since 1.9.0
-	 *
-	 * @param string $key
-	 * @param string $xml_value
-	 * @param string $google_node_pre_tag
-	 *
-	 * @since 2.13.0 Added the wppfm_xml_element_attribute filter
-	 * @since 2.38.0 Removed a code part that would replace a - character by a _ character as the - character is not recommended for an XML file. But the Vivino XML channel requires the use of an _ in some of their keys
-	 * @since 3.8.0 Added the wppfm_xml_key_prefix_per_attribute filter to allow different XML key prefixes in one feed, different per attribute
-	 * @return string
+	 * @return string with a single XML line.
 	 */
-	protected function add_xml_string( $key, $xml_value, $google_node_pre_tag ) {
+	private function add_xml_string( $key, $xml_value, $google_node_pre_tag ) {
 		//$not_allowed_characters = array( ' ', '-' );
 		//$clean_key              = str_replace( $not_allowed_characters, '_', $key );
 
@@ -1090,13 +1171,13 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
-	 * converts an ordinary XML string into a CDATA string as long as it's not only a numeric value;
+	 * Converts an ordinary XML string into a CDATA string as long as it's not only a numeric value.
 	 *
-	 * @param string $string
+	 * @param string $string XML string to convert.
 	 *
-	 * @return string
 	 * @since 2.34.0. Added an utf8 check and rewritten the CDATA string rule.
 	 * @since 3.5.0. Replaced the deprecated utf8_encode with mb_convert_encoding.
+	 * @return string the CDATA string.
 	 */
 	protected function convert_to_character_data_string( $string ) {
 		if ( is_numeric( $string ) ) {
@@ -1111,24 +1192,23 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
-	 * can be overridden by a channel-specific function in its class-feed.php
+	 * Can be overridden by a channel-specific function in its class-feed.php.
 	 *
-	 * @since 1.9.0
-	 *
-	 * @param   $product                array   Pointer to the product data.
+	 * @param   $product_placeholder    array   Pointer to the product data.
 	 * @param   $sub_keys_for_subs      array   Array with the tags that can be placed in the feed as a sub tag (e.g. <loyalty_points><ratio>).
 	 * @param   $tags_repeated_fields   array   Array with tags of fields that can have more than one instance in the feed.
 	 * @param   $node_pre_tag           string  The channel dependant pre tag (eg. g: for Google Feeds).
 	 *
-	 * @return  array   The product with the correct XML tags.
+	 * @since 1.9.0
 	 * @since 2.37.0. Added the extra limit parameter to the explode function so that it can work with attributes that have an - in their name, like attributes used in the Vivino XML channel.
 	 * @since 3.8.0. Added extra code that splits up sub-attributes if more than one sub-attribute is available in the $sub_tags variable.
+	 * @return  array   The product with the correct XML tags.
 	 */
-	public function add_xml_sub_tags( &$product, $sub_keys_for_subs, $tags_repeated_fields, $node_pre_tag ) {
-		$sub_tags = array_intersect_key( $product, array_flip( $sub_keys_for_subs ) );
+	public function add_xml_sub_tags( &$product_placeholder, $sub_keys_for_subs, $tags_repeated_fields, $node_pre_tag ) {
+		$sub_tags = array_intersect_key( $product_placeholder, array_flip( $sub_keys_for_subs ) );
 
 		if ( count( $sub_tags ) < 1 ) {
-			return $product;
+			return $product_placeholder;
 		}
 
 		$subtag_sep = apply_filters( 'wppfm_sub_tag_separator', '||' );
@@ -1157,56 +1237,56 @@ trait WPPFM_Processing_Support {
 					$tags_counter ++;
 				}
 			} else {
-				$tags_value  = array_key_exists( $split[0], $product ) ? $product[ $split[0] ] : '';
+				$tags_value  = array_key_exists( $split[0], $product_placeholder ) ? $product_placeholder[ $split[0] ] : '';
 				$tags_value .= '<' . $node_pre_tag . $split[1] . '>' . $value . '</' . $node_pre_tag . $split[1] . '>';
 			}
 
-			unset( $product[ $key ] );
-			$product[ $split[0] ] = $tags_value;
+			unset( $product_placeholder[ $key ] );
+			$product_placeholder[ $split[0] ] = $tags_value;
 		}
 
-		return $product;
+		return $product_placeholder;
 	}
 
 	/**
-	 * can be overridden by a channel-specific function in its class-feed.php
+	 * Can be overridden by a channel-specific function in its class-feed.php. This version returns an empty array.
 	 *
 	 * @since 1.9.0
 	 *
-	 * @return array
+	 * @return array empty array.
 	 */
 	public function keys_that_have_sub_tags() {
 		return array();
 	}
 
 	/**
-	 * can be overridden by a channel-specific function in its class-feed.php
+	 * Can be overridden by a channel-specific function in its class-feed.php. This version returns and empty array.
 	 *
 	 * @since 2.1.0
 	 *
-	 * @return array
+	 * @return array empty array.
 	 */
 	public function sub_keys_for_sub_tags() {
 		return array();
 	}
 
 	/**
-	 * can be overridden by a channel-specific function in its class-feed.php
+	 * Can be overridden by a channel-specific function in its class-feed.php. this version returns an empty array.
 	 *
 	 * @since 1.9.0
 	 *
-	 * @return array
+	 * @return array empty array.
 	 */
 	public function keys_that_can_be_used_more_than_once() {
 		return array();
 	}
 
 	/**
-	 * replaces certain characters to get a valid xml value
+	 * Replaces certain characters to get a valid xml value.
 	 *
-	 * @param string $value_string
+	 * @param string $value_string the original value.
 	 *
-	 * @return string
+	 * @return string converted string.
 	 */
 	public function convert_to_xml_value( $value_string ) {
 		$string_without_tags = strip_tags( $value_string );
@@ -1254,13 +1334,14 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
-	 * get formal woocommerce custom fields data
+	 * Get formal WooCommerce custom fields data.
 	 *
-	 * @param string $id
-	 * @param string $parent_product_id @since 2.0.9
-	 * @param string $field
+	 * @param string $id                the product id.
+	 * @param string $parent_product_id the products parent id.
+	 * @param string $field             the field data.
 	 *
-	 * @return string
+	 * @since 2.0.9. added the $parent_product_id parameter.
+	 * @return string with formal WooCommerce field data.
 	 */
 	protected function get_custom_field_data( $id, $parent_product_id, $field ) {
 		$custom_string = '';
@@ -1281,21 +1362,22 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
-	 * get third party custom field data
+	 * Handles third party custom field data.
 	 *
-	 * @param string $product_id
-	 * @param string $parent_product_id @since 2.0.9
-	 * @param string $field
+	 * @param string $product_id        the product id.
+	 * @param string $parent_product_id the products parent id.
+	 * @param string $field the field data.
 	 *
-	 * @return string
-	 *@since 1.6.0
-	 *
+	 * @since 1.6.0
+	 * @since 2.0.9. added the $parent_product_id parameter.
+	 * @since 3.1.0. supports the ACF plugin.
+	 * @return string with the correct field data.
 	 */
 	protected function get_third_party_custom_field_data( $product_id, $parent_product_id, $field ) {
 		$result        = '';
 		$product_brand = '';
 
-		// YITH Brands plugin
+		// YITH Brands plugin.
 		if ( get_option( 'yith_wcbr_brands_label' ) === $field ) { // YITH Brands plugin active
 			if ( has_term( '', 'yith_product_brand', $product_id ) ) {
 				$product_brand = get_the_terms( $product_id, 'yith_product_brand' );
@@ -1312,7 +1394,7 @@ trait WPPFM_Processing_Support {
 			}
 		}
 
-		// WooCommerce Brands plugin
+		// WooCommerce Brands plugin.
 		if ( in_array( 'woocommerce-brands/woocommerce-brands.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ), true ) ) {
 
 			if ( has_term( '', 'product_brand', $product_id ) ) {
@@ -1332,9 +1414,9 @@ trait WPPFM_Processing_Support {
 			}
 		}
 
-		// Advanced Custom Fields (ACF) plugin
-		// Handles the ACF custom fields
-		// @since 3.1.0
+		// Advanced Custom Fields (ACF) plugin.
+		// Handles the ACF custom fields.
+		// @since 3.1.0.
 		if ( function_exists( 'acf_get_field' ) && function_exists( 'acf_get_value' ) && function_exists( 'acf_format_value' ) ) {
 			$field_array = acf_get_field( $field );
 
@@ -1350,7 +1432,7 @@ trait WPPFM_Processing_Support {
 						$format_data = $format_data->name;
 					}
 
-					// @since 3.4.0. handling the ACF True / False field type
+					// @since 3.4.0. handling the ACF True / False field type.
 					if ( is_bool( $format_data ) ) {
 						$format_data = $format_data ? 'true' : 'false';
 					}
@@ -1377,40 +1459,46 @@ trait WPPFM_Processing_Support {
 		return $result ? substr( $result, 0, - 2 ) : '';
 	}
 
+	/**
+	 * Adds a single key with value to the active feed file.
+	 *
+	 * @param string $key   the key.
+	 * @param string $value the value.
+	 */
 	protected function write_single_general_xml_string_to_current_file( $key, $value ) {
 		$general_xml_string = sprintf( '<%s>%s</%s>', $key, $value, $key ) . "\r\n";
 		file_put_contents( $this->_feed_file_path, $general_xml_string, FILE_APPEND );
 	}
 
 	/**
-	 * adds data to the product that require a procedure to get
+	 * Handles attributes that use their own procedures to ge the correct output value.
 	 *
-	 * @param object $product
-	 * @param array $active_field_names
-	 * @param string $selected_language
-	 * @param string $selected_currency
-	 * @param string $feed_id
+	 * @param object $product contains all the product data.
 	 *
-	 * @return bool
 	 * @noinspection PhpPossiblePolymorphicInvocationInspection
 	 */
-	protected function add_procedural_data( $product, $active_field_names, $selected_language, $selected_currency, $feed_id ) {
+	protected function handle_procedural_attributes( $product ) {
 		$woocommerce_product = wc_get_product( $product->ID );
+
+		$feed_id = $this->_feed_data->feedId;
 
 		if ( false === $woocommerce_product ) {
 			$msg = sprintf( 'Failed to get the WooCommerce products procedural data from product %s.', $product->ID );
 			do_action( 'wppfm_feed_generation_warning', $feed_id, $msg ); // @since 2.3.0
-
-			return false;
+			return;
 		}
+
+		$active_field_names = $this->_pre_data['column_names'];
+		$selected_language  = $this->_feed_data->language;
+		$selected_currency  = $this->_feed_data->currency;
 
 		$woocommerce_parent_id      = $woocommerce_product->get_parent_id();
 		$woocommerce_product_parent = $woocommerce_product->is_type( 'variable' ) || $woocommerce_product->is_type( 'variation' ) ? wc_get_product( $woocommerce_parent_id ) : null;
 
 		if ( false === $woocommerce_product_parent || null === $woocommerce_product_parent ) {
-			// this product has no parent id, so it is possible this is the main of a variable product,
-			// So to make sure the general variation data like min_variation_price are available, copy the product
-			// in the parent product
+			// This product has no parent id, so it is possible this is the main of a variable product,
+			// so to make sure the general variation data like min_variation_price are available, copy the product
+			// in the parent product.
 			$woocommerce_product_parent = $woocommerce_product;
 		}
 
@@ -1447,21 +1535,22 @@ trait WPPFM_Processing_Support {
 				$permalink = get_permalink( $woocommerce_parent_id );
 			}
 
-			// WPML support
+			// WPML support.
 			$permalink = has_filter( 'wppfm_get_wpml_permalink' )
 				? apply_filters( 'wppfm_get_wpml_permalink', $permalink, $selected_language ) : $permalink;
 
-			// WOOCS support since @2.29.0
+			// WOOCS support since @2.29.0.
 			$permalink = has_filter( 'wppfm_get_woocs_currency' )
 				? apply_filters( 'wppfm_woocs_product_permalink', $permalink, $selected_currency ) : $permalink;
 
-			// Translatepress support since @2.36.0
+			// Translatepress support since @2.36.0.
 			$permalink = has_filter( 'wppfm_get_transpress_permalink' )
 				? apply_filters( 'wppfm_get_transpress_permalink', $permalink, $selected_language ) : $permalink;
 
 			// @since 3.7.0 - Add Google Analytics parameters to the product permalink.
+			// @since 3.11.0 - Added processing Google Analytics URL shortcodes.
 			if ( $this->_feed_data->google_analytics ) {
-				$permalink = $this->add_google_analytics_data_to_product_url( $permalink );
+				$permalink = $this->add_google_analytics_data_to_product_url( $permalink, $product->ID );
 			}
 
 			$product->permalink = $permalink;
@@ -1516,18 +1605,18 @@ trait WPPFM_Processing_Support {
 		}
 
 		if ( in_array( '_wp_attachement_metadata', $active_field_names, true ) ) {
-			$attachment_id                     = 0 === $woocommerce_parent_id ? $product->ID : $woocommerce_parent_id;
-			$product->_wp_attachement_metadata = $this->get_product_image_gallery( $attachment_id, $selected_language );
+			$product_id                        = 0 === $woocommerce_parent_id ? $product->ID : $woocommerce_parent_id;
+			$product->_wp_attachement_metadata = $this->get_product_image_gallery( $product_id, $selected_language );
 		}
 
 		if ( in_array( 'product_tags', $active_field_names, true ) ) {
-			// @since 2.41.0 corrected the code such that it also gives the tags of the parent.
+			// @since 2.41.0 - Corrected the code such that it also gives the tags of the parent.
 			$product_id            = 0 === $woocommerce_parent_id ? $product->ID : $woocommerce_parent_id;
 			$product->product_tags = $this->get_product_tags( $product_id );
 		}
 
 		if ( in_array( 'wc_currency', $active_field_names, true ) ) {
-			// WPML support
+			// WPML support.
 			$product->wc_currency = has_filter( 'wppfm_get_translated_currency' )
 				? apply_filters( 'wppfm_get_translated_currency', get_woocommerce_currency(), $selected_language ) : get_woocommerce_currency();
 		}
@@ -1549,29 +1638,21 @@ trait WPPFM_Processing_Support {
 				$product->_max_variation_regular_price = wppfm_prep_money_values( $woocommerce_product_parent->get_variation_regular_price( 'max' ), $selected_language, $selected_currency );
 			}
 
-			// @since 2.40.0. Fixed the fact that the formal wc get_variation_sale_price function returns the regular price when no sale price is set for a variation.
+			// @since 2.40.0. - Fixed the fact that the formal wc get_variation_sale_price function returns the regular price when no sale price is set for a variation.
 			if ( in_array( '_min_variation_sale_price', $active_field_names, true ) ) {
 				$product->_min_variation_sale_price = wppfm_prep_money_values( $this->get_variation_sale_price( $woocommerce_product_parent ), $selected_language, $selected_currency );
 			}
 
-			// @since 2.40.0. Fixed the fact that the formal wc get_variation_sale_price function returns the regular price when no sale price is set for a variation.
+			// @since 2.40.0. - Fixed the fact that the formal wc get_variation_sale_price function returns the regular price when no sale price is set for a variation.
 			if ( in_array( '_max_variation_sale_price', $active_field_names, true ) ) {
 				$product->_max_variation_sale_price = wppfm_prep_money_values( $this->get_variation_sale_price( $woocommerce_product_parent, 'max' ), $selected_language, $selected_currency );
 			}
 
 			if ( in_array( 'item_group_id', $active_field_names, true ) ) {
-				$parent_sku = $woocommerce_product_parent->get_sku();
-
-				if ( $parent_sku ) {
-					$product->item_group_id = $parent_sku; // best practise
-				} elseif ( $woocommerce_parent_id ) {
-					$product->item_group_id = 'GID' . $woocommerce_parent_id;
-				} else {
-					$product->item_group_id = '';
-				}
+				$product->item_group_id = $this->get_item_group_id( $woocommerce_parent_id );
 			}
 		} else {
-			//@since 2.37.0 added code to handle min and max variation prices for non-variation products.
+			// @since 2.37.0. - Added code to handle min and max variation prices for non-variation products.
 			if ( in_array( '_min_variation_price', $active_field_names, true ) ) {
 				$product->_min_variation_price = wppfm_prep_money_values( $woocommerce_product->get_regular_price(), $selected_language, $selected_currency );
 			}
@@ -1612,21 +1693,21 @@ trait WPPFM_Processing_Support {
 			$product->_stock = $woocommerce_product->get_stock_quantity();
 		}
 
-		// @since 2.1.4
+		// @since 2.1.4.
 		if ( in_array( 'empty', $active_field_names, true ) ) {
 			$product->empty = '';
 		}
 
-		// @since 2.2.0
+		// @since 2.2.0.
 		if ( in_array( 'product_type', $active_field_names, true ) ) {
 			$product->product_type = $woocommerce_product->get_type();
 		}
 
-		// @since 2.2.0
+		// @since 2.2.0.
 		if ( in_array( 'product_variation_title_without_attributes', $active_field_names, true ) ) {
 			$product_title = get_post_field( 'post_title', $product->ID );
 
-			if ( false !== strpos( $product_title, ' - ' ) ) { // assuming that the woocommerce_product_variation_title_attributes_separator is ' - '
+			if ( false !== strpos( $product_title, ' - ' ) ) { // Assuming that the woocommerce_product_variation_title_attributes_separator is ' - '.
 				$title_parts   = explode( ' - ', $product_title );
 				$product_title = $title_parts[0];
 			}
@@ -1634,28 +1715,28 @@ trait WPPFM_Processing_Support {
 			$product->product_variation_title_without_attributes = $product_title;
 		}
 
-		// @since 2.21.0
+		// @since 2.21.0.
 		if ( in_array( '_variation_parent_id', $active_field_names, true ) ) {
 			$product->_variation_parent_id = $woocommerce_parent_id;
 		}
 
-		// @since 2.21.0
+		// @since 2.21.0.
 		if ( in_array( '_product_parent_id', $active_field_names, true ) ) {
 			$product->_product_parent_id = $woocommerce_parent_id ?: '0';
 		}
 
-		// @since 2.21.0
+		// @since 2.21.0.
 		if ( in_array( '_max_group_price', $active_field_names, true ) && $woocommerce_product_parent->is_type( 'grouped' ) ) {
 			$product->_max_group_price = $this->get_group_price( $woocommerce_product_parent, 'max' );
 		}
 
-		// @since 2.21.0
+		// @since 2.21.0.
 		if ( in_array( '_min_group_price', $active_field_names, true ) && $woocommerce_product_parent->is_type( 'grouped' ) ) {
 			$product->_min_group_price = $this->get_group_price( $woocommerce_product_parent );
 		}
 
-		// @since 2.26.0
-		// @since 2.36.0 Changed the way the regular price is fetched for variation products
+		// @since 2.26.0.
+		// @since 2.36.0.- Changed the way the regular price is fetched for variation products.
 		if ( in_array( '_regular_price_with_tax', $active_field_names, true ) ) {
 			if ( $woocommerce_product->is_type( 'variable' ) ) {
 				$regular_price = $woocommerce_product->get_variation_regular_price( 'max' );
@@ -1666,8 +1747,8 @@ trait WPPFM_Processing_Support {
 			$product->_regular_price_with_tax = wppfm_prep_money_values( $price, $selected_language, $selected_currency );
 		}
 
-		// @since 2.26.0
-		// @since 2.36.0 Changed the way the regular price is fetched for variation products
+		// @since 2.26.0.
+		// @since 2.36.0.- Changed the way the regular price is fetched for variation products.
 		if ( in_array( '_regular_price_without_tax', $active_field_names, true ) ) {
 			if ( $woocommerce_product->is_type( 'variable' ) ) {
 				$regular_price = $woocommerce_product->get_variation_regular_price( 'max' );
@@ -1678,10 +1759,10 @@ trait WPPFM_Processing_Support {
 			$product->_regular_price_without_tax = wppfm_prep_money_values( $price, $selected_language, $selected_currency );
 		}
 
-		// @since 2.26.0
-		// @since 2.36.0 Changed the way the sale price is fetched for variation products
-		// @since 2.37.0 Added a check if the sale price is empty because the wc_get_price_including_tax function will return an unwanted regular price if the sale price is empty
-		// @since 2.40.0. Fixed the fact that the formal wc get_variation_sale_price function returns the regular price when no sale price is set for a variation.
+		// @since 2.26.0.
+		// @since 2.36.0.- Changed the way the sale price is fetched for variation products
+		// @since 2.37.0.- Added a check if the sale price is empty because the wc_get_price_including_tax function will return an unwanted regular price if the sale price is empty
+		// @since 2.40.0.- Fixed the fact that the formal wc get_variation_sale_price function returns the regular price when no sale price is set for a variation.
 		if ( in_array( '_sale_price_with_tax', $active_field_names, true ) ) {
 			if ( $woocommerce_product->is_type( 'variable' ) ) {
 				$sale_price = $this->get_variation_sale_price( $woocommerce_product, 'max' );
@@ -1695,10 +1776,10 @@ trait WPPFM_Processing_Support {
 			}
 		}
 
-		// @since 2.26.0
-		// @since 2.36.0 Changed the way the sale price is fetched for variation products
-		// @since 2.37.0 Added a check if the sale price is empty because the wc_get_price_including_tax function will return an unwanted regular price if the sale price is empty
-		// @since 2.40.0. Fixed the fact that the formal wc get_variation_sale_price function returns the regular price when no sale price is set for a variation.
+		// @since 2.26.0.
+		// @since 2.36.0.- Changed the way the sale price is fetched for variation products
+		// @since 2.37.0.- Added a check if the sale price is empty because the wc_get_price_including_tax function will return an unwanted regular price if the sale price is empty
+		// @since 2.40.0.- Fixed the fact that the formal wc get_variation_sale_price function returns the regular price when no sale price is set for a variation.
 		if ( in_array( '_sale_price_without_tax', $active_field_names, true ) ) {
 			if ( $woocommerce_product->is_type( 'variable' ) ) {
 				$sale_price = $this->get_variation_sale_price( $woocommerce_product, 'max' );
@@ -1712,12 +1793,12 @@ trait WPPFM_Processing_Support {
 			}
 		}
 
-		// @since 2.28.0
+		// @since 2.28.0.
 		if ( in_array( '_product_parent_description', $active_field_names, true ) ) {
 			$product->_product_parent_description = $woocommerce_product_parent->get_description( 'feed' );
 		}
 
-		// @since 2.28.0
+		// @since 2.28.0.
 		if ( in_array( '_woocs_currency', $active_field_names, true ) ) {
 			// WOOCS support
 			$product->_woocs_currency = has_filter( 'wppfm_get_woocs_currency' )
@@ -1725,34 +1806,61 @@ trait WPPFM_Processing_Support {
 		}
 
 		$woocommerce_product = null;
-
-		return true;
 	}
 
 	/**
-	 * get additional images
+	 * Get the item group id of a variation product.
 	 *
-	 * @param string $post_id
-	 * @param string $selected_language
+	 * @param string $woocommerce_parent_id the parent product id.
 	 *
-	 * @return array|string
+	 * @since 3.11.0.
+	 * @return string the item group id.
 	 */
-	protected function get_product_image_gallery( $post_id, $selected_language ) {
+	private function get_item_group_id( $woocommerce_parent_id ) {
+		$parent = wc_get_product( $woocommerce_parent_id );
+
+		if ( ! $parent instanceof WC_Product_Variation ) {
+			return '';
+		}
+
+		$parent_sku = $parent->get_sku();
+		$product_id = $parent->get_id();
+
+		if ( $parent_sku ) {
+			return $parent_sku; // Best practise.
+		}
+
+		if ( $product_id ) {
+			return 'GID' . $product_id;
+		}
+
+		return '';
+	}
+
+	/**
+	 * Get all the gallery image urls.
+	 *
+	 * @param string $product_id        the product id.
+	 * @param string $selected_language selected language, if applicable.
+	 *
+	 * @return array|string an array with image urls or an empty string if none are found.
+	 */
+	private function get_product_image_gallery( $product_id, $selected_language ) {
 		$image_urls    = array();
 		$images        = 1;
 		$max_nr_images = 10;
 
-		$product        = wc_get_product( $post_id );
+		$product        = wc_get_product( $product_id );
 		$attachment_ids = $product->get_gallery_image_ids();
 
 		foreach ( $attachment_ids as $attachment_id ) {
 			$link = wp_get_attachment_image_url( $attachment_id, '' );
 
-			// WPML support
+			// WPML support.
 			$image_link = has_filter( 'wppfm_get_wpml_permalink' )
 				? apply_filters( 'wppfm_get_wpml_permalink', $link, $selected_language ) : $link;
 
-			// correct baseurl for https if required
+			// Correct baseurl for https if required.
 			if ( is_ssl() ) {
 				$url = str_replace( 'http://', 'https://', $image_link );
 			} else {
@@ -1770,31 +1878,124 @@ trait WPPFM_Processing_Support {
 		return ! empty( $image_urls ) ? $image_urls : '';
 	}
 
-	protected function add_google_analytics_data_to_product_url( $permalink ) {
-		$google_analytics_data_holder = $this->_feed_data;
+	/**
+	 * Adds Google Analytics parameters to the product permalink.
+	 *
+	 * @param string $permalink  the original permalink.
+	 * @param string $product_id the product id.
+	 *
+	 * @since 3.11.0
+	 * @return string modified permalink with Google Analytics parameters if they are added.
+	 */
+	private function add_google_analytics_data_to_product_url( $permalink, $product_id ) {
+		// Generate Google Analytics parameters with shortcodes replaced
+		$parameters = $this->get_google_analytics_parameters( $product_id );
 
-		$parameters = array(
-			'utm_id' => $google_analytics_data_holder->utm_id,
-			'utm_source' => $google_analytics_data_holder->utm_source,
-			'utm_medium' => $google_analytics_data_holder->utm_medium,
-			'utm_campaign' => $google_analytics_data_holder->utm_campaign,
-			'utm_source_platform' => $google_analytics_data_holder->utm_source_platform,
-			'utm_term' => $google_analytics_data_holder->utm_term,
-			'utm_content' => $google_analytics_data_holder->utm_content,
-		);
-
-		// Filter out empty parameters
-		$parameters = array_filter($parameters, function($value) {
-			return !is_null($value) && $value !== '';
-		});
-
+		// Add the parameters to the permalink
 		return add_query_arg( $parameters, $permalink );
 	}
 
-	protected function get_product_tags( $id ) {
+	/**
+	 * Gets Google Analytics parameters for a product.
+	 *
+	 * @param string $product_id the product id.
+	 *
+	 * @since 3.11.0
+	 * @return array Google Analytics parameters with shortcodes replaced.
+	 */
+	private function get_google_analytics_parameters( $product_id ) {
+		$google_analytics_data_holder = $this->_feed_data;
+
+		$parameters = array(
+			'utm_id'              => $google_analytics_data_holder->utm_id,
+			'utm_source'          => $google_analytics_data_holder->utm_source,
+			'utm_medium'          => $google_analytics_data_holder->utm_medium,
+			'utm_campaign'        => $google_analytics_data_holder->utm_campaign,
+			'utm_source_platform' => $google_analytics_data_holder->utm_source_platform,
+			'utm_term'            => $google_analytics_data_holder->utm_term,
+			'utm_content'         => $google_analytics_data_holder->utm_content,
+		);
+
+		// Replace shortcodes in each Google Analytics parameter value.
+		foreach ( $parameters as $key => $value ) {
+			if ( ! is_null( $value ) && $value !== '' ) {
+				$parameters[ $key ] = $this->replace_shortcodes( $value, $product_id );
+			}
+		}
+
+		// Filter out empty parameters.
+		return array_filter( $parameters, function( $value ) {
+			return ! is_null( $value ) && $value !== '';
+		});
+	}
+
+	/**
+	 * Replaces shortcodes in a text with their actual values.
+	 *
+	 * @param string $text       the text containing shortcodes.
+	 * @param string $product_id the product id.
+	 *
+	 * @since 3.11.0
+	 * @return string the text with shortcodes replaced.
+	 */
+	private function replace_shortcodes( $text, $product_id ) {
+		// Check for shortcodes in the text before proceeding.
+		if ( ! $this->has_shortcode( $text ) ) {
+			return $text; // No shortcodes found, return text as-is.
+		}
+
+		// Prepare only the shortcodes that are found in the text
+		$shortcodes = array(
+			'[product-id]'       => strpos($text, '[product-id]') !== false ? $product_id : '',
+			'[product-sku]'      => strpos($text, '[product-sku]') !== false ? get_post_meta( $product_id, '_sku', true ) : '',
+			'[product-title]'    => strpos($text, '[product-title]') !== false ? get_the_title( $product_id ) : '',
+			'[product-group-id]' => strpos($text, '[product-group-id]') !== false ? $this->get_item_group_id( $product_id ) : '',
+		);
+
+		// Replace shortcodes in the text
+		foreach ( $shortcodes as $shortcode => $value ) {
+			$text = str_replace( $shortcode, $value, $text );
+		}
+
+		return $text;
+	}
+
+	/**
+	 * Checks if a text contains any of the supported shortcodes.
+	 *
+	 * @param string $text the text to check.
+	 *
+	 * @since 3.11.0
+	 * @return bool true if any of the shortcodes are found, false otherwise.
+	 */
+	private function has_shortcode( $text ) {
+		$shortcodes = array(
+			'[product-id]',
+			'[product-sku]',
+			'[product-title]',
+			'[product-group-id]',
+		);
+
+		foreach ( $shortcodes as $shortcode ) {
+			if ( strpos( $text, $shortcode ) !== false ) {
+				return true;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Gets the product tags.
+	 *
+	 * @param string $product_id the product id.
+	 *
+	 * @return string comma separated string containing the product tags.
+	 */
+	private function get_product_tags( $product_id ) {
 		$product_tags_string = '';
-		$product_tag_values  = get_the_terms( $id, 'product_tag' );
-		$post_tag_values     = get_the_tags( $id );
+		$product_tag_values  = get_the_terms( $product_id, 'product_tag' );
+		$post_tag_values     = get_the_tags( $product_id );
 
 		if ( $product_tag_values ) {
 			foreach ( $product_tag_values as $product_tag ) {
@@ -1814,12 +2015,12 @@ trait WPPFM_Processing_Support {
 	/**
 	 * Returns the lowest or highest price of the products in a grouped product.
 	 *
-	 * @param WC_Product $woocommerce_product_parent
-	 * @param string     $min_max
+	 * @param WC_Product $woocommerce_product_parent grouped product data.
+	 * @param string     $min_max                    min (lowest) or max (highest) price, default min.
 	 *
 	 * @return string The highest or lowest price as a string.
 	 */
-	protected function get_group_price( $woocommerce_product_parent, $min_max = 'min' ) {
+	private function get_group_price( $woocommerce_product_parent, $min_max = 'min' ) {
 		$children       = $woocommerce_product_parent->get_children();
 		$product_prices = array();
 
@@ -1834,13 +2035,13 @@ trait WPPFM_Processing_Support {
 	/**
 	 * Fixes the fact that the formal wc get_variation_sale_price function returns the regular price when no sale price is set for a variation.
 	 *
-	 * @param $wc_product
-	 * @param $min_or_max
+	 * @param object $wc_product the product data.
+	 * @param string $min_or_max min (lowest) or max (highest) price, default min.
 	 *
 	 * @since 2.40.0
 	 * @return mixed|string
 	 */
-	protected function get_variation_sale_price( $wc_product, $min_or_max = 'min' ) {
+	private function get_variation_sale_price( $wc_product, $min_or_max = 'min' ) {
 		$variation_sale_price = $wc_product->get_variation_sale_price( $min_or_max );
 		return $variation_sale_price < $wc_product->get_variation_regular_price( $min_or_max ) ? $variation_sale_price : '';
 	}

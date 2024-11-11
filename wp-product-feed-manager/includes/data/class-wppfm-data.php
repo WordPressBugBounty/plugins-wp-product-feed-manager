@@ -326,7 +326,7 @@ if ( ! class_exists( 'WPPFM_Data' ) ) :
 
 				default:
 					if ( 'valid' === get_option( 'wppfm_lic_status' ) ) { // error message for paid versions
-						echo '<div id="error">' . __(
+						echo '<div id="error">' . esc_html__(
 							'Could not add custom fields because I could not identify the channel.
 								If not already done add the correct channel in the Manage Channels page.
 							Also try to deactivate and then activate the plugin.',
@@ -335,7 +335,7 @@ if ( ! class_exists( 'WPPFM_Data' ) ) :
 
 						wppfm_write_log_file( sprintf( 'Could not define the channel in a valid Premium plugin version. Feed id = %s', $source_id ) );
 					} else { // error message for a free version
-						echo '<div id="error">' . __(
+						echo '<div id="error">' . esc_html__(
 							'Could not identify the channel.
 								Try to deactivate and then activate the plugin.
 								If that does not work remove the plugin through the WordPress Plugins page and than reinstall and activate it again.',

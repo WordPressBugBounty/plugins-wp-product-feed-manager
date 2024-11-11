@@ -4,7 +4,6 @@
  * WP Product Feed Controller Class.
  *
  * @package WP Product Feed Manager/Application/Classes
- * @version 1.6.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,7 +14,7 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 
 
 	/**
-	 * Feed Processor Class
+	 * Feed Processor Class.
 	 *
 	 * @since 1.10.0
 	 */
@@ -25,67 +24,65 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 		use WPPFM_Feed_Processor_Functions;
 
 		/**
-		 * Action identifier
+		 * Action identifier.
 		 *
 		 * @var string
 		 */
 		protected $action = 'feed_generation_process';
 
 		/**
-		 * Path to the feed file
+		 * Path to the feed file.
 		 *
 		 * @var string
 		 */
 		private $_feed_file_path;
 
 		/**
-		 * General feed data
+		 * General feed data.
 		 *
 		 * @var stdClass
 		 */
 		private $_feed_data;
 
 		/**
-		 * Required pre feed generation data
+		 * Required pre feed generation data.
 		 *
 		 * @var array
 		 */
 		private $_pre_data;
 
 		/**
-		 * Contains the channel-specific main category title and description title
+		 * Contains the channel-specific main category title and description title.
 		 *
 		 * @var array
 		 */
 		private $_channel_details;
 
 		/**
-		 * Contains the relations between WooCommerce and channel fields
+		 * Contains the relations between WooCommerce and channel fields.
 		 *
 		 * @var array
 		 */
 		private $_relation_table;
 
 		/**
-		 * Placeholder for the correct channel class
+		 * Placeholder for the correct channel class.
 		 *
 		 * @var string
 		 */
 		private $_channel_class;
 
 		/**
-		 * Task
+		 * Starts a single feed update task.
 		 *
-		 * Starts a single feed update task
+		 * @param array    $item            the work value, usually a product id, but it can also be an XML header line.
+		 * @param stdClass $feed_data       a class containing the required feed data.
+		 * @param string   $feed_file_path  the path to the feed file
+		 * @param array    $pre_data        an array with column names, active fields, and database fields.
+		 * @param array    $channel_details an array with the details of the channel for this feed.
+		 * @param array    $relation_table  an array that contains the relations between the field name and the database table field name.
 		 *
-		 * @param array    $item
-		 * @param stdClass $feed_data
-		 * @param string   $feed_file_path
-		 * @param array    $pre_data
-		 * @param array    $channel_details
-		 * @param array    $relation_table
-		 *
-		 * @return boolean
+		 * @return boolean returns true if the task has succeeded.
 		 */
 		protected function task( $item, $feed_data, $feed_file_path, $pre_data, $channel_details, $relation_table ) {
 			if ( ! $item ) {
@@ -110,7 +107,7 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 		}
 
 		/**
-		 * Complete
+		 * Handles the actions after completing a feed update task.
 		 */
 		public function complete() {
 			//parent::complete();
@@ -149,12 +146,11 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 		}
 
 		/**
-		 * Task action
-		 * Selects the required action
+		 * Selects the required action.
 		 *
-		 * @param array $task_data
+		 * @param array $task_data the work value, usually a product id, but it can also be an XML header line.
 		 *
-		 * @return boolean
+		 * @return boolean true if the action is started.
 		 */
 		private function do_task( $task_data ) {
 
@@ -177,10 +173,10 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 		/**
 		 * Ads a single product based on a product id to the feed file.
 		 *
-		 * @param string $product_id The id of the product to be added to the feed.
+		 * @param string $product_id the id of the product to be added to the feed.
 		 *
 		 * @since 2.37.0. Changed the return value for Grouped products to exclude them from being counted as processed products.
-		 * @return boolean
+		 * @return boolean true if the product has been added correctly to the feed.
 		 */
 		private function add_product_to_feed( $product_id ) {
 			if ( ! $product_id ) {
@@ -251,12 +247,12 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 			if ( ! $row_filtered ) {
 				// For each row loop through each active field.
 				foreach ( $this->_pre_data['active_fields'] as $field ) {
-					$field_meta_data = $this->get_meta_data_from_specific_field( $field, $this->_feed_data->attributes );
+					$attribute_meta_data = $this->get_meta_data_from_specific_attribute( $field, $this->_feed_data->attributes );
 
 					// Get the field data based on the user settings.
 					$feed_object = $this->process_product_field(
 						$product_data,
-						$field_meta_data,
+						$attribute_meta_data,
 						$this->_channel_details['category_name'],
 						$row_category,
 						$this->_feed_data->language,
@@ -315,19 +311,19 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 		}
 
 		/**
-		 * Appends a product to the feed
+		 * Appends a processed product to the feed.
 		 *
-		 * @param array $feed_product_object
-		 * @param string $feed_id
-		 * @param string $product_id
+		 * @param array  $product_placeholder an array with the product data to be written to the feed file.
+		 * @param string $feed_id             the id of the feed.
+		 * @param string $product_id          the id of the product.
 		 *
-		 * @return string product added or boolean false
+		 * @return string product added or boolean false.
 		 */
-		private function write_product_object( $feed_product_object, $feed_id, $product_id ) {
+		private function write_product_object( $product_placeholder, $feed_id, $product_id ) {
 			//@since 2.3.0
 			do_action( 'wppfm_add_product_to_feed', $feed_id, $product_id );
 
-			$product_text = $this->generate_feed_text( $feed_product_object );
+			$product_text = $this->generate_feed_text( $product_placeholder );
 
 			if ( false === file_put_contents( $this->_feed_file_path, $product_text, FILE_APPEND ) ) {
 				wppfm_write_log_file( sprintf( 'Could not write product %s to the feed', $product_id ) );
@@ -339,27 +335,27 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 		}
 
 		/**
-		 * convert the feed data of a single product into XML or csv text depending on the channel
+		 * Convert the feed data of a single product into XML or csv text depending on the channel.
 		 *
-		 * @param array $data
+		 * @param array $product_placeholder contains the product data.
 		 *
 		 * @return string
 		 */
-		protected function generate_feed_text( $data ) {
+		protected function generate_feed_text( $product_placeholder ) {
 			switch ( pathinfo( $this->_feed_file_path, PATHINFO_EXTENSION ) ) {
 				case 'xml':
-					return $this->convert_data_to_xml( $data, $this->_channel_details['category_name'], $this->_channel_details['description_name'], $this->_channel_details['channel_id'] );
+					return $this->convert_data_to_xml( $product_placeholder, $this->_channel_details['category_name'], $this->_channel_details['description_name'], $this->_channel_details['channel_id'] );
 
 				case 'txt':
 					$txt_sep = apply_filters( 'wppfm_txt_separator', wppfm_get_correct_txt_separator( $this->_channel_details['channel_id'] ) );
-					return $this->convert_data_to_txt( $data, $txt_sep );
+					return $this->convert_data_to_txt( $product_placeholder, $txt_sep );
 
 				case 'csv':
 					$csv_sep = apply_filters( 'wppfm_csv_separator', wppfm_get_correct_csv_separator( $this->_channel_details['channel_id'] ) );
-					return $this->convert_data_to_csv( $data, $this->_pre_data['active_fields'], $csv_sep );
+					return $this->convert_data_to_csv( $product_placeholder, $this->_pre_data['active_fields'], $csv_sep );
 
 				case 'tsv':
-					return $this->convert_data_to_tsv( $data );
+					return $this->convert_data_to_tsv( $product_placeholder );
 			}
 
 			return '';

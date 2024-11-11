@@ -21,7 +21,7 @@ trait WPPRFM_XML_Element_Functions {
 	 */
 	protected function wpprfm_handle_simple_element( $element_name, $review_data ) {
 		if ( 'content' === $element_name && array_key_exists( $element_name, $review_data ) ) {
-			$review_data[ $element_name ] = htmlspecialchars( $review_data[ $element_name ] );
+			$review_data[ $element_name ] = htmlspecialchars( $review_data[ $element_name ], ENT_QUOTES|ENT_SUBSTITUTE|ENT_HTML401 );
 		}
 
 		if ( array_key_exists( $element_name, $review_data ) && '' !== $review_data[ $element_name ] ) {

@@ -24,7 +24,7 @@ trait WPPRFM_Processing_Support {
 		$support_class = new WPPFM_Feed_Support();
 
 		foreach ( $active_fields as $field ) {
-			$db_title = $support_class->find_relation( $field, $relation_table );
+			$db_title = $support_class->get_db_column_title( $field, $relation_table );
 
 			if ( property_exists( $comment_data, $db_title ) ) {
 				$product_data[ $db_title ] = $comment_data->$db_title;

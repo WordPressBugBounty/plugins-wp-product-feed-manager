@@ -29,7 +29,7 @@ if ( ! class_exists( 'WPPRFM_Ajax_Data' ) ) :
 		public function myajax_get_product_review_feed_attributes() {
 
 			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'reviewFeedGetAttributesNonce' ), 'myajax-review-feed-get-attributes-nonce' ) ) {
-				$feed_id = filter_input( INPUT_POST, 'feedId' );
+				$feed_id = filter_input( INPUT_POST, 'feedId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 				$product_review_feed_attributes = WPPRFM_Attributes_List::get_review_feed_attributes();
 
@@ -56,7 +56,7 @@ if ( ! class_exists( 'WPPRFM_Ajax_Data' ) ) :
 				$review_feed_query_class  = new WPPRFM_Queries();
 				$product_feed_query_class = new WPPFM_Queries();
 
-				$feed_id = filter_input( INPUT_POST, 'sourceId' );
+				$feed_id = filter_input( INPUT_POST, 'sourceId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 				$result = $review_feed_query_class->read_feed( $feed_id );
 

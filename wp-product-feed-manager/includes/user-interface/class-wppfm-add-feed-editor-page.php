@@ -4,7 +4,6 @@
  * WP Product Feed Manager Add Feed Editor Page Class.
  *
  * @package WP Product Feed Manager/User Interface/Classes
- * @version 1.0.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -22,10 +21,13 @@ if ( ! class_exists( 'WPPFM_Add_Feed_Editor_Page' ) ) :
 			$this->_feed_editor_form = new WPPFM_Feed_Editor_Page();
 		}
 
+		/**
+		 * Shows the content of the Feed Editor page.
+		 */
 		public function show() {
 			echo '<div class="wppfm-page-layout">';
-			echo $this->_header_class->show( 'feed-editor-page' );
-			echo $this->_feed_editor_form->display();
+			$this->_header_class->show( 'feed-editor-page' );
+			$this->_feed_editor_form->display();
 			echo '</div>';
 		}
 	}

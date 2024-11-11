@@ -1,4 +1,4 @@
-( function( $ ) {
+( function() {
 	'use strict'
 
 	const onPageReady = function() {
@@ -16,5 +16,5 @@
 		wppfm_activateSelect2SourceSelectors()
 	}
 
-	$( document ).ready( onPageReady );
-} )( jQuery )
+	jQuery( document ).ready( onPageReady );
+} )()

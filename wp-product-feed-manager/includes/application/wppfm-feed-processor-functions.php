@@ -1,8 +1,9 @@
 <?php
 
 /**
+ * WP Product Feed Processor Functions Trait.
+ *
  * @package WP Product Feed Manager/Functions
- * @version 1.0.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -12,22 +13,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 trait WPPFM_Feed_Processor_Functions {
 
 	/**
-	 * Adds a string to the feed
+	 * Adds a file format string to the feed.
 	 *
-	 * @param array $line_data
+	 * @param array $line_data containing the file format line.
 	 *
-	 * @return boolean
+	 * @return boolean true if the format line has been added, false if it failed.
 	 */
 	private function add_file_format_line_to_feed( $line_data ) {
 		return false !== file_put_contents( $this->_feed_file_path, $line_data['file_format_line'], FILE_APPEND );
 	}
 
 	/**
-	 * Adds an error message to the feed
+	 * Adds an error message to the feed.
 	 *
-	 * @param array $error_message_data
+	 * @param array $error_message_data containing the error message in a 'feed_line_message' element.
 	 *
-	 * @return boolean
+	 * @return boolean true if the error message has been added, false if it failed.
 	 */
 	private function add_error_message_to_feed( $error_message_data ) {
 		return false !== file_put_contents( $this->_feed_file_path, $error_message_data['feed_line_message'], FILE_APPEND );
@@ -35,26 +36,35 @@ trait WPPFM_Feed_Processor_Functions {
 
 
 	/**
-	 * register the update in the database
+	 * Register a feed update in the database.
 	 *
-	 * @param string $feed_id
-	 * @param string $feed_name
-	 * @param string $nr_products
-	 * @param string $status
+	 * @param string $feed_id     the feed id.
+	 * @param string $feed_name   the name of the feed.
+	 * @param string $nr_products the number of products in the feed.
+	 * @param string $status      the status of the feed, default null.
 	 */
 	private function register_feed_update( $feed_id, $feed_name, $nr_products, $status = null ) {
 		$data_class = new WPPFM_Data();
 
-		// register the update and update the feed Last Change time
+		// Register the update and update the feed Last Change time.
 		$data_class->update_feed_data( $feed_id, wppfm_get_file_url( $feed_name ), $nr_products );
 
 		$actual_status = $status ?: $data_class->get_feed_status( $feed_id );
 
-		if ( '4' !== $actual_status && '5' !== $actual_status && '6' !== $actual_status ) { // no errors
-			$data_class->update_feed_status( $feed_id, intval( $status ) ); // put feed on status hold if no errors are reported
+		if ( '4' !== $actual_status && '5' !== $actual_status && '6' !== $actual_status ) { // No errors.
+			$data_class->update_feed_status( $feed_id, intval( $status ) ); // Put feed on status hold if no errors are reported.
 		}
 	}
 
+	/**
+	 * Gets the main data of a specific product.
+	 *
+	 * @param string $product_id                the product id.
+	 * @param string $parent_product_id         the products parent id.
+	 * @param string $post_columns_query_string a query string with the post-columns.
+	 *
+	 * @return object|bool with the product main data.
+	 */
 	private function get_products_main_data( $product_id, $parent_product_id, $post_columns_query_string ) {
 		$queries_class   = new WPPFM_Queries();
 		$prep_meta_class = new WPPFM_Feed_Value_Editors();
@@ -81,11 +91,11 @@ trait WPPFM_Feed_Processor_Functions {
 		}
 
 		// Parent ids are required to get the main data from product variations.
-		$meta_parent_ids = 0 !== $parent_product_id ? array( $parent_product_id ) : $this->get_meta_parent_ids( $product_id );
+		$product_parent_ids = 0 !== $parent_product_id ? array( $parent_product_id ) : $this->get_product_parent_ids( $product_id );
 
-		array_unshift( $meta_parent_ids, $product_id ); // Add the product id to the parent ids.
+		array_unshift( $product_parent_ids, $product_id ); // Add the product id to the parent ids.
 
-		$meta_data = $queries_class->read_meta_data( $product_id, $parent_product_id, $meta_parent_ids, $this->_pre_data['database_fields']['meta_fields'] );
+		$meta_data = $queries_class->read_meta_data( $product_id, $parent_product_id, $product_parent_ids, $this->_pre_data['database_fields']['meta_fields'] );
 
 		foreach ( $meta_data as $meta ) {
 			$meta_value = $prep_meta_class->prep_meta_values( $meta, $this->_feed_data->language, $this->_feed_data->currency );
@@ -109,8 +119,8 @@ trait WPPFM_Feed_Processor_Functions {
 			$product_data->{$third_party_field} = $this->get_third_party_custom_field_data( $product_data->ID, $parent_product_id, $third_party_field );
 		}
 
-		if ( $this->_feed_data ) { // @since 2.29.0 to not start this function when using the WooCommerce Google Review Feed Manager plugin version 0.15.0 or lower.
-			$this->add_procedural_data( $product_data, $this->_pre_data['column_names'], $this->_feed_data->language, $this->_feed_data->currency, $this->_feed_data->feedId );
+		if ( $this->_feed_data ) { // @since 2.29.0 - To not start this function when using the WooCommerce Google Review Feed Manager plugin version 0.15.0 or lower.
+			$this->handle_procedural_attributes( $product_data );
 		}
 
 		return $product_data;

@@ -4,7 +4,6 @@
  * WP Product Feed Manager Add Channel Manager Page Class.
  *
  * @package WP Product Feed Manager/User Interface/Classes
- * @version 1.0.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -26,10 +25,15 @@ if ( ! class_exists( 'WPPFM_Add_Channel_Manager_Page' ) ) :
 			$this->_channel_manager_form = new WPPFM_Channel_Manager_Page();
 		}
 
+		/**
+		 * Shows the Channel Manager page.
+		 *
+		 * @param string $updated contains the channel name if the page is loaded after a channel update.
+		 */
 		public function show( $updated ) {
 			echo '<div class="wppfm-page-layout">';
-			echo $this->_header_class->show( 'channel-manager-page' );
-			echo $this->_channel_manager_form->display( $updated );
+			$this->_header_class->show( 'channel-manager-page' );
+			$this->_channel_manager_form->display( $updated );
 			echo '</div>';
 		}
 	}

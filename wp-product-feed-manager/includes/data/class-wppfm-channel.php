@@ -102,7 +102,7 @@ if ( ! class_exists( 'WPPFM_Channel' ) ) :
 		public function get_channel_short_name( $channel_id ) {
 			foreach ( $this->_channels as $channel ) {
 				if ( $channel->channel_id === $channel_id ) {
-					return (string) $channel->channel_short;
+					return sanitize_file_name( (string) $channel->channel_short );
 				}
 			}
 
@@ -244,7 +244,7 @@ if ( ! class_exists( 'WPPFM_Channel' ) ) :
 						return $count;
 					}
 				} else {
-					echo wppfm_handle_wp_errors_response(
+					wppfm_handle_wp_errors_response(
 						$response,
 						sprintf(
 							/* translators: %s: url to the support page */
@@ -336,7 +336,7 @@ if ( ! class_exists( 'WPPFM_Channel' ) ) :
 			} else {
 				if ( wppfm_on_any_own_plugin_page() && ! $silent ) {
 					/* translators: %s: Name of a channel */
-					echo wppfm_show_wp_error( sprintf( __( 'Channel %s is not installed correctly. Please try to Deactivate and then Activate the Feed Manager Plugin in your Plugins page.', 'wp-product-feed-manager' ), $channel_name ) );
+					wppfm_show_wp_error( sprintf( __( 'Channel %s is not installed correctly. Please try to Deactivate and then Activate the Feed Manager Plugin in your Plugins page.', 'wp-product-feed-manager' ), $channel_name ) );
 					wppfm_write_log_file( sprintf( 'Error: Channel %s is not installed correctly.', $channel_name ) );
 				}
 
@@ -432,7 +432,7 @@ if ( ! class_exists( 'WPPFM_Channel' ) ) :
 					);
 				}
 			} else {
-				echo wppfm_show_wp_warning(
+				wppfm_show_wp_warning(
 					sprintf(
 						/* translators: %s: Name of the selected channel */
 						__(

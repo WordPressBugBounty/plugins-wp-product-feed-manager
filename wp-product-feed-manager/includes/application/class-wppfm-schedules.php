@@ -3,7 +3,6 @@
  * WP Product Schedules Class.
  *
  * @package WP Product Feed Manager/Application/Classes
- * @version 1.1.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -14,12 +13,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( ! class_exists( 'WPPFM_Schedules' ) ) :
 
 	/**
-	 * Feed Schedules Class
+	 * Feed Schedules Class.
 	 */
 	class WPPFM_Schedules {
 
 		/**
-		 * Initiates the automatic feed updates
+		 * Initiates the automatic feed updates.
 		 *
 		 * @since 2.37.0. Added a check to exclude Review Feeds from getting in the queue whilst the Review Feed option is not on.
 		 */
@@ -77,12 +76,12 @@ if ( ! class_exists( 'WPPFM_Schedules' ) ) :
 		}
 
 		/**
-		 * Returns the time at which the feed should be updated
+		 * Returns the time at which the feed should be updated.
 		 *
 		 * @param string $last_update       time string with the data and time the feed has been update last.
 		 * @param string $update_frequency  registered update frequency.
 		 *
-		 * @return string Containing the time in Y-m-d H:i:s format
+		 * @return string containing the next update the time in Y-m-d H:i:s format.
 		 */
 		private function new_activation_time( $last_update, $update_frequency ) {
 			$update_split = explode( ':', $update_frequency );
@@ -114,11 +113,11 @@ if ( ! class_exists( 'WPPFM_Schedules' ) ) :
 		}
 
 		/**
-		 * Returns the daily update options
+		 * Returns the daily update options.
 		 *
-		 * @param string $selection     Selected number of hours.
+		 * @param string $selection selected number of hours.
 		 *
-		 * @return int Hours difference between updates
+		 * @return int hours difference between updates.
 		 */
 		private function get_update_hours( $selection ) {
 			switch ( $selection ) {

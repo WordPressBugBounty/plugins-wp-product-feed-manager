@@ -6,7 +6,6 @@
  * WP Product Feed Master Class.
  *
  * @package WP Product Feed Manager/Application/Classes
- * @version 3.7.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -16,51 +15,49 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 
 	/**
-	 * Feed Master Class
-	 *
-	 * @since 2.0.0
+	 * Feed Master Class.
 	 */
 	class WPPFM_Feed_Master_Class {
 
 		use WPPFM_Processing_Support;
 
 		/**
-		 * Contains the general feed data
+		 * Contains the general feed data.
 		 *
 		 * @var object
 		 */
 		protected $_feed = null;
 
 		/**
-		 * Instantiation of global background process class
+		 * Instantiation of global background process class.
 		 *
 		 * @var stdClass
 		 */
 		protected $_background_process;
 
 		/**
-		 * Placeholder for the correct channel class
+		 * Placeholder for the correct channel class.
 		 *
 		 * @var stdClass
 		 */
 		protected $_channel_class;
 
 		/**
-		 * Placeholder for the WPPFM_Data_Class
+		 * Placeholder for the WPPFM_Data_Class.
 		 *
 		 * @var stdClass
 		 */
 		protected $_data_class;
 
 		/**
-		 * Path and name of the feed file
+		 * Path and name of the feed file.
 		 *
 		 * @var string
 		 */
 		protected $_feed_file_path;
 
 		/**
-		 * Initiate new Feed Master class.
+		 * Constructor of the feed master class. Instantiates the correct background_process for the selected feed and data class.
 		 *
 		 * @param string $feed_id The id of the feed. Default 0.
 		 *
@@ -80,9 +77,9 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		}
 
 		/**
-		 * The update feed file function that starts the update process
+		 * Starts the update process.
 		 *
-		 * @param bool $silent  Indicates whether process messages should be shown or not (default true).
+		 * @param bool $silent  Sets whether process messages should be shown or not. Default true.
 		 *
 		 * @return false|void or false
 		 */
@@ -143,7 +140,7 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 			$nr_of_products_in_feed = $this->_background_process->nr_of_products_in_queue();
 
 			if ( ! $silent ) {
-				echo 'started_processing-' . $nr_of_products_in_feed;
+				echo 'started_processing-' . esc_html( $nr_of_products_in_feed );
 			}
 		}
 
@@ -152,7 +149,7 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		 *
 		 * @param string $feed_id   The id of the feed to be checked.
 		 *
-		 * @return array   An array with feed status data.
+		 * @return array with feed status data.
 		 */
 		public function feed_status_check( $feed_id ) {
 			$queries_class = new WPPFM_Queries();
@@ -171,7 +168,7 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 				// If it is, set the feed status to fail and change the $current_feed_status['status_id'] to 6.
 				if ( WPPFM_Feed_Controller::feed_processing_failed( $feed_file ) ) {
 
-					do_action( 'wppfm_feed_processing_failed_file_size_stopped_increasing', $feed_id, WPPFM_Feed_Controller::nr_ids_remaining_in_queue() );
+					do_action( 'wppfm_feed_processing_failed_file_size_stopped_increasing', $feed_id, WPPFM_Feed_Controller::nr_ids_remaining_in_product_queue() );
 					do_action( 'wppfm_register_feed_url', $feed_id, $feed_file );
 
 					// Change the status of the feed to failed processing.
@@ -200,8 +197,6 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 
 		/**
 		 * Initiates the update process of the next feed in the feed queue.
-		 *
-		 * @return void
 		 */
 		public function initiate_update_next_feed_in_queue() {
 			$next_feed_id = WPPFM_Feed_Controller::get_next_id_from_feed_queue();
@@ -213,9 +208,9 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		}
 
 		/**
-		 * Perform all preparations for the feed update starts
+		 * Perform all preparations for the feed update.
 		 *
-		 * @return bool true if the feed file has been updated successfully
+		 * @return bool true if the preparations are successful.
 		 */
 		private function prepare_feed_file_update() {
 			// Prepare the folder structure to support saving feed files.
@@ -263,7 +258,7 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		}
 
 		/**
-		 * Store common product metadata in the Background Process properties
+		 * Prepares the background process. Stores common product metadata in the Background Process properties.
 		 */
 		private function prepare_background_process() {
 			// Start counting from zero.
@@ -273,11 +268,11 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 			$this->_background_process->set_file_path( $this->_feed_file_path );
 			$this->_background_process->set_pre_data( $this->get_required_pre_data() );
 			$this->_background_process->set_channel_details( $this->get_channel_details() );
-			$this->_background_process->set_relations_table( $this->get_channel_to_woocommerce_field_relations() );
+			$this->_background_process->set_relations_table( $this->channel_to_woocommerce_field_relations() );
 		}
 
 		/**
-		 * Fills the background queue
+		 * Fills the product background queue with products that are to be processed.
 		 */
 		private function fill_the_background_queue() {
 			// Start with an empty queue.
@@ -292,7 +287,7 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 			}
 
 			// Add the header to the queue.
-			$header_string = $this->get_feed_header();
+			$header_string = $this->get_feed_start_line();
 			$this->_background_process->push_to_queue( array( 'file_format_line' => $header_string ) );
 
 			do {
@@ -311,7 +306,7 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 			} while ( ! empty( $product_ids ) && $sw_status_control > $product_counter );
 
 			delete_transient( 'wppfm_start_product_id' );
-			set_transient( 'wppfm_nr_of_processed_products', 0 ); // (Re)set the processed product counter for the progress bar
+			set_transient( 'wppfm_nr_of_processed_products', 0 ); // (Re)set the processed product counter for the progress bar.
 
 			// implement the wppfm_feed_ids_in_queue filter on the queue.
 			$this->_background_process->apply_filter_to_queue( $this->_feed->feedId );
@@ -338,9 +333,9 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		}
 
 		/**
-		 * Start the feed update process in the background
+		 * Initiates the feed update process in the background.
 		 *
-		 * @param string $feed_id   The id of the feed that needs to be updated.
+		 * @param string $feed_id The id of the feed that is to be updated.
 		 */
 		private function activate_feed_file_update( $feed_id ) {
 			// Save the queue data and then run the wppfm-background-process dispatch function.
@@ -348,9 +343,9 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		}
 
 		/**
-		 * Set all class properties
+		 * Set all class properties.
 		 *
-		 * @return bool
+		 * @return bool true if the properties are set correctly.
 		 */
 		private function set_properties() {
 			// Some channels do not use channels and leave the main category empty, which causes issues.
@@ -371,11 +366,11 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		}
 
 		/**
-		 * Returns the header that is correct for the selected feed type
+		 * Returns the correct first line for the selected feed type.
 		 *
-		 * @return string
+		 * @return string with the first feed line.
 		 */
-		private function get_feed_header() {
+		private function get_feed_start_line() {
 			$header_string = '';
 
 			if ( $this->_feed->channel ) {
@@ -386,7 +381,7 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 					$header_string = $this->_channel_class->header( $this->_feed->title );
 				} elseif ( 'txt' === $file_extension ) {
 					$txt_sep       = apply_filters( 'wppfm_txt_separator', wppfm_get_correct_txt_separator( $this->_feed->channel ) );
-					$header_string = $this->make_feed_string_from_data_array( $this->get_active_fields(), $txt_sep );
+					$header_string = $this->make_feed_string_from_product_placeholder( $this->get_active_fields(), $txt_sep );
 				} elseif ( 'csv' === $file_extension ) {
 					$csv_sep = apply_filters( 'wppfm_csv_separator', wppfm_get_correct_csv_header_separator( $this->_feed->channel ) );
 					$string  = $this->make_custom_header_string( $this->get_active_fields(), $csv_sep );
@@ -403,6 +398,7 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 
 		/**
 		 * Sets the activity status of a specific attribute to true or false depending on its level.
+		 * 'Active' (true) means the attribute will be added to the feed, 'not active' (false) means it will not be added to the feed.
 		 * ALERT! Has a JavaScript equivalent in channel-functions.js called setAttributeStatus().
 		 *
 		 * @param int    $field_level   The level of the field.
@@ -423,9 +419,9 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		}
 
 		/**
-		 * Produces an array with the ids of all products that should be added into the feed
+		 * Produces an array with the ids of all products that should be added into the feed.
 		 *
-		 * @return array with ids
+		 * @return array with ids.
 		 */
 		private function get_product_ids_for_feed() {
 			$queries_class = new WPPFM_Queries();
@@ -443,9 +439,9 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		}
 
 		/**
-		 * Returns a comma separated string with selected category numbers to be used as part of a query
+		 * Returns a comma separated string with selected category numbers to be used as part of a query.
 		 *
-		 * @return string
+		 * @return string with selected category ids.
 		 */
 		private function make_category_selection_string() {
 			$category_selection_string = '';
@@ -461,9 +457,9 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		}
 
 		/**
-		 * Get all general data required to make a feed
+		 * Get all general data required to make a feed.
 		 *
-		 * @return array
+		 * @return array with arrays containing required data to make a feed.
 		 */
 		private function get_required_pre_data() {
 			// Get the feed query string if the user has added to filter out specific products from the feed (Paid version only).
@@ -490,16 +486,16 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		}
 
 		/**
-		 * Returns the correct background class name.
+		 * Returns the correct background feed processor class name.
 		 * Also sets the wppfm_set_global_background_process transient.
 		 *
-		 * @param $feed_id
+		 * @param string $feed_id The id of the feed that is currently processing.
 		 *
 		 * @since 2.33.0.
 		 * @since 2.34.0. Improved the stability of the correct selection of the class name.
 		 * @since 2.37.0. Added a check if the Review Feed Manager is selected on or not, before using the WPPRFM_Review_Feed_Processor as background class.
 		 *
-		 * @return string
+		 * @return string containing the correct background feed processor class.
 		 */
 		protected function get_background_process_class_name( $feed_id ) { // HWOTBERH
 			$query_class = new WPPFM_Queries();
@@ -541,9 +537,9 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		}
 
 		/**
-		 * Get category name and description name from the active channel
+		 * Gets the category name and description name from the active channel.
 		 *
-		 * @return array
+		 * @return array containing the channel details.
 		 */
 		private function get_channel_details() {
 			return function_exists( 'wppfm_channel_file_text_data' ) ? wppfm_channel_file_text_data( $this->_feed->channel ) :
@@ -557,9 +553,9 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		/**
 		 * Returns the column names from the database that are required to get the data necessary to make the feed.
 		 *
-		 * @param object $feed_filter_object    The feed filter object.
+		 * @param object $feed_filter_object The feed filter object.
 		 *
-		 * @return array
+		 * @return array with column names.
 		 */
 		private function get_column_names_required_for_feed( $feed_filter_object ) {
 			$support_class = new WPPFM_Feed_Support();
@@ -591,7 +587,7 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		/**
 		 * Returns all active column names that are stored in the feed attributes.
 		 *
-		 * @param object|string $attribute  The attribute array.
+		 * @param object|string $attribute The attribute array.
 		 *
 		 * @return array
 		 * @noinspection PhpArrayPushWithOneElementInspection
@@ -632,7 +628,7 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		/**
 		 * Extract the active fields from the attributes.
 		 *
-		 * @return array
+		 * @return array with active field strings.
 		 */
 		private function get_active_fields() {
 			$active_fields = array();
@@ -684,7 +680,7 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		 * Returns an array with fields that are handled procedurally in the add_procedural_data() function.
 		 *
 		 * @since 2.36.0.
-		 * @return string[]
+		 * @return array with procedural field strings.
 		 */
 		private function procedural_fields() {
 			return array(
@@ -725,9 +721,9 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		}
 
 		/**
-		 * Gather all required column names from the database.
+		 * Gather all required column names from the database that hold data that .
 		 *
-		 * @param array $active_field_names     Array with the names of the active fields.
+		 * @param array $active_field_names Array with the names of the active fields.
 		 *
 		 * @return array
 		 */
@@ -775,20 +771,20 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		}
 
 		/**
-		 * Header text, override this function in the class-feed.php if required for a channel-specific header.
+		 * Feed header text, override this function in the class-feed.php if required for a channel-specific header.
 		 *
-		 * @param string $title     Title string.
+		 * @param string $title Title string.
 		 *
-		 * @return string
+		 * @return string with the header text.
 		 */
 		protected function header( $title ) {
 			return apply_filters( 'wppfm_xml_header', $title );
 		}
 
 		/**
-		 * Footer text, override if required for a channel-specific footer.
+		 * Feed footer text, override if required for a channel-specific footer.
 		 *
-		 * @return string
+		 * @return string with the footer text.
 		 */
 		protected function footer() {
 			return apply_filters( 'wppfm_xml_footer', '</products></rss>' );

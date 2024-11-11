@@ -53,6 +53,11 @@ function wppfm_ajax_feed_data_to_database_array( $feed_type ) {
 	return apply_filters('wppfm_feed_data_ajax_to_database_conversion_table', $conversionTable);
 }
 
+/**
+ * Returns an array with all the feed names.
+ *
+ * @return array with all the feed names as strings.
+ */
 function wppfm_get_all_feed_names() {
 	$query_class = new WPPFM_Queries();
 	$feed_names  = $query_class->get_all_feed_names();

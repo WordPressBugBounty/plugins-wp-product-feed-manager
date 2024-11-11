@@ -4,7 +4,6 @@
  * WP Product Feed Value Editors Class.
  *
  * @package WP Product Feed Manager/Application/Classes
- * @version 1.6.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,47 +14,129 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( ! class_exists( 'WPPFM_Feed_Value_Editors' ) ) :
 
 	/**
-	 * Feed Value Editors Class
+	 * Feed Value Editors Class.
 	 */
 	class WPPFM_Feed_Value_Editors {
 
+		/**
+		 * Handles the overwrite value editing.
+		 *
+		 * @param string[] $condition query string describing the overwritten query.
+		 *
+		 * @return string containing the overwritten result.
+		 */
 		public function overwrite_value( $condition ) {
 			return $condition[2];
 		}
 
+		/**
+		 * Handles the replacement value editing.
+		 *
+		 * @param string[] $condition     array with query strings describing the replacement query.
+		 * @param string   $current_value the current value.
+		 *
+		 * @return string containing the replacement result.
+		 */
 		public function replace_value( $condition, $current_value ) {
 			return str_replace( $condition[2], $condition[3], $current_value );
 		}
 
-		public function convert_to_element( $element_name, $current_value ) {
+		/**
+		 * Converts an attribute element to a child element.
+		 *
+		 * @param string[] $element_name  array with the names of the attribute element.
+		 * @param string   $current_value the current value.
+		 *
+		 * @return string containing the conversion result.
+		 */
+		public function convert_to_child_element( $element_name, $current_value ) {
 			return "!sub:$element_name[2]|$current_value";
 		}
 
+		/**
+		 * Handles the remove value editing.
+		 *
+		 * @param string[] $condition     array with query strings describing the remove value query.
+		 * @param string   $current_value the current value.
+		 *
+		 * @return string containing the remove value result.
+		 */
 		public function remove_value( $condition, $current_value ) {
 			return str_replace( $condition[2], '', $current_value );
 		}
 
+		/**
+		 * Handles the adding of a prefix editing.
+		 *
+		 * @param string[] $condition     array with query strings describing the add prefix query.
+		 * @param string   $current_value the current value.
+		 *
+		 * @return string containing the replacement result.
+		 */
 		public function add_prefix_value( $condition, $current_value ) {
 			return $condition[2] . $current_value;
 		}
 
+		/**
+		 * Handles the adding of a suffix editing.
+		 *
+		 * @param string[] $condition     array with query strings describing the added suffix query.
+		 * @param string   $current_value the current value.
+		 *
+		 * @return string containing the replacement result.
+		 */
 		public function add_suffix_value( $condition, $current_value ) {
 			return $current_value . $condition[2];
 		}
 
+		/**
+		 * Performs a strip_tags action on a value.
+		 *
+		 * @param string $current_value the current value.
+		 *
+		 * @return string the resulting value.
+		 */
 		public function strip_tags_from_value( $current_value ) {
 			return strip_tags( $current_value );
 		}
 
-		// @since 2.34.0.
+		/**
+		 * Performs an html_entity_decode action on a value.
+		 *
+		 * @since 2.34.0
+		 *
+		 * @param string $current_value the current value.
+		 *
+		 * @return string the resulting value.
+		 */
 		public function html_entity_decode_value( $current_value ) {
-			return html_entity_decode( $current_value );
+			return html_entity_decode( $current_value, ENT_QUOTES|ENT_SUBSTITUTE|ENT_HTML401 );
 		}
 
+		/**
+		 * Limits the number of characters in a value.
+		 *
+		 * @param string[] $condition     array with query strings describing the limit characters query. This parameter contains the requested max number of characters.
+		 * @param string   $current_value the current value.
+		 *
+		 * @return string the current value limited to the given max number of characters.
+		 */
 		public function limit_characters_value( $condition, $current_value ) {
 			return substr( $current_value, 0, $condition[2] );
 		}
 
+		/**
+		 * Performs a recalculation action on a given value.
+		 *
+		 * @param string[]     $condition              array with query strings describing the recalculating query.
+		 * @param string       $current_value          the current value.
+		 * @param string       $combination_string     a string containing combination values.
+		 * @param array|string $combined_data_elements an array with combined data elements or an empty string to be used in recalculation queries.
+		 * @param string       $feed_language          selected Language in WPML add-on, leave empty if no exchange rate correction is required.
+		 * @param string       $feed_currency          selected currency in WOOCS add-on, leave empty if no correction is required.
+		 *
+		 * @return string the result of the recalculation.
+		 */
 		public function recalculate_value( $condition, $current_value, $combination_string, $combined_data_elements, $feed_language, $feed_currency ) {
 			if ( ! $combination_string ) {
 				$values           = $this->make_recalculate_inputs( $current_value, $condition[3] );
@@ -87,6 +168,14 @@ if ( ! class_exists( 'WPPFM_Feed_Value_Editors' ) ) :
 			}
 		}
 
+		/**
+		 * Combines values based on a combination string, like combining a currency value with its currency symbol.
+		 *
+		 * @param array $values              an array containing the values to combine.
+		 * @param string $combination_string a string containing combination values.
+		 *
+		 * @return string containing the combined result.
+		 */
 		private function make_combined_result_string( $values, $combination_string ) {
 			$separators    = $this->combination_separators();
 			$result_string = $values[0];
@@ -102,6 +191,11 @@ if ( ! class_exists( 'WPPFM_Feed_Value_Editors' ) ) :
 			return $result_string;
 		}
 
+		/**
+		 * Returns an array with possible combination separators as shown in the combined source fields selection.
+		 *
+		 * @return string[] with the separators.
+		 */
 		public function combination_separators() {
 			return array(
 				'',
@@ -119,8 +213,16 @@ if ( ! class_exists( 'WPPFM_Feed_Value_Editors' ) ) :
 			); // should correspond with wppfm_getCombinedSeparatorList()
 		}
 
+		/**
+		 * Retracts the recalculation main and sub value from the $current_value and $current_sub_value variables.
+		 *
+		 * @param string $current_value     containing the main value.
+		 * @param string $current_sub_value containing the sub value.
+		 *
+		 * @return array with the main and sub value.
+		 */
 		private function make_recalculate_inputs( $current_value, $current_sub_value ) {
-			if ( ! preg_match( '/[a-zA-Z]/', $current_value ) ) { // only remove the commas if the current value has no letters
+			if ( ! preg_match( '/[a-zA-Z]/', $current_value ) ) { // Only remove the commas if the current value has no letters.
 				$main_value = wppfm_number_format_parse( $current_value );
 			} else {
 				$main_value = $current_value;
@@ -134,6 +236,15 @@ if ( ! class_exists( 'WPPFM_Feed_Value_Editors' ) ) :
 			);
 		}
 
+		/**
+		 * Turns a meta-value into a money value if required.
+		 *
+		 * @param object $meta_data     containing the meta data.
+		 * @param string $feed_language the language of the feed.
+		 * @param string $feed_currency the currency of the feed.
+		 *
+		 * @return mixed|string the result value.
+		 */
 		public function prep_meta_values( $meta_data, $feed_language, $feed_currency ) {
 			$result = $meta_data->meta_value;
 
@@ -158,7 +269,7 @@ if ( ! class_exists( 'WPPFM_Feed_Value_Editors' ) ) :
 		 * @return boolean
 		 */
 		public function is_money_value( $value ) {
-			// replace a comma separator with a period, so it can be recognized as numeric.
+			// Replace a comma separator with a period, so it can be recognized as numeric.
 			$possible_number = wppfm_number_format_parse( $value );
 
 			// if it's not a number, it cannot be a money value.

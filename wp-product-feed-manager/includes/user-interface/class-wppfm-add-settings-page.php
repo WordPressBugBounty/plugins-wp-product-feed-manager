@@ -4,7 +4,6 @@
  * WP Product Feed Manager Add Settings Page Class.
  *
  * @package WP Product Feed Manager/User Interface/Classes
- * @version 1.0.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -26,10 +25,13 @@ if ( ! class_exists( 'WPPFM_Add_Settings_Page' ) ) :
 			$this->_settings_form = new WPPFM_Settings_Page();
 		}
 
+		/**
+		 * Shows the Settings Page.
+		 */
 		public function show() {
 			echo '<div class="wppfm-page-layout">';
-			echo $this->_header_class->show( 'settings-page' );
-			echo $this->_settings_form->display();
+			$this->_header_class->show( 'settings-page' );
+			$this->_settings_form->display();
 			echo '</div>';
 		}
 	}

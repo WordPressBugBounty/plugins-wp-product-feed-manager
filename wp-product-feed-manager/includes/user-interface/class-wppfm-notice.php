@@ -4,7 +4,6 @@
  * WP Product Feed Manager Notice Class.
  *
  * @package WP Product Feed Manager/User Interface/Classes
- * @version 1.0.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,24 +14,29 @@ if ( ! class_exists( 'WPPFM_Notice' ) ) :
 
 	class WPPFM_Notice {
 
-		public static function summer_promotion_2024() {
-			$promotion_image = '<img src="' . WPPFM_PLUGIN_URL . '/images/icon-summer-sale-24.png" alt="Summer Promotion">';
-			$get_deal_link = '<a class="wppfm-discount-button wppfm-go-for-the-deal" id="wppfm-go-for-the-deal" target="_blank" href="https://www.wpmarketingrobot.com/?discount=summersale24&utm_source=pl_top&utm_medium=banner&utm_campaign=summer_sale&utm_id=GFP.11724">' . __( 'Get Your Deal Now, Click Here!', 'wp-product-feed-manager' ) . '</a>';
-			$dismiss_link = '<a class="wppfm-discount-button wppfm-dismiss-promotion-notice" id="wppfm-dismiss-promotion-notice" href="#">' . __( 'Nope, I hate summers!', 'wp-product-feed-manager' ) . '</a>';
+		/**
+		 * Renders a Sales Promotion notice.
+		 */
+		public static function render_sales_promotion_notice() {
+			$promotion_image_url = WPPFM_PLUGIN_URL . '/images/icon-black-friday-sale.png';
+			$get_deal_link = 'https://www.wpmarketingrobot.com/black-friday-sale/?discount=BLACKFRIDAY2024&utm_source=pl_top&utm_medium=banner&utm_campaign=black-friday-24&utm_id=GFP.251124';
 
 			echo
 			'<div class="wppfm-message-field notice is-dismissible" id="wppfm-discount-promotion-notice">
 				<div class="wppfm-discount-promotion-container">
-					<div class="wppfm-discount-promotion-image">' . $promotion_image . '</div>
+					<div class="wppfm-discount-promotion-image"><img src="' . esc_url( $promotion_image_url ) . '" alt="Black Friday Promotion"></div>
 					<div class="wppfm-discount-promotion-offer">
 						<div class="wppfm-discount-promotion-message">
-							<h1>' . __( 'SUMMER SALE!!!', 'wp-product-feed-manager' ) . '</h1><p>' . __( 'Enjoy a', 'wp-product-feed-manager' ) . ' <em>25% DISCOUNT</em> ' . __( 'on Google Feed Manager Premium from July to August 2024.', 'wp-product-feed-manager' ) . '</p>
-							<p>' . __( 'Use CODE:', 'wp-product-feed-manager' ) . ' <em>SUMMERSALE24</em> ' . __( 'at checkout. Don\'t miss out on this special deal - grab it now!', 'wp-product-feed-manager' ) . '</p>
-							<div class="wppfm-discount-promotion-call-to-action">' . $get_deal_link . $dismiss_link . '</div>
+							<h1>' . esc_html__( '30% Black Friday SALE!!', 'wp-product-feed-manager' ) . '</h1><p>' . esc_html__( 'Black Friday Sale: 30% Off', 'wp-product-feed-manager' ) . ' <em>Google Feed Manager Premium!</em> ' . esc_html__( 'From November 29 to December 2, 2024.', 'wp-product-feed-manager' )
+			. ' ' . esc_html__( 'Optimize your WooCommerce feed management with this limited-time offer!' ) . '</p>
+							<div class="wppfm-discount-promotion-call-to-action">
+							<a class="wppfm-discount-button wppfm-go-for-the-deal" id="wppfm-go-for-the-deal" target="_blank" href="' . esc_url( $get_deal_link ) . '">' . esc_html__( 'Get Your Deal Now!', 'wp-product-feed-manager' ) . '</a>
+							<a class="wppfm-discount-button wppfm-dismiss-promotion-notice" id="wppfm-dismiss-promotion-notice" href="#">' . esc_html__( 'Nope, I don\'t like deals!', 'wp-product-feed-manager' ) . '</a>
+							</div>
 						</div>
 					</div>
 				</div>
-				<div class="wppfm-discount-promotion-dismiss-action"><a class="wppfm-dismiss-discount-link" id="wppfm-dismiss-promotion-notice-link" href="#">' . __( 'don\'t show this summer sale offer anymore', 'wp-product-feed-manager' ) . '</a></div>
+				<div class="wppfm-discount-promotion-dismiss-action"><a class="wppfm-dismiss-discount-link" id="wppfm-dismiss-promotion-notice-link" href="#">' . esc_html__( 'don\'t show this Black Friday offer anymore', 'wp-product-feed-manager' ) . '</a></div>
 			</div>';
 		}
 	}

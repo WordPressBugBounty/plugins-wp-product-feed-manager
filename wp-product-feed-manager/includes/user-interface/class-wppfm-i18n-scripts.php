@@ -5,7 +5,6 @@
  *
  * @package WP Product Feed Manager/User Interface/Classes
  * @since 2.2.0
- * @version 1.1.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,13 +14,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( ! class_exists( 'WPPFM_i18n_Scripts' ) ) :
 
 	/**
-	 * Internationalisation Class
+	 * Internationalisation Class.
 	 */
 	/* phpcs:ignore PEAR.NamingConventions.ValidClassName */
 	class WPPFM_i18n_Scripts {
 
 		/**
-		 * Localizes the javascript strings that are used on the feed settings pages
+		 * Localizes the JavaScript strings that are used on the feed settings pages.
 		 */
 		public static function wppfm_feed_settings_i18n() {
 			$pars = array(
@@ -113,7 +112,7 @@ if ( ! class_exists( 'WPPFM_i18n_Scripts' ) ) :
 		}
 
 		/**
-		 * Localizes the javascript strings that are used on the feed list pages
+		 * Localizes the JavaScript strings that are used on the feed list pages.
 		 */
 		public static function wppfm_list_table_i18n() {
 			$pars = array(
@@ -153,6 +152,9 @@ if ( ! class_exists( 'WPPFM_i18n_Scripts' ) ) :
 			);
 		}
 
+		/**
+		 * Localizes the JavaScript string that is used in the channel manager page.
+		 */
 		public static function wppfm_channel_manager_i18n() {
 			$pars = array(
 				/* translators: %installed_version%: channel version number installed*/
@@ -167,7 +169,7 @@ if ( ! class_exists( 'WPPFM_i18n_Scripts' ) ) :
 		}
 
 		/**
-		 * Localizes the javascript strings that are used on the settings page
+		 * Localizes the JavaScript strings that are used on the settings page.
 		 */
 		public static function wppfm_settings_i18n() {
 			$pars = array(
@@ -183,6 +185,10 @@ if ( ! class_exists( 'WPPFM_i18n_Scripts' ) ) :
 				/* translators: %backup_file_name%: name of the backup file*/
 				'file_duplicated'                      => esc_html__( '%backup_file_name% duplicated', 'wp-product-feed-manager' ),
 				'list_restore'                         => esc_html__( 'Restore', 'wp-product-feed-manager' ),
+				'backup_file_name_exists'              => esc_html__( 'A backup file with the selected name already exists. Please choose an other name or delete the existing file first.', 'wp-product-feed-manager' ),
+				'write_protected_file'                 => sprintf( esc_html__( '1432 - %s is not a writable folder. Make sure you have admin rights to this folder.', 'wp-product-feed-manager' ), WPPFM_BACKUP_DIR ),
+				/* translators: %backup_file_name%: name of the backup file*/
+				'could_not_write_file'                 => esc_html__( '1433 - Could not write the %backup_file_name% file.', 'wp-product-feed-manager' ),
 				'no_backup'                            => esc_html__( 'No backup found', 'wp-product-feed-manager' ),
 				'invalid_email_address'                => esc_html__( 'The input is not a valid email address. Please try again.', 'wp-product-feed-manager' ),
 			);
@@ -198,10 +204,10 @@ if ( ! class_exists( 'WPPFM_i18n_Scripts' ) ) :
 
 		public static function wppfm_support_i18n() {
 			$pars = array(
-				'signed_up_success'        => esc_html__( 'You successfully signed up for our news letter.' ),
-				'email_already_registered' => esc_html__( 'The email you entered is already on our news letter list.' ),
-				'signup_failed'            => esc_html__( 'There was an unknown error with the sign up process, please contact us at info@wpmarketingrobot.com!' ),
-				'email_not_valid'          => esc_html__( 'The email you entered is not a valid email address. Please check the address again.' ),
+				'chopping_checklist_send'  => esc_html__( 'Your Free Google Shopping Checklist is send to you by email.', 'wp-product-feed-manager' ),
+				'email_already_registered' => esc_html__( 'The email you entered is already on our news letter list.', 'wp-product-feed-manager' ),
+				'signup_failed'            => esc_html__( 'There was an unknown error with the sign up process, please contact us at info@wpmarketingrobot.com!', 'wp-product-feed-manager' ),
+				'email_not_valid'          => esc_html__( 'The email you entered is not a valid email address. Please check the address again.', 'wp-product-feed-manager' ),
 			);
 
 			wp_localize_script(
@@ -212,9 +218,9 @@ if ( ! class_exists( 'WPPFM_i18n_Scripts' ) ) :
 		}
 
 		/**
-		 * Adds localized words that are used on more than one page
+		 * Adds localized words that are used on more than one page.
 		 *
-		 * @param array $pars page specific words
+		 * @param array $pars page specific words.
 		 */
 		private static function add_general_words( &$pars ) {
 			$pars['edit']                  = esc_html__( 'edit', 'wp-product-feed-manager' );

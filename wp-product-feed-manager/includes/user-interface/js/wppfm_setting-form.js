@@ -108,8 +108,19 @@ function wppfm_backup() {
 				function( response ) {
 					wppfm_resetBackupsList();
 
-					if ( '1' === response ) {
-						wppfm_showSuccessMessage( 'New backup file "' + newFileName + '" stored.' );
+					switch( response ) {
+						case 'success':
+							wppfm_showSuccessMessage( 'New backup file "' + newFileName + '" stored.' );
+							break;
+						case 'name_exists':
+							wppfm_showWarningMessage( wppfm_setting_form_vars.backup_file_name_exists );
+							break;
+						case 'write_protected':
+							wppfm_showErrorMessage( wppfm_setting_form_vars.write_protected_file );
+							break;
+						default:
+							wppfm_showErrorMessage( wppfm_setting_form_vars.could_not_write_file.replace( '%backup_file_name%', fileName ) );
+							break;
 					}
 				}
 		);

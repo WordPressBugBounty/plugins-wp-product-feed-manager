@@ -2,10 +2,10 @@
 Contributors: WPMarketingRobot, Michel Jongbloed, AukeJomm
 Tags: product feed manager, Google product feed manager WooCommerce, WooCommerce product feed, WooCommerce Google product feed, WordPress feed manager
 Donate link: https://www.wpmarketingrobot.com/
-Requires at least: 5.4
+Requires at least: 6.5
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 2.10.0
+Stable tag: 2.11.0
 License: GPLv3 or later License
 URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -30,7 +30,7 @@ Our mission is to make Google Shopping accessible to everyone. Whether you're a 
 == WooCommerce Google Shopping Feed - Video Tutorial ==
 [youtube https://www.youtube.com/watch?v=68v63Q9jhIw]
 
-<a target="_blank" href="https://www.wpmarketingrobot.com/docs/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=documentation">Documentation</a> | <a target="_blank" href="https://www.youtube.com/@wpmarketingrobot/videos">Video Tutorials</a> | <a target="_blank" href="https://www.wpmarketingrobot.com/support/faq/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=faq">FAQ</a> | <a target="_blank" href="https://www.wpmarketingrobot.com/support/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=support">Support</a>
+<a target="_blank" href="https://www.wpmarketingrobot.com/help-center/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=documentation">Documentation</a> | <a target="_blank" href="https://www.youtube.com/@wpmarketingrobot/videos">Video Tutorials</a> | <a target="_blank" href="https://www.wpmarketingrobot.com/help-item/faq/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=faq">FAQ</a> | <a target="_blank" href="https://www.wpmarketingrobot.com/support/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=support">Support</a>
 
 == What customers say about us ==
 >**Excellent Plugin / Solid Customer Support!**
@@ -40,7 +40,7 @@ Our mission is to make Google Shopping accessible to everyone. Whether you're a 
 
 > **Essential for any e-commerce and outstanding support.**
 > This plugin is really essential for any shop that wants to be reliably listed by Google. 
->This has become a critical component of my business strategy and when bug appeared after using this plugin smoothly during years, Michel was here and allowed me to keep running my business.
+>This has become a critical component of my business strategy and when bug appeared after using this plugin smoothly for years, Michel was here and allowed me to keep running my business.
 >
 >Thanks again for your work!
 >
@@ -132,11 +132,11 @@ Unlock even more functionalities and advanced settings with our premium features
 - Unlimited Product Feed Generated (Free version limited to 100 products per feed)
 - Advanced product filter
 - Full support WPML
-- Poly Lang Multi language support
+- Poly Lang Multi-language support
 - TranslatePress
 - E-commerce version with Multiple channels like Google Shopping, Amazon, eBay, Facebook, Instagram, Etsy,  Pinterest, etc
 
-=== <a href="https://www.wpmarketingrobot.com/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=pro_version" target="_blank">Get our Google Feed Manager or Full Product feed manager - Premium </a> ===
+=== <a href="https://www.wpmarketingrobot.com/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=pro_version" target="_blank">Get our Premium Google Feed Manager or Multi-Channel Product feed manager </a> ===
 
 == Installation ==
 
@@ -170,7 +170,7 @@ The power of the plugin is that you can add the data from your shop to any feed 
 While you grow with your webshop you can start working with our Premium plugin for even more powerful features and even more channels to sell your products on.
 
 = How does the Google Feed Manager plugin work? =
-Basically, the plugin will generate an XML product feed valid for the Google product feed guidelines. It will take the data from your WooCommerce-powered online shop and create a valid Google product feed. The plugin will automatically update the feed to reflect the changes of your products so the XML feed will contain the correct product data. 
+The plugin will generate an XML product feed valid for the Google product feed guidelines. It will take the data from your WooCommerce-powered online shop and create a valid Google product feed. The plugin will automatically update the feed to reflect the changes of your products so the XML feed will contain the correct product data. 
 
 The only thing you have to do is add the XML feed URL to your Merchant Center and start selling in Google.
 
@@ -184,10 +184,10 @@ MySQL 5.6 or greater
 WP Memory limit of 256 MB or higher for larger shops
 If you have all of that sorted please follow the next steps before contacting us.
 
-Are you still e0xperiencing issues with our plugin? Follow these steps before contacting us:
-1. Check out our <a href="https://www.wpmarketingrobot.com/docs/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=documentation" target="_blank">Documentation</a>
+Are you still experiencing issues with our plugin? Follow these steps before contacting us:
+1. Check out our <a href="https://www.wpmarketingrobot.com/help-center/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=documentation" target="_blank">Documentation</a>
 2. Deactivate and re-activate the plugin, it might solve the issue;
-3. In-case de- & reactivating the plugin doesn't solve the problem, remove the plugin and reinstall it (do not worry, you will not lose your current project settings and product feeds);
+3. In case de- & reactivating the plugin doesn't solve the problem, remove the plugin and reinstall it (do not worry, you will not lose your current project settings and product feeds);
 4. Still experiencing issues? <a href="https://www.wpmarketingrobot.com/support/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=support" target="_blank">contact our support</a> 
 
 == Screenshots ==
@@ -196,6 +196,17 @@ Are you still e0xperiencing issues with our plugin? Follow these steps before co
 3. Save and generate your feed
 
 == Changelog ==
+= 2.11.0 2024-11-11 =
+* Fixed - Fix an issue causing the WooCommerce source selector in a new optional attribute line would not convert to a Select2 selector.
+* Fixed - Fix an issue that could cause the plugin to get stuck in thinking a feed regeneration is in progress, even if its not. This prevented new feeds to regenerate.
+* Update - Converted the feed filter Source selector to a Select2 selector
+* Update - Improved the error, warning, info and success message handling
+* Update - Added the option to exclude single products from a feed, from the Edit Product page
+* Update - Added the option to use shortcodes in the Google Campaign URL Builder
+* Tweak - Reformatted and cleaned up a large part of the code
+* Tweak - Only show the Brand, GTIN and MPN sources in the WooCommerce source selectors when the "Show product identifiers" option on the Settings page is selected
+* Tweak - Tested up to WooCommerce 9.3.3
+
 = 2.10.0 2024-08-28 =
 * Fixed - Some Google Analytics fields would not read their stored settings from the database
 * Fixed - Google Analytics field data would not be transferred to feed duplicate
@@ -343,5 +354,5 @@ Fixed an issue with a folder name with a capital letter that would cause error m
 
 === Upgrade Notice ===
 
-= 2.10.0 2024-09-28 =
+= 2.11.0 2024-11-11 =
 * Important: This update introduces additional tweaks and some bug fixes. We strongly recommend backing up your existing feeds before upgrading.

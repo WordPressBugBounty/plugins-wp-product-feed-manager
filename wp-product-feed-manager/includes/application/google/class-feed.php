@@ -57,7 +57,7 @@ if ( ! class_exists( 'WPPFM_Google_Feed_Class' ) ) :
 		}
 
 		// overrides the set_feed_output_attribute_levels function in WPPFM_Feed_Master_Class
-		// ALERT! This function is equivalent for the setGoogleOutputAttributeLevels() function in wppfm_google-source.js
+		// ALERT! This function is equivalent to the setGoogleOutputAttributeLevels() function in wppfm_google-source.js
 		public function set_feed_output_attribute_levels( $main_data ) {
 			$country = $main_data->country;
 
@@ -152,6 +152,7 @@ if ( ! class_exists( 'WPPFM_Google_Feed_Class' ) ) :
 				'product_fee',
 				'consumer_notice',
 				'return_rule_label',
+				'certification',
 			);
 		}
 

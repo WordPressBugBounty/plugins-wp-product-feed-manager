@@ -30,7 +30,7 @@ function wppfm_on_any_own_plugin_page() {
  * @return boolean
  */
 function wppfm_on_own_main_plugin_page() {
-	$ref_url = $_SERVER['REQUEST_URI'] ?? '';
+	$ref_url = esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' );
 
 	// return true if the current page url has not been identified
 	if ( empty( $ref_url ) ) {
@@ -50,7 +50,7 @@ function wppfm_on_own_main_plugin_page() {
 }
 
 function wppfm_get_url_parameter( $parameter_name ) {
-	$result = array_key_exists( $parameter_name, $_GET ) && $_GET[$parameter_name] ? $_GET[$parameter_name] : null;
+	$result = filter_input( INPUT_GET, $parameter_name, FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 	switch ( $parameter_name ) {
 		case 'id':
@@ -63,7 +63,7 @@ function wppfm_get_url_parameter( $parameter_name ) {
 			return in_array( $result, wppfm_valid_page_names() ) ? $result : null;
 
 		default:
-			return htmlspecialchars( $result );
+			return htmlspecialchars( $result, ENT_QUOTES|ENT_SUBSTITUTE|ENT_HTML401 );
 	}
 }
 

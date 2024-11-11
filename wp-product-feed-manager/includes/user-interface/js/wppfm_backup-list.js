@@ -33,10 +33,12 @@ function wppfm_resetOptionSettings() {
 				var options = JSON.parse( optionsString );
 
 				jQuery( '#wppfm-auto-feed-fix-mode' ).prop( 'checked', options[ 0 ] === 'true' );
-				jQuery( '#wppfm-background-processing-mode' ).prop( 'checked', options[ 3 ] === 'true' );
-
-				jQuery( '#wppfm-third-party-attr-keys' ).val( options[ 1 ] );
-				jQuery( '#wppfm-notice-mailaddress' ).val( options[ 2 ] );
+				jQuery( '#wppfm-background-processing-mode' ).prop( 'checked', options[ 1 ] === 'true' );
+				jQuery( '#wppfm-process-logging-mode' ).prop( 'checked', options[ 2 ] === 'true' );
+				jQuery( '#wppfm-product-identifiers' ).prop( 'checked', options[ 3 ] === 'true' );
+				jQuery( '#wppfm-manual-channel-update' ).prop( 'checked', options[ 4 ] === 'true' );
+				jQuery( '#wppfm-third-party-attr-keys' ).val( options[ 5 ] );
+				jQuery( '#wppfm-notice-mailaddress' ).val( options[ 6 ] );
 			}
 		}
 	);

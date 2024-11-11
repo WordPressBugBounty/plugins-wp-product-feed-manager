@@ -4,7 +4,6 @@
  * WP Product Feed Manager Add Feed List Page Class.
  *
  * @package WP Product Feed Manager/User Interface/Classes
- * @version 1.0.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -22,10 +21,13 @@ if ( ! class_exists( 'WPPFM_Add_Feed_List_Page' ) ) :
 			$this->_feed_list_form = new WPPFM_Feed_List_Page();
 		}
 
+		/**
+		 * Shows the content of the Feed List page.
+		 */
 		public function show() {
 			echo '<div class="wppfm-page-layout">';
-			echo $this->_header_class->show( 'feed-list-page' );
-			echo $this->_feed_list_form->display();
+			$this->_header_class->show( 'feed-list-page' );
+			$this->_feed_list_form->display();
 			echo '</div>';
 		}
 	}

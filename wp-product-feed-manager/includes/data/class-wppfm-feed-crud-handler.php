@@ -44,7 +44,7 @@ if ( ! class_exists( 'WPPFM_Feed_CRUD_Handler' ) ) :
 
 			$queries_class->store_feed_filter( $actual_feed_id, $feed_filter );
 
-			return $actual_feed_id;
+			echo esc_html( $actual_feed_id );
 		}
 
 		private static function get_feed_id_from_feed_data( $feed_data ) {

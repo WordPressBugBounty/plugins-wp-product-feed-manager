@@ -4,8 +4,6 @@
  * WP Email Class.
  *
  * @package WP Product Feed Manager/Application/Classes
- * @version 1.2.0
- * @since 2.3.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,10 +13,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( ! class_exists( 'WPPFM_Email' ) ) :
 
 	/**
-	 * Email Class
+	 * Email Class.
+	 *
+	 * @since 2.3.0.
 	 */
 	class WPPFM_Email {
 
+		/**
+		 * Sends a notice  email to the notice mailaddress containing a feed failed processing message.
+		 *
+		 * @return bool true if the message has been sent.
+		 */
 		public static function send_feed_failed_message() {
 			$to = get_option( 'wppfm_notice_mailaddress', get_bloginfo( 'admin_email' ) );
 
@@ -32,10 +37,20 @@ if ( ! class_exists( 'WPPFM_Email' ) ) :
 			return self::send( $to, $header, $message );
 		}
 
+		/**
+		 * Returns a failed processing header string.
+		 *
+		 * @return string with the header text.
+		 */
 		private static function feed_failed_header() {
 			return sprintf( 'Feed generation failure on your %s shop', get_bloginfo( 'name' ) );
 		}
 
+		/**
+		 * Returns a failed processing message string.
+		 *
+		 * @return string with the message.
+		 */
 		private static function feed_failed_message() {
 			return sprintf(
 				'This is an automatic message from your %s plugin. One or more product feeds on your %s shop failed to generate. Please check the status of your feeds and try to manually regenerate them again.
@@ -47,11 +62,11 @@ Should this problem persist, please open a support ticket.',
 		}
 
 		/**
-		 * Sends the email
+		 * Sends an email.
 		 *
-		 * @param string $to to address
-		 * @param string $subject the subject
-		 * @param string $message the message
+		 * @param string $to to address.
+		 * @param string $subject the subject.
+		 * @param string $message the message.
 		 *
 		 * @return bool whether the mail contents were sent successfully.
 		 */

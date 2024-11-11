@@ -4,7 +4,6 @@
  * WPPRFM Google Product Promotions Feed Page Class.
  *
  * @package WP Product Promotions Feed Manager/Classes
- * @version 1.0.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -32,67 +31,67 @@ if ( ! class_exists( 'WPPPFM_Promotions_Feed_Editor_Page' ) ) :
 
 			wppfm_check_db_version();
 
-			$feed_id_param = array_key_exists( 'id', $_GET ) && $_GET['id'] ? $_GET['id'] : null;
-			$this->_feed_id = is_numeric( $feed_id_param ) ? $feed_id_param : null;
+			$this->_feed_id = filter_input( INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT );
 
-			// fill the _feed_data container.
+			// Fill the _feed_data container.
 			$this->set_feed_data();
 
-			// load the language scripts.
+			// Load the language scripts.
 			/** @noinspection PhpVoidFunctionResultUsedInspection */
 			add_option( 'wp_enqueue_scripts', WPPFM_i18n_Scripts::wppfm_feed_settings_i18n() );
 		}
 
 		public function display() {
-			$html  = $this->add_data_storage();
-			$html .= $this->promotions_feed_editor_page();
-
-			return $html;
+			$this->add_data_storage();
+			$this->promotions_feed_editor_page();
 		}
 
 		/**
-		 * Collects the html code for the Google merchant promotions feed form page and displays it on the screen.
+		 * Collects the HTML code for the Google merchant promotions feed form page and displays it on the screen.
 		 */
 		private function promotions_feed_editor_page() {
-			$html  = '<div class="wppfm-page__title" id="wppfm-edit-feed-title"><h1>' . esc_html__( 'Product Feed Editor', 'wp-product-feed-manager' ) . '</h1></div>';
-			$html .= $this->sub_title();
+			echo '<div class="wppfm-page__title" id="wppfm-edit-feed-title"><h1>' . esc_html__( 'Product Feed Editor', 'wp-product-feed-manager' ) . '</h1></div>';
+			$this->sub_title();
+			echo '</div>';
 
-			$html .= '</div>';
+			echo '<div class="wpppfm-promotions-feed-editor-wrapper">';
 
-			$html .= '<div class="wpppfm-promotions-feed-editor-wrapper">';
+			$this->main_input_table();
 
-			$html .= $this->main_input_table();
+			$this->promotions_feed_top_buttons();
 
-			$html .= $this->promotions_feed_top_buttons();
+			$this->start_promotions_area();
 
-			$html .= $this->start_promotions_area();
-			$html .= $this->promotion_template();
-			$html .= $this->end_promotions_area();
+			$this->promotion_template();
 
-			$html .= $this->promotions_feed_bottom_buttons();
+			$this->end_promotions_area();
 
-			return $html;
+			$this->promotions_feed_bottom_buttons();
+
+			echo '</div>';
 		}
 
 		/**
 		 * Stores data in the DOM for the Feed Manager Feed Editor page
-		 *
-		 * @return string The html code for the data storage
 		 */
 		private function add_data_storage() {
-			return
+			echo
 				'<div id="wppfm-feed-editor-page-data-storage" class="wppfm-data-storage-element"
-				data-wppfm-feed-data="' . htmlentities( wp_json_encode( $this->_feed_data ), ENT_QUOTES ) . '"
-				data-wppfm-ajax-feed-data-to-database-conversion-array=' . wp_json_encode( wppfm_ajax_feed_data_to_database_array( 'google-merchant-promotions-feed' ) ) . '
-				data-wppfm-feed-url="' . $this->_feed_data['url'] . '"
-				data-wppfm-all-feed-names="' . implode( ';;',  wppfm_get_all_feed_names() ) . '"
-				data-wppfm-plugin-version-id="' . WPPFM_PLUGIN_VERSION_ID . '" 
-				data-wppfm-plugin-version-nr="' . WPPFM_VERSION_NUM . '">
+				data-wppfm-feed-data="' . wc_esc_json( wp_json_encode( $this->_feed_data ), false ) . '"
+				data-wppfm-ajax-feed-data-to-database-conversion-array=' . esc_attr( wp_json_encode( wppfm_ajax_feed_data_to_database_array( 'google-merchant-promotions-feed' ) ) ) . '
+				data-wppfm-feed-url="' . esc_url( $this->_feed_data['url'] ) . '"
+				data-wppfm-all-feed-names="' . esc_attr( implode( ';;',  wppfm_get_all_feed_names() ) ) . '"
+				data-wppfm-plugin-version-id="' . esc_attr( WPPFM_PLUGIN_VERSION_ID ) . '" 
+				data-wppfm-plugin-version-nr="' . esc_attr( WPPFM_VERSION_NUM ) . '"
+				data-wppfm-plugin-distributor="' . esc_attr( WPPFM_PLUGIN_DISTRIBUTOR ) . '">
 			</div>';
 		}
 
+		/**
+		 * The promotion feed editor page subtitle.
+		 */
 		private function sub_title() {
-			return WPPFM_Form_Element::feed_editor_sub_title( wppfm_feed_form_sub_header_text() );
+			WPPFM_Form_Element::feed_editor_sub_title( wppfm_feed_form_sub_header_text() );
 		}
 
 		/**
@@ -120,35 +119,47 @@ if ( ! class_exists( 'WPPPFM_Promotions_Feed_Editor_Page' ) ) :
 		}
 
 		/**
-		 * Returns the html code for the main input table.
+		 * Sets the main input table.
 		 */
 		private function main_input_table() {
 			$main_input_wrapper = new WPPPFM_Google_Merchant_Promotions_Feed_Main_Input_Wrapper();
-			return $main_input_wrapper->display();
+			$main_input_wrapper->display();
 		}
 
 		/**
-		 * Returns the html code for the promotion buttons.
+		 * Sets the feed top buttons.
 		 */
 		private function promotions_feed_top_buttons() {
-			return WPPFM_Form_Element::feed_generation_buttons( 'wppfm-top-buttons-wrapper', 'wpppfm-promotions-feed-buttons-section', 'wpppfm-generate-merchant-promotions-feed-button-bottom', 'wpppfm-save-merchant-promotions-feed-button-bottom', 'wppfm-view-feed-button-bottom' );
+			WPPFM_Form_Element::feed_generation_buttons( 'wppfm-top-buttons-wrapper', 'wpppfm-promotions-feed-buttons-section', 'wpppfm-generate-merchant-promotions-feed-button-bottom', 'wpppfm-save-merchant-promotions-feed-button-bottom', 'wppfm-view-feed-button-bottom' );
 		}
 
+		/**
+		 * Sets the feed bottom buttons.
+		 */
 		private function promotions_feed_bottom_buttons() {
-			return WPPFM_Form_Element::feed_generation_buttons( 'wppfm-center-buttons-wrapper', 'wpppfm-promotions-feed-buttons-section', 'wpprfm-generate-merchant-promotions-feed-button-bottom', 'wpppfm-save-merchant-promotions-feed-button-bottom', 'wppfm-view-feed-button-bottom' );
+			WPPFM_Form_Element::feed_generation_buttons( 'wppfm-center-buttons-wrapper', 'wpppfm-promotions-feed-buttons-section', 'wpprfm-generate-merchant-promotions-feed-button-bottom', 'wpppfm-save-merchant-promotions-feed-button-bottom', 'wppfm-view-feed-button-bottom' );
 		}
 
+		/**
+		 * Renders the promotion area start code.
+		 */
 		private function start_promotions_area() {
-			return '<section class="wpppfm-promotions-group-area">';
+			echo '<section class="wpppfm-promotions-group-area">';
 		}
 
+		/**
+		 * Renders the promotion area end code.
+		 */
 		private function end_promotions_area() {
-			return '</section>';
+			echo '</section>';
 		}
 
+		/**
+		 * Sets a promotion template wrapper.
+		 */
 		private function promotion_template() {
 			$promotion_template = new WPPPFM_Google_Merchant_Promotion_Wrapper();
-			return $promotion_template->display();
+			$promotion_template->display();
 		}
 
 	}

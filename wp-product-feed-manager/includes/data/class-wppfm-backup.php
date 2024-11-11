@@ -165,7 +165,7 @@ if ( ! class_exists('WPPFM_Backup') ) :
 				}
 			}
 
-			return TRUE;
+			return True;
 		}
 
 		/**

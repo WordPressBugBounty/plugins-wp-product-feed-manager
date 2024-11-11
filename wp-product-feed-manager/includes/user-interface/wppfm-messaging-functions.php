@@ -2,7 +2,6 @@
 
 /**
  * @package WP Product Feed Manager/User Interface/Functions
- * @version 2.4.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -10,84 +9,72 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Returns the html for a standard WordPress error message
+ * Shows a standard WordPress error message.
  *
- * @param string $message
- * @param bool $dismissible (default false)
- * @param string $permanent_dismissible_id (default '')
- *
- * @return string html
+ * @param string $message                  The message to show.
+ * @param bool   $dismissible              Is dismissible or not (default false).
+ * @param string $permanent_dismissible_id Permanent dismissible id (default '').
  */
 function wppfm_show_wp_error( $message, $dismissible = false, $permanent_dismissible_id = '' ) {
-	return wppfm_show_wp_message( $message, 'error', $dismissible, $permanent_dismissible_id );
+	wppfm_show_wp_message( $message, 'error', $dismissible, $permanent_dismissible_id );
 }
 
 /**
- * Returns the html for a standard WordPress warning message
+ * Shows a standard WordPress warning message.
  *
- * @param string $message
- * @param bool $dismissible (default false)
- * @param string $permanent_dismissible_id (default '')
- *
- * @return string html
+ * @param string $message                  The message to show.
+ * @param bool   $dismissible              Is dismissible or not (default false).
+ * @param string $permanent_dismissible_id Permanent dismissible id (default '').
  */
 function wppfm_show_wp_warning( $message, $dismissible = false, $permanent_dismissible_id = '' ) {
-	return wppfm_show_wp_message( $message, 'warning', $dismissible, $permanent_dismissible_id );
+	wppfm_show_wp_message( $message, 'warning', $dismissible, $permanent_dismissible_id );
 }
 
 /**
- * Returns the html for a standard WordPress success message
+ * Shows a standard WordPress success message.
  *
- * @param string $message
- * @param bool $dismissible (default false)
- * @param string $permanent_dismissible_id (default '')
- *
- * @return string html
+ * @param string $message                  The message to show.
+ * @param bool   $dismissible              Is dismissible or not (default false).
+ * @param string $permanent_dismissible_id Permanent dismissible id (default '').
  */
 function wppfm_show_wp_success( $message, $dismissible = false, $permanent_dismissible_id = '' ) {
-	return wppfm_show_wp_message( $message, 'success', $dismissible, $permanent_dismissible_id );
+	wppfm_show_wp_message( $message, 'success', $dismissible, $permanent_dismissible_id );
 }
 
 /**
- * Returns the html for a standard WordPress info message
+ * Shows a standard WordPress info message.
  *
- * @param string $message
- * @param bool $dismissible (default false)
- * @param string $permanent_dismissible_id (default '')
- *
- * @return string html
+ * @param string $message                  The message to show.
+ * @param bool   $dismissible              Is dismissible or not (default false).
+ * @param string $permanent_dismissible_id Permanent dismissible id (default '').
  */
 function wppfm_show_wp_info( $message, $dismissible = false, $permanent_dismissible_id = '' ) {
-	return wppfm_show_wp_message( $message, 'info', $dismissible, $permanent_dismissible_id );
+	wppfm_show_wp_message( $message, 'info', $dismissible, $permanent_dismissible_id );
 }
 
 /**
- * Returns the html for a standard WordPress message
+ * Shows a standard WordPress message.
  *
- * @param string $message
- * @param string $type
- * @param bool $dismissible
- * @param string $permanent_dismissible_id
- *
- * @return string html
+ * @param string $message                  The message to show.
+ * @param string $type                     The message type (info, success, warning or error).
+ * @param bool   $dismissible              Is dismissible or not.
+ * @param string $permanent_dismissible_id Permanent dismissible id.
  */
 function wppfm_show_wp_message( $message, $type, $dismissible, $permanent_dismissible_id ) {
 	$dismissible_text    = $dismissible ? ' is-dismissible' : '';
 	$perm_dismissible    = $permanent_dismissible_id ? ' id="disposable-warning-message"' : '';
 	$dismiss_permanently = '' !== $permanent_dismissible_id ? '<p id=dismiss-permanently>dismiss permanently<p>' : '';
 
-	return '<div' . $perm_dismissible . ' class="notice notice-' . $type . $dismissible_text . '"><p>' . $message . '</p>' . $dismiss_permanently . '</div>';
+	echo '<div' . esc_attr( $perm_dismissible ) . ' class="notice notice-' . esc_attr( $type ) . esc_attr( $dismissible_text ) . '"><p>' . esc_html( $message ) . '</p>' . esc_attr( $dismiss_permanently ) . '</div>';
 }
 
 /**
- * Shows an error message to the user and writes an error log based on the wp_error given
+ * Shows an error message to the user and writes an error log based on the wp_error given.
  *
  * @since 1.9.3
  *
- * @param wp_error $response object
- * @param string   $message
- *
- * @return string html
+ * @param wp_error $response Object wit the error message.
+ * @param string   $message  The error message to show.
  */
 function wppfm_handle_wp_errors_response( $response, $message ) {
 	$error_messages = method_exists( (object) $response, 'get_error_messages' ) ? $response->get_error_messages() : array( 'Error unknown' );
@@ -96,18 +83,18 @@ function wppfm_handle_wp_errors_response( $response, $message ) {
 
 	wppfm_write_log_file( $message . ' ' . $error_text );
 
-	return wppfm_show_wp_error( $message . ' Error message: ' . $error_message );
+	wppfm_show_wp_error( $message . ' Error message: ' . $error_message );
 }
 
 /**
- * enables writing log files in the plugin folder
+ * Enables writing log files in the plugin folder.
  *
  * @since 1.5.1
- * @since 2.41.0 error log files should go to the wp-content folder
+ * @since 2.41.0 error log files should go to the wp-content folder.
  * @since 2.42.0 fixed an error where the error file was not placed in the wp-content folder.
  *
- * @param string $error_message
- * @param string $filename (default 'error')
+ * @param string $error_message The error message to write.
+ * @param string $filename      The file name in which the error message is written (default 'error').
  */
 function wppfm_write_log_file( $error_message, $filename = 'debug' ) {
 	$file = 'error' === $filename ? WP_CONTENT_DIR . '/' . $filename . '.log' : WPPFM_PLUGIN_DIR . $filename . '.log';
@@ -127,9 +114,7 @@ function wppfm_write_log_file( $error_message, $filename = 'debug' ) {
 }
 
 /**
- * Returns an html string containing a message to inform the user that he has to update the WooCommerce plugin
- *
- * @return string html
+ * Shows a message to inform the user that he has to update the WooCommerce plugin.
  */
 function wppfm_update_your_woocommerce_version_message() {
 	// To prevent several PHP Warnings if the WC folder name has been changed whilst the plugin is still registered.
@@ -140,10 +125,10 @@ function wppfm_update_your_woocommerce_version_message() {
 		$wc_version = '"UNKNOWN"';
 	}
 
-	$html  = '<div class="wppfm-full-screen-message-field">';
-	$html .= '<div class="wppfm-warning-message__icon"><img src="' . WPPFM_PLUGIN_URL . '/images/alert.png" alt="Alert" /></div>';
-	$html .= '<div class="wppfm-warning-message__content">';
-	$html .= '<p>*** ' . sprintf(
+	echo '<div class="wppfm-full-screen-message-field">
+		<div class="wppfm-warning-message__icon"><img src="' . esc_url( WPPFM_PLUGIN_URL . '/images/alert.png' ) . '" alt="Alert" /></div>
+		<div class="wppfm-warning-message__content">';
+	echo '<p>*** ' . sprintf(
 		/* translators: %1$s: minimum version of the WooCommerce plugin, %2$s: installed version of the WooCommerce plugin */
 		esc_html__(
 			'This plugin requires WooCommerce version %1$s as a minimum!
@@ -151,42 +136,36 @@ function wppfm_update_your_woocommerce_version_message() {
 			Please update to the latest version ***',
 			'wp-product-feed-manager'
 		),
-		WPPFM_MIN_REQUIRED_WC_VERSION,
-		$wc_version
+		esc_html( WPPFM_MIN_REQUIRED_WC_VERSION ),
+		esc_html( $wc_version )
 	) . '</p>';
-	$html .= '</div></div>';
-
-	return $html;
+	echo '</div></div>';
 }
 
 /**
- * Returns an html string containing a message to the user that WooCommerce is not installed on the server
- *
- * @return string html
+ * Shows a message to the user that WooCommerce is not installed on the server.
  */
 function wppfm_you_have_no_woocommerce_installed_message() {
-	$html  = '<div class="wppfm-full-screen-message-field">';
-	$html .= '<div class="wppfm-warning-message__icon"><img src="' . WPPFM_PLUGIN_URL . '/images/alert.png" alt="Alert" /></div>';
-	$html .= '<div class="wppfm-warning-message__content">';
-	$html .= '<p>*** ' . esc_html__(
+	echo '<div class="wppfm-full-screen-message-field">
+		<div class="wppfm-warning-message__icon"><img src="' . esc_url( WPPFM_PLUGIN_URL . '/images/alert.png' ) . '" alt="Alert" /></div>
+		<div class="wppfm-warning-message__content">';
+	echo '<p>*** ' . esc_html__(
 		'This plugin only works in conjunction with the WooCommerce Plugin!
 				It seems you have not installed and activated the WooCommerce Plugin yet, so please do so before using this Plugin.',
 		'wp-product-feed-manager'
 	) . ' ***</p>';
 	/* translators: %s: link to information about the WooCommerce plugin */
-	$html .= '<p>' . sprintf( __( 'You can find more information about the Woocommerce Plugin %sby clicking here</a>.', 'wp-product-feed-manager' ), '<a href="https://wordpress.org/plugins/woocommerce/">' ) . '</p>';
-	$html .= '</div></div>';
-
-	return $html;
+	echo '<p>' . sprintf( esc_html__( 'You can find more information about the Woocommerce Plugin %sby clicking here</a>.', 'wp-product-feed-manager' ), '<a href="https://wordpress.org/plugins/woocommerce/">' ) . '</p>';
+	echo '</div></div>';
 }
 
 /**
- * Writes a http_requests_error.log file in the plugin folder when there is a normal http request failed
+ * Writes a http_requests_error.log file in the plugin folder when there is a normal http request failed.
  *
  * @since 1.9.0
  *
  * @param string $response
- * @param array $args
+ * @param array  $args
  * @param string $url
  *
  * @return string
@@ -200,5 +179,5 @@ function wppfm_log_http_requests( $response, $args, $url ) {
 	return $response;
 }
 
-// hook into WP_Http::_dispatch_request()
+// Hook into WP_Http::_dispatch_request().
 add_filter( 'http_response', 'wppfm_log_http_requests', 10, 3 );

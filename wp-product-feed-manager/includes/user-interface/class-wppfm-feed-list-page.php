@@ -4,7 +4,6 @@
  * WPPFM Product Feed Manager Page Class.
  *
  * @package WP Product Feed Manager/User Interface/Classes
- * @version 1.0.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -14,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( ! class_exists( 'WPPFM_Feed_List_Page' ) ) :
 
 	/**
-	 * Feed List Form Class
+	 * Feed List Form Class.
 	 *
 	 * @since 3.2.0
 	 */
@@ -32,61 +31,52 @@ if ( ! class_exists( 'WPPFM_Feed_List_Page' ) ) :
 		}
 
 		/**
-		 * Generates the main part of the Feed_List page
+		 * Generates the Feed_List page.
 		 *
 		 * @since 3.2.0
-		 *
-		 * @return string The html code for the main part of the Feed_List page
 		 */
 		public function display() {
-			$html  = $this->add_data_storage();
-			$html .= $this->feed_list_page();
-
-			return $html;
+			$this->add_data_storage();
+			$this->feed_list_page();
 		}
 
 		/**
-		 * Generates the main part of the Feed_List page
-		 *
-		 * @return string The html code for the main part of the Feed_List page
+		 * Generates the main part of the Feed_List page.
 		 */
 		private function feed_list_page() {
-			// Feed List Page Header with Add New Feed button
-			$html  = '<div class="wppfm-page__title" id="wppfm-product-feed-list-title"><h1>' . esc_html__( 'Product Feed List', 'wp-product-feed-manager' ) . '</h1></div>';
-			$html .= '<div class="wppfm-button-wrapper">';
-			$html .= '<a href="admin.php?page=wppfm-feed-editor-page" class="wppfm-button wppfm-blue-button" id="wppfm-add-new-feed-button"><i class="wppfm-button-icon wppfm-icon-plus"></i>' . esc_html__( 'Add New Feed', 'wp-product-feed-manager' ) . '</a>';
-			$html .= '</div>';
+			// Feed List Page Header with Add New Feed button.
+			echo '<div class="wppfm-page__title" id="wppfm-product-feed-list-title"><h1>' . esc_html__( 'Product Feed List', 'wp-product-feed-manager' ) . '</h1></div>
+			<div class="wppfm-button-wrapper">
+			<a href="admin.php?page=wppfm-feed-editor-page" class="wppfm-button wppfm-blue-button" id="wppfm-add-new-feed-button"><i class="wppfm-button-icon wppfm-icon-plus"></i>' . esc_html__( 'Add New Feed', 'wp-product-feed-manager' ) . '</a>
+			</div>';
 
-			// Feed List Table
-			$html .= '<div class="wppfm-page-layout__main" id="wppfm-product-feed-list-table">';
-			$html .= $this->list_content();
-			$html .= '</div>';
-
-			return $html;
+			// Feed List Table.
+			echo '<div class="wppfm-page-layout__main" id="wppfm-product-feed-list-table">';
+			$this->list_content();
+			echo '</div>';
 		}
 
 		/**
-		 * Stores data in the DOM for the Feed List Table
-		 *
-		 * @return string The html code for the data storage
+		 * Stores data in the DOM for the Feed List Table.
 		 */
 		private function add_data_storage() {
 			$sortable_columns = $this->get_sortable_columns();
 			$feeds_in_queue   = get_site_option( 'wppfm_feed_queue', array() );
 
-			return
+			echo
 				'<div id="wppfm-feed-list-page-data-storage" class="wppfm-data-storage-element" 
 					data-wppfm-sort-column="none"
 					data-wppfm-sort-direction="none" 
-					data-wppfm-sortable-columns="' . implode( '-', $sortable_columns ) . '"
-					data-wppfm-feeds-in-queue="' . implode( ',', $feeds_in_queue ) . '"
-					data-wppfm-plugin-version-id="' . WPPFM_PLUGIN_VERSION_ID . '" 
-					data-wppfm-plugin-version-nr="' . WPPFM_VERSION_NUM . '">
+					data-wppfm-sortable-columns="' . esc_html( implode( '-', $sortable_columns ) ) . '"
+					data-wppfm-feeds-in-queue="' . esc_html( implode( ',', $feeds_in_queue ) ) . '"
+					data-wppfm-plugin-version-id="' . esc_html( WPPFM_PLUGIN_VERSION_ID ) . '" 
+					data-wppfm-plugin-version-nr="' . esc_attr( WPPFM_VERSION_NUM ) . '"
+					data-wppfm-plugin-distributor="' . esc_attr( WPPFM_PLUGIN_DISTRIBUTOR ) . '">
 				</div>';
 		}
 
 		/**
-		 * Prepares the list table
+		 * Prepares the list table.
 		 */
 		private function prepare_feed_list() {
 			$this->_list_table->set_table_id( 'wppfm-feed-list' );
@@ -103,21 +93,21 @@ if ( ! class_exists( 'WPPFM_Feed_List_Page' ) ) :
 			$list_columns['col_feed_status']  = __( 'Status', 'wp-product-feed-manager' );
 			$list_columns['col_feed_actions'] = __( 'Actions', 'wp-product-feed-manager' );
 
-			// set the column names
+			// Set the column names.
 			$this->_list_table->set_column_titles( $list_columns );
 		}
 
 		/**
-		 * Activates the html for the main body top.
+		 * Activates the HTML for the main body top.
 		 */
 		private function list_content() {
-			return $this->_list_table->get_feed_list_table();
+			$this->_list_table->get_feed_list_table();
 		}
 
 		/**
 		 * Stores which columns in the Feed List will be sortable.
 		 *
-		 * @return string[]
+		 * @return string[] with the sortable column data.
 		 */
 		private function get_sortable_columns() {
 			return array(

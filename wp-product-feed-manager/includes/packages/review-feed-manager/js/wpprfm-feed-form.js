@@ -1,34 +1,32 @@
 function wpprfm_initializeProductReviewFeedForm( productReviewFileName ) {
-	// clear the previous form
+	// Clear the previous form.
 	jQuery( '#wppfm-main-input-map' ).empty();
 
 	wppfm_showWorkingSpinner();
 
-	// now add the correct elements for a product review feed
+	// Now add the correct elements for a product review feed.
 	window.location = encodeURI( window.location.href + '&feed-type=google-product-review-feed&feed-name=' + productReviewFileName );
 }
 
 /**
- * Shows the category selector, product filter and attribute mapping wrappers.
+ * Shows the category selector, product filter, and attribute mapping wrappers.
  */
 function wpprfm_showCategoryAndAttributeMappingWrappers() {
 	jQuery( '#category-map' ).show();
 
-	jQuery( '#wppfm-main-product-filter-wrapper' ).show();
-
-	// show the attribute mapping
+	// Show the attribute mapping.
 	jQuery( '#fields-form' ).show();
 }
 
 /**
- * Hides the category selector, product filter and attribute mapping wrappers.
+ * Hides the category selector, product filter, and attribute mapping wrappers.
  */
 function wpprfm_hideCategoryAndAttributeMappingWrappers() {
 	jQuery( '#category-map' ).hide();
 
 	jQuery( '#wppfm-main-product-filter-wrapper' ).hide();
 
-	// show the attribute mapping
+	// Show the attribute mapping.
 	jQuery( '#fields-form' ).hide();
 }
 
@@ -48,17 +46,17 @@ function wpprfm_fillFeedFields( feedData ) {
 	jQuery( '#wpprfm-publisher-favicon' ).val( feedData[ 'publisherFavicon' ] );
 	jQuery( '#days-interval' ).val( schedule[ 0 ] );
 
-	// get the link to the update schedule selectors
+	// Get the link to the update schedule selectors.
 	var hrsSelector     = document.getElementById( 'update-schedule-hours' );
 	var minutesSelector = document.getElementById( 'update-schedule-minutes' );
 	var freqSelector    = document.getElementById( 'update-schedule-frequency' );
 
-	// set the values of the update schedule selectors
+	// Set the values of the update schedule selectors.
 	hrsSelector.value     = schedule[ 1 ];
 	minutesSelector.value = schedule[ 2 ];
 	freqSelector.value    = schedule[ 3 ] ? schedule[ 3 ] : '1'; // standard setting is once a day
 
-	// set the layout of the update schedule selectors
+	// Set the layout of the update schedule selectors.
 	wppfm_setScheduleSelector( schedule[ 0 ], schedule[ 3 ] );
 }
 
@@ -91,7 +89,7 @@ function wpprfm_fillSourcesList( customFields ) {
 }
 
 /**
- * Gets the data from the feed data holder element that is stored in the feeds html code and uses it to make a new _reviewFeedHolder that
+ * Gets the data from the feed data holder element that is stored in the feed HTML code and uses it to make a new _reviewFeedHolder that
  * will be used to fill the Review Feed form.
  */
 function wpprfm_initiateReviewFeed() {
@@ -99,7 +97,7 @@ function wpprfm_initiateReviewFeed() {
 
 	if ( ! feedData ) { return; }
 
-	// make a new _reviewFeedHolder
+	// Make a new _reviewFeedHolder.
 	if (feedData) {
 		_reviewFeedHolder = new Feed(
 			feedData[ 'feed_id' ],
@@ -122,12 +120,12 @@ function wpprfm_initiateReviewFeed() {
 			'2'
 		);
 
-		// add the Google Review Feed specific properties to the Feed object
+		// Add the Google Review Feed specific properties to the Feed object.
 		_reviewFeedHolder[ 'aggregatorName' ] = feedData['aggregator_name'];
 		_reviewFeedHolder[ 'publisherName' ] = feedData['publisher_name'];
 		_reviewFeedHolder[ 'publisherFavicon' ] = feedData['publisher_favicon_url'];
 
-		// update the _feedHolder variable in the wppfm_feed-form.js file
+		// Update the _feedHolder variable in the wppfm_feed-form.js file.
 		wppfm_constructNewSpecialFeed( _reviewFeedHolder );
 
 		wpprfm_setDefaultReviewFeedAttributes( JSON.parse( feedData[ 'attribute_data' ] ),
@@ -149,14 +147,14 @@ function wpprfm_initiateSaveAndGenerateReviewFeed() {
 	wppfm_showWorkingSpinner();
 	wppfm_disableFeedActionButtons( 'google-product-review-feed' );
 
-	// save the feed data to the database
+	// Save the feed data to the database.
 	wppfm_saveFeedToDb( _reviewFeedHolder, function( dbResult ) {
 
 		var newFeed = _reviewFeedHolder[ 'feedId' ] === - 1;
 
 		wpprfm_handleSaveReviewFeedToDbResult( dbResult, newFeed );
 
-		// convert the data to xml and save the code to a feed file
+		// Convert the data to XML and save the code to a feed file.
 		wppfm_updateFeedFile( _reviewFeedHolder[ 'feedId' ], function( xmlResult ) {
 
 			wppfm_handleUpdateFeedFileActionResult( xmlResult );
@@ -173,16 +171,16 @@ function wpprfm_initiateSaveAndGenerateReviewFeed() {
  */
 function wpprfm_handleSaveReviewFeedToDbResult( dbResult, newFeed ) {
 
-	// the wppfm_saveFeedToDb returns the entered feed id
+	// The wppfm_saveFeedToDb returns the entered feed id.
 	if ( 0 === dbResult || '0' === dbResult ) {
 		wppfm_handleSaveFeedToDbFailedAction();
 	} else {
 
-		// insert the feed id in the _feed
+		// Insert the feed id in the _feed.
 		_reviewFeedHolder[ 'feedId' ] = dbResult;
 
 		if ( newFeed ) {
-			// reset the url to implement the feed id so the user can reset the form if he wants
+			// Reset the url to implement the feed id so the user can reset the form if he wants.
 			wppfm_resetUrlForNewFeed( _reviewFeedHolder[ 'feedId' ], 'google-product-review-feed' );
 			wppfm_storeFeedUrlInSourceData( _reviewFeedHolder[ 'url' ] );
 		}
@@ -206,7 +204,7 @@ jQuery(function() {
 	if ( '' !== feedId ) {
 		wpprfm_initiateReviewFeed();
 		wpprfm_editExistingReviewFeed( feedId );
-	} else if ( '' !== feedName && '' !== feedType ) { // new feed
+	} else if ( '' !== feedName && '' !== feedType ) { // New feed.
 		jQuery( '#wppfm-feed-file-name' ).val( feedName );
 		wppfm_setMerchantSelector( false, '1' );
 		wppfm_setGoogleFeedTypeSelector( false, '2' );

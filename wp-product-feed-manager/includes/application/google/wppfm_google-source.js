@@ -2,7 +2,7 @@ var _googleClothingAndAccessories = false;
 var _googleNeedsProductCat        = false;
 var _googleRequiresBrand          = true;
 
-// ALERT! This function is equivalent for the woocommerce_to_feed_fields() function in class-data.php
+// ALERT! This function is equivalent to the woocommerce_to_feed_fields() function in class-data.php
 function woocommerceToGoogleFields() {
 	return {
 		'id': '_sku',
@@ -24,7 +24,7 @@ function woocommerceToGoogleFields() {
 	};
 }
 
-// ALERT! This function is equivalent for the set_google_output_attribute_levels() function in class-data.php
+// ALERT! This function is equivalent to the set_google_output_attribute_levels() function in class-data.php
 function setGoogleOutputAttributeLevels( feedHolder, targetCountry ) {
 	for ( var i = 0; i < feedHolder[ 'attributes' ].length; i ++ ) {
 
@@ -321,11 +321,6 @@ function switchToGoogleFeedFormMainInputs( isNew, channel ) {
 	appendCategoryLists( parseInt( channel ), 'en-US', isNew );
 }
 
-function verifyMinPluginVersion( requiredVersion ) {
-	var versionNr = jQuery( '#wppfm-plugin-version-nr').text()
-	console.log( versionNr );
-}
-
 function googleInputChanged( feedId, categoryChanged ) {
 	var fileName             = jQuery( '#wppfm-feed-file-name' ).val();
 
@@ -334,7 +329,6 @@ function googleInputChanged( feedId, categoryChanged ) {
 	}
 
 	var selectedCountry      = jQuery( '#wppfm-countries-selector' ).val();
-	var selectedFeedType     = jQuery( '#wppfm-feed-types-selector' ).val();
 	var selectedMainCategory = '';
 
 	var categorySelectors       = jQuery( '#lvl_0' );

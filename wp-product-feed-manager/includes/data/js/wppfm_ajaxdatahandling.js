@@ -120,6 +120,7 @@ function wppfm_getMainFeedFilters( feedId, callback ) {
 
 function wppfm_getNextCategories( channelId, requestedLevel, parentCategory, language, callback ) {
 
+	console.log(channelId, requestedLevel, parentCategory, language);
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{

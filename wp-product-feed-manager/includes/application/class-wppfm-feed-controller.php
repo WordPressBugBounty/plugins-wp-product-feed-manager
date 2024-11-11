@@ -4,7 +4,6 @@
  * WP Product Feed Controller Class.
  *
  * @package WP Product Feed Manager/Application/Classes
- * @version 1.3.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -14,16 +13,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 
 	/**
-	 * Feed Controller Class
+	 * Feed Controller Class.
 	 *
 	 * @since 1.10.0
 	 */
 	class WPPFM_Feed_Controller {
 
 		/**
-		 * Removes a feed id from the feed queue
+		 * Removes a feed id from the feed queue.
 		 *
-		 * @param string $feed_id
+		 * @param string $feed_id the id of the feed to remove.
 		 */
 		public static function remove_id_from_feed_queue( $feed_id ) {
 			$feed_queue = self::get_feed_queue();
@@ -41,9 +40,9 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 		}
 
 		/**
-		 * Adds a feed id to the feed queue
+		 * Adds a feed id to the feed queue.
 		 *
-		 * @param string $feed_id
+		 * @param string $feed_id the id of the feed to add.
 		 */
 		public static function add_id_to_feed_queue( $feed_id ) {
 			$feed_queue = self::get_feed_queue();
@@ -55,7 +54,9 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 		}
 
 		/**
-		 * Gets the next feed id from the feed queue
+		 * Gets the next feed id from the feed queue.
+		 *
+		 * @return string with the next feed id in the feed queue. False if no id is found.
 		 */
 		public static function get_next_id_from_feed_queue() {
 			$feed_queue = self::get_feed_queue();
@@ -64,7 +65,7 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 		}
 
 		/**
-		 * Empties the feed queue
+		 * Empties the feed queue.
 		 */
 		public static function clear_feed_queue() {
 			delete_option( 'wppfm_feed_queue' );
@@ -72,9 +73,9 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 		}
 
 		/**
-		 * Checks if the feed queue is empty
+		 * Checks if the feed queue is empty.
 		 *
-		 * @return bool
+		 * @return bool true if the feed is empty.
 		 */
 		public static function feed_queue_is_empty() {
 			$queue = self::get_feed_queue();
@@ -83,12 +84,12 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 		}
 
 		/**
-		 * Returns the number of product ids that are still in the queue
+		 * Returns the number of product ids that are still in the product queue.
 		 *
 		 * @since 2.3.0
-		 * @return int number of product ids still in the queue
+		 * @return int number of product ids still in the product queue.
 		 */
-		public static function nr_ids_remaining_in_queue() {
+		public static function nr_ids_remaining_in_product_queue() {
 			$key = get_site_option( 'wppfm_background_process_key' );
 			$ids_in_product_queue = get_site_option( $key );
 
@@ -96,22 +97,24 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 		}
 
 		/**
-		 * Sets the background_process_is_running option
+		 * Sets the background_process_is_running option.
 		 *
-		 * @param bool $set (default false)
+		 * @since 3.11.0 switched from using an option to using a transient to store the process status.
+		 * @param bool $set required setting. Default false.
 		 */
 		public static function set_feed_processing_flag( $set = false ) {
 			$status = false !== $set ? 'true' : 'false';
-			update_site_option( 'wppfm_background_process_is_running', $status );
+			set_site_transient( 'wppfm_background_process_is_active', $status, DAY_IN_SECONDS );
 		}
 
 		/**
-		 * Get the background_process_is_running status
+		 * Get the background_process_is_active status option.
 		 *
-		 * @return bool
+		 * @since 3.11.0 switched from using an option to using a transient to store the process status.
+		 * @return bool true if the process is still running.
 		 */
 		public static function feed_is_processing() {
-			$status = get_option( 'wppfm_background_process_is_running', 'false' );
+			$status = get_site_transient( 'wppfm_background_process_is_active' );
 
 			return 'true' === $status;
 		}
@@ -121,9 +124,9 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 		 *
 		 * @since 2.2.0.
 		 *
-		 * @param   string $feed_file   String with the full path and name of the feed file.
+		 * @param   string $feed_file String with the full path and name of the feed file.
 		 *
-		 * @return  boolean False if the feed still grows, true if it stopped growing for a certain time.
+		 * @return  boolean false if the feed still grows, true if it stopped growing for a certain time.
 		 */
 		public static function feed_processing_failed( $feed_file ) {
 
@@ -191,9 +194,9 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 		}
 
 		/**
-		 * Returns the current feed queue
+		 * Returns the current feed queue.
 		 *
-		 * @return array with feed ids in the queue or an empty array
+		 * @return array with feed ids in the queue or an empty array.
 		 */
 		protected static function get_feed_queue() {
 			return get_site_option( 'wppfm_feed_queue', array() );

@@ -44,7 +44,7 @@ if ( ! class_exists( 'WPPFM_File' ) ) :
 
 			if ( file_exists( $path ) ) {
 				$file = fopen( $path, 'r' )
-				or die( __( 'Unable to open the file containing the categories', 'wp-product-feed-manager' ) );
+				or die( esc_html__( 'Unable to open the file containing the categories', 'wp-product-feed-manager' ) );
 
 				// step over the first lines that do not contain categories
 				while ( strpos( fgets( $file ), '#' ) ) {
@@ -87,14 +87,15 @@ if ( ! class_exists( 'WPPFM_File' ) ) :
 
 			if ( file_exists( $path ) ) {
 				$file = fopen( $path, 'r' )
-				or die( __( 'Unable to open the file containing the categories', 'wp-product-feed-manager' ) );
+				or die( esc_html__( 'Unable to open the file containing the categories', 'wp-product-feed-manager' ) );
 
 				// step through all the lines in the file
 				while ( ! feof( $file ) ) {
 					$field_object = new stdClass();
 
 					// get the line
-					$line = fgetcsv( $file, 0, "\t" );
+					/** @noinspection PhpRedundantOptionalArgumentInspection */
+					$line = fgetcsv( $file, 0, "\t", "\"", "\\" );
 
 					if ( is_array( $line ) && ! empty( $line[0] ) ) {
 						$field_object->field_id    = $line[0];
@@ -124,7 +125,7 @@ if ( ! class_exists( 'WPPFM_File' ) ) :
 					continue;
 				}
 
-				$feed = fopen( $file, 'r' ) or die( __( 'Unable to open the file containing the categories', 'wp-product-feed-manager' ) );
+				$feed = fopen( $file, 'r' ) or die( esc_html__( 'Unable to open the file containing the categories', 'wp-product-feed-manager' ) );
 
 				$line = fgets( $feed );
 				if ( is_resource( $feed ) ) {
@@ -145,18 +146,20 @@ if ( ! class_exists( 'WPPFM_File' ) ) :
 			if ( is_writable( WPPFM_BACKUP_DIR ) ) {
 				$feed = fopen( $backup_file, 'w' );
 			} else {
-				/* translators: %s: Folder that holds the backup files */
-				return sprintf( __( '1432 - %s is not a writable folder. Make sure you have admin rights to this folder.', 'wp-product-feed-manager' ), WPPFM_BACKUP_DIR );
+				return 'write_protected';
 			}
 
 			if ( false !== $feed ) {
-				fwrite( $feed, $backup_string );
+				$result = fwrite( $feed, $backup_string );
 				fclose( $feed );
 
-				return true;
+				if ( false !== $result ) {
+					return 'success';
+				} else {
+					return 'backup_failed';
+				}
 			} else {
-				/* translators: %s: Selected backup file */
-				return sprintf( __( '1433 - Could not write the %s file.', 'wp-product-feed-manager' ), $backup_file );
+				return 'backup_failed';
 			}
 		}
 

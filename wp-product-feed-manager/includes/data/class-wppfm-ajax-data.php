@@ -4,7 +4,6 @@
  * WP Ajax Data Class.
  *
  * @package WP Product Feed Manager/Data/Classes
- * @version 1.10.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -14,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 
 	/**
-	 * Ajax Data Class
+	 * Ajax Data Class.
 	 */
 	class WPPFM_Ajax_Data extends WPPFM_Ajax_Calls {
 
@@ -24,7 +23,6 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 			$this->_queries_class = new WPPFM_Queries();
 			$this->_files_class   = new WPPFM_File();
 
-			// hooks
 			add_action( 'wp_ajax_myajax-get-list-of-feeds', array( $this, 'myajax_get_list_of_feeds' ) );
 			add_action( 'wp_ajax_myajax-get-list-of-backups', array( $this, 'myajax_get_list_of_backups' ) );
 			add_action( 'wp_ajax_myajax-get-settings-options', array( $this, 'myajax_get_settings_options' ) );
@@ -46,14 +44,14 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		}
 
 		/**
-		 * Returns a list of all active feeds to an ajax caller
+		 * Returns a list of all active feeds to an ajax caller.
 		 */
 		public function myajax_get_list_of_feeds() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'postFeedsListNonce' ), 'myajax-post-feeds-list-nonce' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'postFeedsListNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-post-feeds-list-nonce' ) ) {
 				$list = $this->_queries_class->get_feeds_list();
 
 				// @since 2.1.0 due to implementation of i18n to the plugin and for backwards compatibility, we need to change
-				// the status string entries from the database to identification strings (i.e., OK to ok and On hold in on_hold)
+				// the status string entries from the database to identification strings (i.e., OK to ok and On hold in on_hold).
 				if ( $list && ! ctype_lower( $list[0]->status ) ) {
 					wppfm_correct_old_feeds_list_status( $list );
 				}
@@ -66,7 +64,7 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 
 				echo wp_json_encode( $result );
 			} else {
-				echo $this->show_not_allowed_error_message();
+				$this->show_not_allowed_error_message();
 			}
 
 			// IMPORTANT: don't forget to exit.
@@ -74,68 +72,78 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		}
 
 		/**
-		 * Returns a list of backups the user has made
+		 * Returns a list of backups the user has made.
 		 */
 		public function myajax_get_list_of_backups() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'postBackupListNonce' ), 'myajax-backups-list-nonce' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'postBackupListNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-backups-list-nonce' ) ) {
 				echo wp_json_encode( $this->_files_class->make_list_of_active_backups() );
 			} else {
-				echo '<div id="error">' . __( 'You are not allowed to do this!', 'wp-product-feed-manager' ) . '</div>';
+				$this->show_not_allowed_error_message();
 			}
 
 			// IMPORTANT: don't forget to exit.
 			exit;
 		}
 
+		/**
+		 * Returns a JSON string containing an array with the setting options.
+		 */
 		public function myajax_get_settings_options() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'postSetupOptionsNonce' ), 'myajax-setting-options-nonce' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'postSetupOptionsNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-setting-options-nonce' ) ) {
+				$auto_feed_fix_option = 'true' === get_option( 'wppfm_auto_feed_fix' ) ? 'true' : 'false';
+				$disabled_background_mode = 'true' === get_option( 'wppfm_disabled_background_mode' ) ? 'true' : 'false';
+				$feed_process_logger = 'true' === get_option( 'wppfm_process_logger_status' ) ? 'true' : 'false';
+				$show_product_identifiers = 'true' === get_option( 'wppfm_show_product_identifiers' ) ? 'true' : 'false';
+				$manual_channel_update = 'true' === get_option( 'wppfm_manual_channel_update' ) ? 'true' : 'false';
+				$third_party_attribute_keywords = sanitize_text_field( get_option( 'wppfm_third_party_attribute_keywords' ) );
+				$notice_mailaddress = sanitize_email( get_option( 'wppfm_notice_mailaddress' ) );
+
 				$options = array(
-					get_option( 'wppfm_auto_feed_fix' ),
-					get_option( 'wppfm_third_party_attribute_keywords' ),
-					get_option( 'wppfm_notice_mailaddress' ),
-					get_option( 'wppfm_disabled_background_mode' ),
+					$auto_feed_fix_option,
+					$disabled_background_mode,
+					$feed_process_logger,
+					$show_product_identifiers,
+					$manual_channel_update,
+					$third_party_attribute_keywords,
+					$notice_mailaddress,
 				);
 				echo wp_json_encode( $options );
 			} else {
-				echo $this->show_not_allowed_error_message();
+				$this->show_not_allowed_error_message();
 			}
 
-			// IMPORTANT: don't forget to exit
+			// IMPORTANT: don't forget to exit.
 			exit;
 		}
 
 		/**
 		 * Retrieves the output fields that are specific for a given merchant and
 		 * also adds stored metadata to the output fields
-		 *
-		 * @access public (ajax triggered)
 		 */
 		public function myajax_get_output_fields() {
-
-			// check: if the call is safe
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'outputFieldsNonce' ), 'myajax-output-fields-nonce' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'outputFieldsNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-output-fields-nonce' ) ) {
 				$data_class = new WPPFM_Data();
 
-				// get the posted inputs
-				$channel_id   = filter_input( INPUT_POST, 'channelId' );
-				$feed_type_id = filter_input( INPUT_POST, 'feedType' );
-				$feed_id      = filter_input( INPUT_POST, 'feedId' );
+				// Get the posted inputs.
+				$channel_id   = filter_input( INPUT_POST, 'channelId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+				$feed_type_id = filter_input( INPUT_POST, 'feedType', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+				$feed_id      = filter_input( INPUT_POST, 'feedId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 				$channel      = trim( $this->_queries_class->get_channel_short_name_from_db( $channel_id ) );
 				$is_custom    = function_exists( 'wppfm_channel_is_custom_channel' ) && wppfm_channel_is_custom_channel( $channel_id );
 
 				if ( ! $is_custom ) {
 					$channel_class = new WPPFM_Channel();
 
-					// read the output fields
+					// Read the output fields.
 					$outputs = apply_filters( 'wppfm_get_feed_attributes', $this->_files_class->get_output_fields_for_specific_channel( $channel ), $feed_id, $feed_type_id );
 
 					// if the feed is a stored feed, look for metadata to add (a feed an id of -1 is a new feed that not yet has been saved)
 					if ( $feed_id >= 0 ) {
-						// add metadata to the feed output fields
+						// Add metadata to the feed output fields.
 						$outputs = $data_class->fill_output_fields_with_metadata( $feed_id, $outputs );
 					}
 
-					// add the channel-specific feed specification url to the output fields
+					// Add the channel-specific feed specification url to the output fields.
 					$outputs['feed_specification_url'] = $channel_class->get_channel_specifications_link( $channel );
 				} else {
 					$data_class = new WPPFM_Data();
@@ -144,7 +152,7 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 
 				echo wp_json_encode( $outputs );
 			} else {
-				echo $this->show_not_allowed_error_message();
+				$this->show_not_allowed_error_message();
 			}
 
 			// IMPORTANT: don't forget to exit.
@@ -152,13 +160,11 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		}
 
 		/**
-		 * Gets all the different source fields from the custom products and third party sources and combines them into one list
-		 *
-		 * @access public (ajax triggered)
+		 * Gets all the different source fields from the custom products and third party sources and combines them into one list.
 		 */
 		public function myajax_get_input_fields() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'inputFieldsNonce' ), 'myajax-input-fields-nonce' ) ) {
-				$source_id = filter_input( INPUT_POST, 'sourceId' );
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'inputFieldsNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-input-fields-nonce' ) ) {
+				$source_id = filter_input( INPUT_POST, 'sourceId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 				switch ( $source_id ) {
 					case '1':
@@ -183,7 +189,7 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 
 					default:
 						if ( 'valid' === get_option( 'wppfm_lic_status' ) ) { // error message for paid versions
-							echo '<div id="error">' . __(
+							echo '<div id="error">' . esc_html__(
 								'Could not add custom fields because I could not identify the channel.
 									If not already done add the correct channel in the Manage Channels page.
 									Also try to deactivate and then activate the plugin.',
@@ -192,7 +198,7 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 
 							wppfm_write_log_file( sprintf( 'Could not define the channel in a valid Premium plugin version. Feed id = %s', $source_id ) );
 						} else { // error message for a free version
-							echo '<div id="error">' . __(
+							echo '<div id="error">' . esc_html__(
 								'Could not identify the channel.
 								Try to deactivate and then activate the plugin.
 								If that does not work remove the plugin through the WordPress Plugins page and than reinstall and activate it again.',
@@ -205,57 +211,67 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 						break;
 				}
 			} else {
-				echo $this->show_not_allowed_error_message();
-			}
-
-			// IMPORTANT: don't forget to exit
-			exit;
-		}
-
-		public function myajax_get_feed_filters() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'inputFeedFiltersNonce' ), 'myajax-feed-filters-nonce' ) ) {
-				$feed_id = filter_input( INPUT_POST, 'feedId' );
-
-				$data_class = new WPPFM_Data();
-				$filters    = $data_class->get_filter_query( $feed_id );
-
-				echo $filters ? wp_json_encode( $filters ) : '0';
-			} else {
-				echo $this->show_not_allowed_error_message();
-			}
-
-			// IMPORTANT: don't forget to exit
-			exit;
-		}
-
-		public function myajax_get_feed_status() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'feedStatusNonce' ), 'myajax-feed-status-nonce' ) ) {
-				$feed_id = filter_input( INPUT_POST, 'sourceId' );
-
-				$feed_master = new WPPFM_Feed_Master_Class( $feed_id );
-				$feed_data   = $feed_master->feed_status_check( $feed_id );
-
-				echo wp_json_encode( $feed_data );
-			} else {
-				echo $this->show_not_allowed_error_message();
+				$this->show_not_allowed_error_message();
 			}
 
 			// IMPORTANT: don't forget to exit.
 			exit;
 		}
 
-		public function myajax_update_feed_data() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'updateFeedDataNonce' ), 'myajax-update-feed-data-nonce', 'edit_feeds' ) ) {
-				// Get the posted feed data.
-				$ajax_feed_data = json_decode( filter_input( INPUT_POST, 'feed' ) );
-				$feed_filter    = filter_input( INPUT_POST, 'feedFilter' );
-				$m_data         = filter_input( INPUT_POST, 'metaData' );
+		/**
+		 * Gets the stored main feed query string.
+		 */
+		public function myajax_get_feed_filters() {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'inputFeedFiltersNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-feed-filters-nonce' ) ) {
+				$feed_id = filter_input( INPUT_POST, 'feedId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
-				echo WPPFM_Feed_CRUD_Handler::create_or_update_feed_data( $ajax_feed_data, $m_data, $feed_filter );
+				$data_class = new WPPFM_Data();
+				$filters    = $data_class->get_filter_query( $feed_id );
+
+				echo $filters ? wp_json_encode( $filters ) : '0';
 			} else {
-				echo $this->show_not_allowed_error_message();
+				$this->show_not_allowed_error_message();
 			}
 
+			// IMPORTANT: don't forget to exit.
+			exit;
+		}
+
+		/**
+		 * Gets the current feed status.
+		 */
+		public function myajax_get_feed_status() {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'feedStatusNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-feed-status-nonce' ) ) {
+				$feed_id = filter_input( INPUT_POST, 'sourceId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+
+				$feed_master = new WPPFM_Feed_Master_Class( $feed_id );
+				$feed_data   = $feed_master->feed_status_check( $feed_id );
+
+				echo wp_json_encode( $feed_data );
+			} else {
+				$this->show_not_allowed_error_message();
+			}
+
+			// IMPORTANT: don't forget to exit.
+			exit;
+		}
+
+		/**
+		 * Updates the feed data to the database. Creates a new record if the feed data does not exist.
+		 */
+		public function myajax_update_feed_data() {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'updateFeedDataNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-update-feed-data-nonce', 'edit_feeds' ) ) {
+				// Get the posted feed data.
+				$ajax_feed_data = isset( $_POST['feed'] ) ? json_decode( sanitize_text_field( wp_unslash( $_POST['feed'] ) ) ) : array();
+				$feed_filter    = isset( $_POST['feedFilter'] ) ? sanitize_text_field( wp_unslash( $_POST['feedFilter'] ) ) : '';
+				$m_data         = isset( $_POST['metaData'] ) ? sanitize_text_field( wp_unslash( $_POST['metaData'] ) ) : '';
+
+				WPPFM_Feed_CRUD_Handler::create_or_update_feed_data( $ajax_feed_data, $m_data, $feed_filter );
+			} else {
+				$this->show_not_allowed_error_message();
+			}
+
+			// IMPORTANT: don't forget to exit.
 			exit;
 		}
 
@@ -263,19 +279,19 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * Switches the status of a feed between hold and ok.
 		 */
 		public function myajax_switch_feed_status_between_hold_and_ok() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'switchFeedStatusNonce' ), 'myajax-switch-feed-status-nonce', 'edit_feeds' ) ) {
-				$feed_id = filter_input( INPUT_POST, 'feedId' );
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'switchFeedStatusNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-switch-feed-status-nonce', 'edit_feeds' ) ) {
+				$feed_id = filter_input( INPUT_POST, 'feedId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 				$feed_status    = $this->_queries_class->get_current_feed_status( $feed_id );
 				$current_status = $feed_status[0]->status_id;
 
-				$new_status = '1' === $current_status ? '2' : '1'; // only allow status 1 or 2
+				$new_status = '1' === $current_status ? '2' : '1'; // Only allow status 1 or 2.
 
 				$result = $this->_queries_class->switch_feed_status( $feed_id, $new_status );
 
-				echo ( false === $result ) ? $current_status : $new_status;
+				echo ( false === $result ) ? esc_html( $current_status ) : esc_html( $new_status );
 			} else {
-				echo $this->show_not_allowed_error_message();
+				$this->show_not_allowed_error_message();
 			}
 
 			// IMPORTANT: don't forget to exit
@@ -286,15 +302,15 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * Duplicates a feed.
 		 */
 		public function myajax_duplicate_feed_data() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'duplicateFeedNonce' ), 'myajax-duplicate-existing-feed-nonce', 'edit_feeds' ) ) {
-				$feed_id = filter_input( INPUT_POST, 'feedId' );
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'duplicateFeedNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-duplicate-existing-feed-nonce', 'edit_feeds' ) ) {
+				$feed_id = filter_input( INPUT_POST, 'feedId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
-				echo WPPFM_Db_Management::duplicate_feed( $feed_id );
+				WPPFM_Db_Management::duplicate_feed( $feed_id );
 			} else {
-				echo $this->show_not_allowed_error_message();
+				$this->show_not_allowed_error_message();
 			}
 
-			// IMPORTANT: don't forget to exit
+			// IMPORTANT: don't forget to exit.
 			exit;
 		}
 
@@ -302,29 +318,34 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * Removes a feed from the feedmanager_product_feed table.
 		 */
 		public function myajax_delete_feed() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'deleteFeedNonce' ), 'myajax-delete-feed-nonce', 'delete_feeds' ) ) {
-				$feed_id = filter_input( INPUT_POST, 'feedId' );
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'deleteFeedNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-delete-feed-nonce', 'delete_feeds' ) ) {
+				$feed_id = filter_input( INPUT_POST, 'feedId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 				WPPFM_Feed_Controller::remove_id_from_feed_queue( $feed_id );
 				$this->_queries_class->delete_meta( $feed_id );
-				echo $this->_queries_class->delete_feed( $feed_id );
+				$result = $this->_queries_class->delete_feed( $feed_id );
+				echo esc_html( $result );
 			} else {
-				echo $this->show_not_allowed_error_message();
+				$this->show_not_allowed_error_message();
 			}
 
-			// IMPORTANT: don't forget to exit
+			// IMPORTANT: don't forget to exit.
 			exit;
 		}
 
+		/**
+		 * Generates a backup of the current feeds and plugin settings.
+		 */
 		public function myajax_backup_current_data() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'backupNonce' ), 'myajax-backup-nonce', 'manage_options' ) ) {
-				$backup_file_name = sanitize_file_name( filter_input( INPUT_POST, 'fileName' ) );
-				echo WPPFM_Db_Management::backup_database_tables( $backup_file_name );
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'backupNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-backup-nonce', 'manage_options' ) ) {
+				$backup_file_name = filter_input( INPUT_POST, 'fileName', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+				$result = WPPFM_Db_Management::backup_database_tables( $backup_file_name );
+				echo esc_html( $result );
 			} else {
-				echo $this->show_not_allowed_error_message();
+				$this->show_not_allowed_error_message();
 			}
 
-			// IMPORTANT: don't forget to exit
+			// IMPORTANT: don't forget to exit.
 			exit;
 		}
 
@@ -332,14 +353,15 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * Removes a backup file from the backup folder.
 		 */
 		public function myajax_delete_backup_file() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'deleteBackupNonce' ), 'myajax-delete-backup-nonce', 'manage_options' ) ) {
-				$backup_file_name = filter_input( INPUT_POST, 'fileName' );
-				WPPFM_Db_Management::delete_backup_file( $backup_file_name );
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'deleteBackupNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-delete-backup-nonce', 'manage_options' ) ) {
+				$backup_file_name = filter_input( INPUT_POST, 'fileName', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+				$result = WPPFM_Db_Management::delete_backup_file( $backup_file_name );
+				echo esc_html( $result );
 			} else {
-				echo $this->show_not_allowed_error_message();
+				$this->show_not_allowed_error_message();
 			}
 
-			// IMPORTANT: don't forget to exit
+			// IMPORTANT: don't forget to exit.
 			exit;
 		}
 
@@ -347,14 +369,15 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * Restores a Feed Manager backup.
 		 */
 		public function myajax_restore_backup_file() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'restoreBackupNonce' ), 'myajax-restore-backup-nonce', 'manage_options' ) ) {
-				$backup_file_name = filter_input( INPUT_POST, 'fileName' );
-				echo WPPFM_Db_Management::restore_backup( $backup_file_name );
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'restoreBackupNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-restore-backup-nonce', 'manage_options' ) ) {
+				$backup_file_name = filter_input( INPUT_POST, 'fileName', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+				$result = WPPFM_Db_Management::restore_backup( $backup_file_name );
+				echo esc_html( $result );
 			} else {
-				echo $this->show_not_allowed_error_message();
+				$this->show_not_allowed_error_message();
 			}
 
-			// IMPORTANT: don't forget to exit
+			// IMPORTANT: don't forget to exit.
 			exit;
 		}
 
@@ -362,53 +385,73 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * Makes a duplicate of an existing backup.
 		 */
 		public function myajax_duplicate_backup_file() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'duplicateBackupNonce' ), 'myajax-duplicate-backup-nonce', 'manage_options' ) ) {
-				$backup_file_name = filter_input( INPUT_POST, 'fileName' );
-				WPPFM_Db_Management::duplicate_backup_file( $backup_file_name );
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'duplicateBackupNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-duplicate-backup-nonce', 'manage_options' ) ) {
+				$backup_file_name = filter_input( INPUT_POST, 'fileName', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+				$result = WPPFM_Db_Management::duplicate_backup_file( $backup_file_name );
+				echo esc_html( $result );
 			} else {
-				echo $this->show_not_allowed_error_message();
+				$this->show_not_allowed_error_message();
 			}
 
-			// IMPORTANT: don't forget to exit
+			// IMPORTANT: don't forget to exit.
 			exit;
 		}
 
+		/**
+		 * Gets the next feed if from the feed queue. Returns a false string if the feed queue is empty.
+		 */
 		public function myajax_get_next_feed_in_queue() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'nextFeedInQueueNonce' ), 'myajax-next-feed-in-queue-nonce' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'nextFeedInQueueNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-next-feed-in-queue-nonce' ) ) {
 				$next_feed_id = WPPFM_Feed_Controller::get_next_id_from_feed_queue();
-				echo false !== $next_feed_id ? $next_feed_id : 'false';
+				echo false !== $next_feed_id ? esc_html( $next_feed_id ) : 'false';
 			} else {
-				echo $this->show_not_allowed_error_message();
+				$this->show_not_allowed_error_message();
 			}
 
-			// IMPORTANT: don't forget to exit
+			// IMPORTANT: don't forget to exit.
 			exit;
 		}
 
+		/**
+		 * Registers a notice dismission.
+		 */
 		public function myajax_register_notice_dismission() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'noticeDismissionNonce' ), 'myajax-duplicate-backup-nonce', 'manage_options' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'noticeDismissionNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-duplicate-backup-nonce', 'manage_options' ) ) {
 
 				update_option( 'wppfm_license_notice_suppressed', true );
 				echo 'true';
 			} else {
-				echo $this->show_not_allowed_error_message();
+				$this->show_not_allowed_error_message();
 			}
 
-			// IMPORTANT: don't forget to exit
+			// IMPORTANT: don't forget to exit.
 			exit;
 		}
 
-		// Handling the cancellation of the summer promotion notice
+		/**
+		 * Handling the cancellation of the summer promotion notice.
+		 */
 		public function myajax_cancel_promotion() {
-			update_option( 'wppfm_summer_promotion_2024_dismissed', 'canceled' );
+			update_option( 'wppfm_black_friday_promotion_2024_dismissed', 'canceled' );
 
-			$result = get_option( 'wppfm_summer_promotion_2024_dismissed' );
-			echo 'Removed summer promotion ' . $result . '!';
+			$result = get_option( 'wppfm_black_friday_promotion_2024_dismissed' );
+			echo 'Removed black friday promotion ' . esc_html( $result ) . '!';
 
-			// IMPORTANT: don't forget to exit
+			// IMPORTANT: don't forget to exit.
 			exit;
 		}
 
+		/**
+		 * Combines custom attributes and feeds.
+		 *
+		 * @param $attributes
+		 * @param $feeds
+		 * @param $product_attributes
+		 * @param $product_taxonomies
+		 * @param $third_party_fields
+		 *
+		 * @return mixed
+		 */
 		private function combine_custom_attributes_and_feeds( $attributes, $feeds, $product_attributes, $product_taxonomies, $third_party_fields ) {
 			$prev_dup_array = array(); // used to prevent doubles
 
@@ -468,6 +511,13 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 			return $attributes;
 		}
 
+		/**
+		 * Converts a list of feed type ids to type names.
+		 *
+		 * @param array $list with type ids to convert.
+		 *
+		 * @return void
+		 */
 		private function convert_type_ids_to_type_names( $list ) {
 			$channel_class = new WPPFM_Channel();
 

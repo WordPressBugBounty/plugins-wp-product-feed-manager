@@ -19,7 +19,7 @@ wppfm_logger_setup();
 function wppfm_logger_setup() {
 
 	if ( wppfm_process_logger_is_active() ) {
-		require_once __DIR__ . '/includes/wppfm-logger-functions.php';
+		require_once __DIR__ . '/includes/wppfm-logger-actions.php';
 
 		if ( ! is_plugin_active( 'wp-product-feed-manager-logger/wp-product-feed-manager-logger.php' ) ) {
 			// Include the required classes.

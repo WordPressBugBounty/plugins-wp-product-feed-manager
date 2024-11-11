@@ -13,7 +13,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Gets called when opening an existing feed or on opening the feed form for creating a new Google (Supplemental) feed. It also gets called on the second stage of creating a new feed for a channel other than Google (Supplemental).
  * Returns a string containing the standard header for an admin page.
  *
- * @return string|null
+ * @since 3.11.0 replaced the use of str_contains to using strpos for pre 8.0 versions of PHP.
+ *
+ * @return string containing the feed form sub header text.
  */
 function wppfm_feed_form_sub_header_text() {
 	$channel_class = new WPPFM_Channel();
@@ -24,7 +26,7 @@ function wppfm_feed_form_sub_header_text() {
 	$feed_type_parameter         = wppfm_get_url_parameter( 'feed-type' );
 	$feed_type                   = null !== $feed_type_parameter ? $feed_type_parameter : ''; // Convert null to an empty string to prevent an issue with the str_contains function
 	$feed_type_name              = wppfm_convert_string_with_dashes_to_upper_case_string_with_spaces( $feed_type );
-	$channel_feed_specifications = 'google' === $channel_short_name || str_contains( $feed_type, 'google' ) ? $data_class->get_support_feed_specifications_url( $feed_type ) : $channel_class->get_channel_specifications_link( $channel_short_name );
+	$channel_feed_specifications = 'google' === $channel_short_name || strpos( $feed_type, 'google' ) !== false ? $data_class->get_support_feed_specifications_url( $feed_type ) : $channel_class->get_channel_specifications_link( $channel_short_name );
 
 	$new_feed_text            = 1 > $feed_id ? __( ' Select the products you want in the feed by selecting the correct Shop Category and make sure the required attributes are set correctly', 'wp-product-feed-manager' ) : '';
 	$feed_specifications_link = $channel_feed_specifications ? '<br><a href="' . $channel_feed_specifications . '" target="_blank">' . __( 'Click here to view the specifications for this feed.', 'wp-product-feed-manager' ) . '</a>' : '';

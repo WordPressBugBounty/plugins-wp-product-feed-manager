@@ -145,9 +145,16 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 				$this->_wpdb->prepare( "SELECT product_feed_id FROM {$this->_table_prefix}feedmanager_product_feed WHERE channel_id = %d", $channel_id ), ARRAY_A );
 		}
 
-		public function get_meta_parents( $feed_id ) {
+		/**
+		 * Queries the Post table to get the parent ids of a specific product.
+		 *
+		 * @param string $product_id the product id.
+		 *
+		 * @return array with the products' parent ids.
+		 */
+		public function get_product_parents( $product_id ) {
 			return $this->_wpdb->get_results(
-				$this->_wpdb->prepare( "SELECT ID FROM {$this->_table_prefix}posts WHERE post_parent = %d AND post_status = 'publish'", $feed_id ), ARRAY_A );
+				$this->_wpdb->prepare( "SELECT ID FROM {$this->_table_prefix}posts WHERE post_parent = %d AND post_status = 'publish'", $product_id ), ARRAY_A );
 		}
 
 		public function read_feed( $feed_id ) {
@@ -783,7 +790,7 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 				)
 			);
 
-			return $counter;
+			echo esc_html( $counter );
 		}
 
 		public function title_exists( $feed_title ) {

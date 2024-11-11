@@ -7,14 +7,14 @@
  * Author URI: https://www.wpmarketingrobot.com
  * Developer: Michel Jongbloed
  * Developer URI: https://www.wpmarketingrobot.com
- * Version: 2.10.0
- * Modified: 28-08-2024
+ * Version: 2.11.0
+ * Modified: 10-11-2024
  * WC requires at least: 8.4
- * WC tested up to: 9.2.3
+ * WC tested up to: 9.3.3
  *
  * This plugin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * the Free Software Foundation, either version 3 of the License or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -24,7 +24,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * You can read the GNU General Public License here <http://www.gnu.org/licenses/>.
- * Requires at least: 6.2
+ * Requires at least: 6.5
  * Requires Plugins: woocommerce
  * Tested up to: 6.6
  *
@@ -43,7 +43,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 	/**
 	 * The Main WP_Product_Feed_Manager Class.
 	 *
-	 * @class WP_Product_Feed_Manager
+	 * @class WP_Product_Feed_Manager.
 	 */
 	final class WP_Product_Feed_Manager {
 
@@ -52,7 +52,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		 *
 		 * @var string  Containing the version number of the plugin.
 		 */
-		public $version = '2.10.0';
+		public $version = '2.11.0';
 
 		/**
 		 * Author Name.
@@ -137,7 +137,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		}
 
 		/**
-		 * Defines a few important constants
+		 * Defines a few important constants.
 		 */
 		private function define_constants() {
 			// Store the name of the plugin.
@@ -169,6 +169,11 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 			// @since 2.38.0.
 			if ( ! defined( 'WPPFM_PLUGIN_VERSION_ID' ) ) {
 				define( 'WPPFM_PLUGIN_VERSION_ID', 'free' );
+			}
+
+			// Store the plugin distributor.
+			if ( ! defined( 'WPPFM_PLUGIN_DISTRIBUTOR' ) ) {
+				define( 'WPPFM_PLUGIN_DISTRIBUTOR', 'wpmarketingrobot' );
 			}
 
 			// Store the transient alive time.
@@ -249,7 +254,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		}
 
 		/**
-		 * Sets the activation and deactivation hooks
+		 * Sets the activation and deactivation hooks.
 		 */
 		private function hooks() {
 			// Register's the activation, deactivation and uninstall hooks.
@@ -259,12 +264,12 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		}
 
 		/**
-		 * Includes the required files
+		 * Includes the required files.
 		 */
 		private function includes() {
-			// Include the WordPress pluggable.php file on forehand to prevent a "Call to undefined function wp_get_current_user()" error
-			// https://wp-types.com/forums/topic/mandrill-wp_mail-has-been-declared-by-another-process-or-plugin-need-fix/.
-			if ( is_admin() && in_array( basename( $_SERVER['PHP_SELF'] ), array( 'options-general.php' ), true ) && isset( $_GET['page'] ) && 'email_template' === $_GET['page'] ) {
+			// Include the WordPress pluggable.php file on forehand to prevent a "Call to undefined function wp_get_current_user()" error.
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			if ( is_admin() && basename( $_SERVER['PHP_SELF'] ) === 'options-general.php' && 'email_template' === filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL_SPECIAL_CHARS) ) {
 				require_once ABSPATH . 'wp-includes/pluggable.php';
 			}
 
@@ -282,11 +287,12 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 			require_once __DIR__ . '/includes/data/wppfm-data-storage-functions.php';
 			require_once __DIR__ . '/includes/user-interface/wppfm-messaging-functions.php';
 			require_once __DIR__ . '/includes/user-interface/wppfm-url-functions.php';
+			require_once __DIR__ . '/includes/user-interface/wppfm-woocommerce-actions.php';
 			require_once __DIR__ . '/includes/wppfm-wpincludes.php';
 			require_once __DIR__ . '/includes/packages/logger/wp-product-feed-manager-logger.php';
 
 			if ( 'true' === get_option( 'wppfm_show_product_identifiers', 'false' ) ) {
-				require_once __DIR__ . '/includes/application/wppfm-support-fields.php'; // @since 2.10.0
+				require_once __DIR__ . '/includes/user-interface/wppfm-product-identifiers.php'; // @since 2.10.0
 			}
 
 			// Include all required classes.
@@ -311,7 +317,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		}
 
 		/**
-		 * Registers a dismiss notice action
+		 * Registers a dismiss notice action.
 		 *
 		 * @since 1.9.8
 		 */
@@ -333,7 +339,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		}
 
 		/**
-		 * Performs the required actions on activation of the plugin
+		 * Performs the required actions on activation of the plugin.
 		 */
 		public function on_activation() {
 			// Add the required tables to the database.
@@ -344,7 +350,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		}
 
 		/**
-		 * Registers the text domain
+		 * Registers the text domain.
 		 *
 		 * @since 2.1.6
 		 */
@@ -353,7 +359,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		}
 
 		/**
-		 * Performs the required actions on deactivation of the plugin
+		 * Performs the required actions on deactivation of the plugin.
 		 */
 		public function on_deactivation() {
 			// Stop the scheduled feed update actions.
@@ -363,7 +369,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		}
 
 		/**
-		 * Gets triggered when the plugin quits and is used to fetch fatal errors
+		 * Gets triggered when the plugin quits and is used to fetch fatal errors.
 		 *
 		 * @since 1.10.0
 		 */

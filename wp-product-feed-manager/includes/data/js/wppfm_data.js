@@ -1,7 +1,7 @@
 /**
- * Returns an array with all possible condition options
+ * Returns an array with all possible condition options.
  *
- * @return {array} An array with possible condition options
+ * @return {array} an array with possible condition options.
  */
 function wppfm_queryOptionsEng() {
 
@@ -12,21 +12,37 @@ function wppfm_queryOptionsEng() {
 	];
 }
 
+/**
+ * Returns an array with the change values options.
+ *
+ * @returns {array} with the change values options.
+ */
 function wppfm_changeValuesOptions() {
 
-	// @since 2.22.0 strip tags and limit characters.
-	// @since 2.34.0 html entity decode.
+	// @since 2.22.0 - Strip tags and limit characters.
+	// @since 2.34.0 - HTML entity decode.
 	return [ 'change nothing', 'overwrite', 'replace', 'remove', 'add prefix', 'add suffix', 'recalculate', 'convert to child-element', 'strip tags', 'html entity decode', 'limit characters' ];
 }
 
+/**
+ * Returns an array with the change value recalculation options.
+ *
+ * @returns {array} with the change value recalculation options.
+ */
 function wppfm_changeValuesRecalculateOptions() {
 
 	return [ 'add', 'subtract', 'multiply', 'divide' ];
 }
 
+/**
+ * Returns an array with the WooCommerce source options.
+ *
+ * @returns {array} with the source options.
+ */
 function wppfm_woocommerceSourceOptions() {
+	var dataStorageElement = jQuery( '#wppfm-feed-editor-page-data-storage' );
 
-	return [
+	var options = [
 		{value: '_backorders', label: 'Allow Backorders', prop: 'meta'},
 		//{ value: '_button_text', label: 'Button Text', prop: 'meta' },
 		//{value:'', label:'Cross-Sells', prop:'meta'},
@@ -59,9 +75,6 @@ function wppfm_woocommerceSourceOptions() {
 		{value: 'post_excerpt', label: 'Product Short Description', prop: 'post'},
 		{value: 'product_tags', label: 'Product Tags', prop: 'meta'},
 		{value: 'post_title', label: 'Product Title', prop: 'post'},
-		{value: 'wppfm_product_brand', label: 'Product brand', prop: 'meta'},
-		{value: 'wppfm_product_gtin', label: 'Product GTIN', prop: 'meta'},
-		{value: 'wppfm_product_mpn', label: 'Product MPN', prop: 'meta'},
 		{value: 'product_variation_title_without_attributes', label: 'Product Title Without Variable Attributes', prop: 'meta'},
 		{value: 'product_type', label: 'Product Type', prop: 'meta'},
 		{value: 'permalink', label: 'Permalink', prop: 'post'},
@@ -98,7 +111,22 @@ function wppfm_woocommerceSourceOptions() {
 		// @since 2.28.0
 		{value: '_product_parent_description', label: 'Product Parent Description', prop: 'meta'},
 		{value: '_woocs_currency', label: 'WOOCS Currency', prop: 'meta'},
+		// @since 3.11.0
+		{value: 'wppfm_exclude_from_feed', label: 'Exclude From Feed option selected', prop: 'meta'},
 	];
+
+	// @since 3.11.0 - Made the inclusion of the plugin own product identifiers dependent on if the Show product identifiers option in the Settings page has been selected or not.
+	if ( true === dataStorageElement.data('wppfmShowProductIdentifiers') ) {
+		var productIdentifierOptions = [
+			{value: 'wppfm_product_brand', label: 'Product brand', prop: 'meta'},
+			{value: 'wppfm_product_gtin', label: 'Product GTIN', prop: 'meta'},
+			{value: 'wppfm_product_mpn', label: 'Product MPN', prop: 'meta'},
+		];
+
+		options = [...options, ...productIdentifierOptions];
+	}
+
+	return options;
 }
 
 function wppfm_sourceOptionsConverter( optionValue ) {
@@ -119,7 +147,7 @@ function wppfm_validateUrl( url ) {
 	return ! ! pattern.test( url );
 }
 
-// Returns true if the string is any of the allowed Google feed types
+// Returns true if the string is any of the allowed Google feed types.
 function wppfm_isSpecificGoogleFeedType( feedTypeString ) {
 	return feedTypeString === 'product-feed'
 			|| feedTypeString === 'google-local-product-inventory-feed'

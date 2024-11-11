@@ -4,7 +4,6 @@
  * WP Product Feed Manager Add Support Page Class.
  *
  * @package WP Product Feed Manager/User Interface/Classes
- * @version 1.0.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -26,10 +25,13 @@ if ( ! class_exists( 'WPPFM_Add_Support_Page' ) ) :
 			$this->_support_form = new WPPFM_Support_Page();
 		}
 
+		/**
+		 * Show the Support page.
+		 */
 		public function show() {
 			echo '<div class="wppfm-page-layout">';
-			echo $this->_header_class->show( 'support-page' );
-			echo $this->_support_form->display();
+			$this->_header_class->show( 'support-page' );
+			$this->_support_form->display();
 			echo '</div>';
 		}
 	}

@@ -41,28 +41,6 @@ if ( ! class_exists( 'WPPFM_Folders' ) ) :
 			wp_mkdir_p( $dir );
 		}
 
-		public static function update_wppfm_channel_dir() {
-			$old_channel_folder = WP_PLUGIN_DIR . '/wp-product-feed-manager-support/channels';
-
-			if ( file_exists( $old_channel_folder ) ) {
-				if ( file_exists( WPPFM_CHANNEL_DATA_DIR ) ) { // if the channels folder already exists, remove it to prevent the rename function from failing
-					self::delete_folder( WPPFM_CHANNEL_DATA_DIR );
-				}
-
-				if ( ! self::copy_folder( $old_channel_folder, WPPFM_CHANNEL_DATA_DIR ) ) {
-					return false;
-				}
-
-				if ( ! self::delete_folder( $old_channel_folder ) ) {
-					require_once WP_PLUGIN_DIR . '/wp-product-feed-manager/includes/user-interface/wppfm-messaging-functions.php';
-					/* translators: %s: old channel folder */
-					echo wppfm_show_wp_warning( sprintf( __( 'Unable to remove the %s folder. This folder is not required any more. Please try removing this folder manually using ftp software or an equivalent methode.', 'wp-product-feed-manager' ), $old_channel_folder ) );
-				}
-			}
-
-			return true;
-		}
-
 		/**
 		 * Deletes a directory and all its content
 		 *

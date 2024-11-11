@@ -4,7 +4,6 @@
  * The uninstallation functions.
  *
  * @package WP Product Feed Manager/Functions
- * @version 3.5.0
  */
 
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
@@ -17,6 +16,14 @@ $upload_dir = wp_get_upload_dir();
 
 if ( ! class_exists( 'WPPFM_Folders' ) ) {
 	require_once __DIR__ . '/includes/setup/class-wppfm-folders.php';
+}
+
+if ( ! class_exists( 'WPPFM_Db_Management' ) ) {
+	require_once __DIR__ . '/includes/data/class-wppfm-db-management.php';
+}
+
+if ( ! class_exists( 'WPPFM_Queries' ) ) {
+	require_once __DIR__ . '/includes/data/class-wppfm-queries.php';
 }
 
 // Stop the scheduled feed update actions.
@@ -44,10 +51,13 @@ foreach ( $tables as $table ) {
 	$wpdb->query( "DROP TABLE IF EXISTS $table" );
 }
 
-// Remove the custom capabilities
+// Reset the keyed options @since 3.11.0.
+WPPFM_Db_Management::clean_options_table();
+
+// Remove the custom capabilities.
 wppfm_remove_custom_capabilities();
 
-// unregister the plugin
+// Unregister the plugin.
 wppfm_unregister_plugin();
 
 /**
@@ -68,7 +78,7 @@ function wppfm_remove_custom_capabilities() {
 
 
 /**
- * Removes the registration info from the database
+ * Removes the registration info from the database.
  */
 function wppfm_unregister_plugin() {
 	// Retrieve the license from the database.

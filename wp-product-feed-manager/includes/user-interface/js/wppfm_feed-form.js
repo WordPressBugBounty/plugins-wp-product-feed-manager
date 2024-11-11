@@ -14,6 +14,7 @@ var _customFields                = [];
 var _inputFields                 = [];
 var _feedHolder                  = [];
 
+
 function wppfm_initializeStandardProductFeedForm( feedFileName, feedType = 'product-feed' ) {
 	// clear the previous form
 	jQuery( '#wppfm-main-input-map' ).empty();
@@ -841,14 +842,14 @@ function wppfm_handleUpdateFeedFileActionResult( updateResult ) {
 		case 'started_processing':
 			errorMessageElement.hide();
 			//noinspection JSUnresolvedVariable
-			wppfm_showSuccessMessage( wppfm_feed_settings_form_vars.feed_started );
+			wppfm_showInfoMessage( wppfm_feed_settings_form_vars.feed_started );
 			wppfm_feedProcessStatusCheck( _feedHolder[ 'feedId' ], feedProcessStatusCheckRepeatTime );
 			break;
 
 		case 'pushed_to_queue':
 			errorMessageElement.hide();
 			//noinspection JSUnresolvedVariable
-			wppfm_showSuccessMessage( wppfm_feed_settings_form_vars.feed_queued );
+			wppfm_showInfoMessage( wppfm_feed_settings_form_vars.feed_queued );
 			wppfm_feedProcessStatusCheck( _feedHolder[ 'feedId' ], 10000 );
 			break;
 
@@ -933,7 +934,7 @@ function wppfm_feedProcessStatusCheck( feedId, repeatTime ) {
 				case '3': // processing
 					//noinspection JSUnresolvedVariable
 					wppfm_updateProgressBar( status[ 'products_in_queue' ] )
-					wppfm_showSuccessMessage( wppfm_feed_settings_form_vars.feed_status_still_processing );
+					wppfm_showInfoMessage( wppfm_feed_settings_form_vars.feed_status_still_processing );
 					break;
 
 				case '4': // in queue
@@ -1439,6 +1440,8 @@ function wppfm_activateOptionalFieldRow( level, name ) {
 	} else if ( level === 4 ) {
 		jQuery( '#new-optional-row' ).append( code );
 	}
+
+	wppfm_activateSelect2SourceSelectors();
 }
 
 function wppfm_activateCustomFieldRow( fieldName ) {
@@ -2927,7 +2930,7 @@ function wppfm_hideFeedFormMainInputs() {
 }
 
 
-function wppfm_editFeedFilter( ) {
+function wppfm_editFeedFilter() {
 	alert( wppfm_feed_settings_form_vars.advanced_filter_only_for_premium );
 }
 
@@ -2935,8 +2938,8 @@ function wppfm_makeFeedFilterWrapper( feedId, filter ) {
 	var	htmlCode = wppfm_feed_settings_form_vars.all_products_included;
 	htmlCode += '<span id="filter-edit-text" style="display:initial;"> (<a class="edit-feed-filter wppfm-btn wppfm-btn-small" href="javascript:void(0)" id="wppfm-edit-feed-filters';
 	htmlCode += '" onclick="wppfm_editFeedFilter()">' + wppfm_feed_settings_form_vars.edit + '</a>)</span>';
-	jQuery( '.wppfm-product-filter-condition-wrapper' ).html( htmlCode );
-	jQuery( '.wppfm-main-product-filter-wrapper' ).show();
+	jQuery( '#wppfm-main-product-filter-section-body' ).html( htmlCode );
+	jQuery( '#wppfm-main-product-filter-wrapper' ).show();
 }
 
 function wppfm_getCombinedSeparatorList( selectedValue ) {

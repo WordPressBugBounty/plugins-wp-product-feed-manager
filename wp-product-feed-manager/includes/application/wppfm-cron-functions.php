@@ -4,7 +4,6 @@
  * Initiates the Cron functions required for the automatic feed updates.
  *
  * @package WP Product Feed Manager/Application/Functions
- * @version 1.3.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -12,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Activates the feed update schedules using Cron Jobs
+ * Activates the feed update schedules using Cron Jobs.
  */
 function wppfm_update_feeds() {
 	// Include the required WordPress files.
@@ -47,8 +46,8 @@ function wppfm_update_feeds() {
 	// Include the files required for the Google Merchant Promotions Feed Manager.
 	//wppfm_include_files_for_merchant_promotions_feed_package();
 
-	WC_Post_types::register_taxonomies(); // Make sure the woocommerce taxonomies are loaded.
-	WC_Post_types::register_post_types(); // Make sure the woocommerce post types are loaded.
+	WC_Post_types::register_taxonomies(); // Make sure the WooCommerce taxonomies are loaded.
+	WC_Post_types::register_post_types(); // Make sure the WooCommerce post types are loaded.
 
 	// Include all required classes.
 	include_classes();

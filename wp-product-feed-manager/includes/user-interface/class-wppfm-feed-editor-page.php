@@ -4,7 +4,6 @@
  * WPPFM Product Feed Manager Page Class.
  *
  * @package WP Product Feed Manager/User Interface/Classes
- * @version 1.0.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -44,42 +43,39 @@ if ( ! class_exists( 'WPPFM_Feed_Editor_Page' ) ) :
 		}
 
 		/**
-		 * Generates the main part of the Feed Editor page
+		 * Generates the main part of the Feed Editor page.
 		 *
 		 * @since 3.2.0
-		 *
-		 * @return string The html code for the main part of the Feed Editor page
 		 */
 		public function display() {
-			$html  = $this->add_data_storage();
-			$html .= $this->feed_editor_page();
-
-			return $html;
+			$this->add_data_storage();
+			$this->feed_editor_page();
 		}
 
+		/**
+		 * Renders the edit Google Product Feed form page and displays it on the screen.
+		 */
 		private function feed_editor_page() {
-			$html  = '<div class="wppfm-page__title" id="wppfm-edit-feed-title"><h1>' . esc_html__( 'Product Feed Editor', 'wp-product-feed-manager' ) . '</h1></div>';
-			$html .= $this->sub_title();
+			echo '<div class="wppfm-page__title" id="wppfm-edit-feed-title"><h1>' . esc_html__( 'Product Feed Editor', 'wp-product-feed-manager' ) . '</h1></div>';
+			$this->sub_title();
+			echo '</div>';
 
-			$html .= '</div>';
+			echo '<div class="wppfm-feed-editor-wrapper">';
 
-			$html .= '<div class="wppfm-feed-editor-wrapper">';
+			$this->main_input_table_wrapper();
 
-			$html .= $this->main_input_table_wrapper();
+			$this->category_selector_table_wrapper();
 
-			$html .= $this->category_selector_table_wrapper();
+			$this->feed_top_buttons();
 
-			$html .= $this->feed_top_buttons();
+			$this->attribute_mapping_table_wrapper();
 
-			$html .= $this->attribute_mapping_table_wrapper();
+			$this->google_analytics_table_wrapper();
 
-			$html .= $this->google_analytics_table_wrapper();
+			$this->feed_bottom_buttons();
 
-			$html .= $this->feed_bottom_buttons();
+			echo '</div>';
 
-			$html .= '</div>';
-
-			return $html;
 		}
 
 		/**
@@ -118,7 +114,7 @@ if ( ! class_exists( 'WPPFM_Feed_Editor_Page' ) ) :
 				'main_category'       => $feed_data ? $feed_data['main_category'] : '',
 				'include_variations'  => $feed_data ? $feed_data['include_variations'] : '',
 				'is_aggregator'       => $feed_data ? $feed_data['is_aggregator'] : '',
-				'aggregator_name'     => $feed_data ? $feed_data['aggregator_name'] : '', // specifically for a Google Dynamic Remarketing Support feed
+				'aggregator_name'     => $feed_data ? $feed_data['aggregator_name'] : '', // Specifically for a Google Dynamic Remarketing Support feed.
 				'url'                 => $feed_data ? $feed_data['url'] : '',
 				'source'              => $feed_data ? $feed_data['source'] : '',
 				'feed_title'          => $feed_data ? $feed_data['feed_title'] : '',
@@ -140,74 +136,73 @@ if ( ! class_exists( 'WPPFM_Feed_Editor_Page' ) ) :
 		}
 
 		/**
-		 * Stores data in the DOM for the Feed Manager Feed Editor page
-		 *
-		 * @return string The html code for the data storage
+		 * Stores data in the DOM for the Feed Manager Feed Editor page.
 		 */
 		private function add_data_storage() {
-			return
+			echo
 			'<div id="wppfm-feed-editor-page-data-storage" class="wppfm-data-storage-element"
-				data-wppfm-feed-data="' . htmlentities( wp_json_encode( $this->_feed_data ), ENT_QUOTES ) . '"
-				data-wppfm-ajax-feed-data-to-database-conversion-array=' . wp_json_encode( wppfm_ajax_feed_data_to_database_array( 'product-feed' ) ) . '
-				data-wppfm-feed-url="' . $this->_feed_data['url'] . '"
-				data-wppfm-all-feed-names="' . implode( ';;',  wppfm_get_all_feed_names() ) . '"
-				data-wppfm-plugin-version-id="' . WPPFM_PLUGIN_VERSION_ID . '" 
-				data-wppfm-plugin-version-nr="' . WPPFM_VERSION_NUM . '">
+				data-wppfm-feed-data="' . wc_esc_json( wp_json_encode( $this->_feed_data ), false ) . '"
+				data-wppfm-ajax-feed-data-to-database-conversion-array=' . esc_attr( wp_json_encode( wppfm_ajax_feed_data_to_database_array( 'product-feed' ) ) ) . '
+				data-wppfm-feed-url="' . esc_url( $this->_feed_data['url'] ) . '"
+				data-wppfm-all-feed-names="' . esc_attr( implode( ';;',  wppfm_get_all_feed_names() ) ) . '"
+				data-wppfm-plugin-version-id="' . esc_attr( WPPFM_PLUGIN_VERSION_ID ) . '" 
+				data-wppfm-plugin-version-nr="' . esc_attr( WPPFM_VERSION_NUM ) . '"
+				data-wppfm-plugin-distributor="' . esc_attr( WPPFM_PLUGIN_DISTRIBUTOR ) . '"
+				data-wppfm-show-product-identifiers="' . esc_attr( get_option( 'wppfm_show_product_identifiers', 'false' ) ) . '">
 			</div>';
 		}
 
+		/**
+		 * Gets the Feed Editor subtitle.
+		 */
 		private function sub_title() {
-			return WPPFM_Form_Element::feed_editor_sub_title( wppfm_feed_form_sub_header_text() );
+			WPPFM_Form_Element::feed_editor_sub_title( wppfm_feed_form_sub_header_text() );
 		}
 
 		/**
-		 * Returns the html code for the main input table.
+		 * The main input table.
 		 */
 		private function main_input_table_wrapper() {
 			$main_input_wrapper = new WPPFM_Product_Feed_Main_Input_Wrapper();
-			return $main_input_wrapper->display();
+			$main_input_wrapper->display();
 		}
 
 		/**
-		 * Returns the html code for the category mapping table.
+		 * The category mapping table.
 		 */
 		private function category_selector_table_wrapper() {
 			$category_table_wrapper = new WPPFM_Product_Feed_Category_Wrapper();
-			return $category_table_wrapper->display();
+			$category_table_wrapper->display();
 		}
 
 		/**
-		 * Returns the html code for the Save & Generate Feed and Save Feed buttons at the top of the attribute list.
-		 *
-		 * @return string
+		 * Returns the Save & Generate Feed and Save Feed buttons at the top of the attribute list.
 		 */
 		private function feed_top_buttons() {
-			return WPPFM_Form_Element::feed_generation_buttons( 'wppfm-top-buttons-wrapper', 'page-top-buttons', 'wppfm-generate-feed-button-top', 'wppfm-save-feed-button-top', 'wppfm-view-feed-button-top', 'block' );
+			WPPFM_Form_Element::feed_generation_buttons( 'wppfm-top-buttons-wrapper', 'page-top-buttons', 'wppfm-generate-feed-button-top', 'wppfm-save-feed-button-top', 'wppfm-view-feed-button-top', 'block' );
 		}
 
 		/**
-		 * Returns the html code for the Save & Generate Feed and Save Feed buttons at the bottom of the attribute list.
-		 *
-		 * @return string
+		 * Returns the Save & Generate Feed and Save Feed buttons at the bottom of the attribute list.
 		 */
 		private function feed_bottom_buttons() {
-			return WPPFM_Form_Element::feed_generation_buttons( 'wppfm-center-buttons-wrapper', 'page-center-buttons', 'wppfm-generate-feed-button-bottom', 'wppfm-save-feed-button-bottom', 'wppfm-view-feed-button-bottom' );
+			WPPFM_Form_Element::feed_generation_buttons( 'wppfm-center-buttons-wrapper', 'page-center-buttons', 'wppfm-generate-feed-button-bottom', 'wppfm-save-feed-button-bottom', 'wppfm-view-feed-button-bottom' );
 		}
 
 		/**
-		 * Return the html code for the attribute mapping table.
+		 * Return the attribute mapping table.
 		 */
 		private function attribute_mapping_table_wrapper() {
 			$attribute_mapping_wrapper = new WPPFM_Product_Feed_Attribute_Mapping_Wrapper();
-			return $attribute_mapping_wrapper->display();
+			$attribute_mapping_wrapper->display();
 		}
 
 		/**
-		 * Return the html code for the Google Analytics table.
+		 * Returns the Google Analytics table.
 		 */
 		private function google_analytics_table_wrapper() {
 			$google_analytics_wrapper = new WPPFM_Product_Feed_Google_Analytics_Wrapper();
-			return $google_analytics_wrapper->display();
+			$google_analytics_wrapper->display();
 		}
 	}
 

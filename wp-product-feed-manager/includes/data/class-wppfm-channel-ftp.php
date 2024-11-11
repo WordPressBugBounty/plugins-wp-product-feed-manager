@@ -37,7 +37,7 @@ if ( ! class_exists( 'WPPFM_Channel_FTP' ) ) :
 
 			// and if it is writable
 			if ( ! is_writable( WPPFM_CHANNEL_DATA_DIR ) ) {
-				echo wppfm_show_wp_error(
+				wppfm_show_wp_error(
 					sprintf(
 						/* translators: %s: Folder that contains the channel data */
 						__(
@@ -67,8 +67,8 @@ if ( ! class_exists( 'WPPFM_Channel_FTP' ) ) :
 			curl_setopt( $ch, CURLOPT_AUTOREFERER, true );
 			curl_setopt( $ch, CURLOPT_FRESH_CONNECT, true ); // @since 2.34.0.
 			curl_setopt( $ch, CURLOPT_TIMEOUT, 10 );
-			curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, 0 );
-			curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, 0 );
+			curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, 2 );
+			curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, 1 );
 			curl_setopt( $ch, CURLOPT_FILE, $zip_resource );
 
 			$page = curl_exec( $ch );

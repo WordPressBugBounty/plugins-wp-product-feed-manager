@@ -2,7 +2,6 @@
 
 /**
  * @package WP Product Feed Manager/User Interface/Functions
- * @version 1.0.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -66,10 +65,9 @@ add_action( 'admin_menu', 'wppfm_add_feed_manager_menu' );
  */
 function wppfm_check_backups() {
 	if ( ! wppfm_check_backup_status() ) {
-		$msg = __( 'Due to an update of your Feed Manager plugin, your feed backups are no longer valid! Please open the Feed Manager Settings page, remove all current backups, and make a new one.', 'wp-product-feed-manager' )
 		?>
 		<div class="notice notice-warning is-dismissible">
-			<p><?php echo $msg; ?></p>
+			<p><?php esc_html_e( 'Due to an update of your Feed Manager plugin, your feed backups are no longer valid! Please open the Feed Manager Settings page, remove all current backups, and make a new one.', 'wp-product-feed-manager' ); ?></p>
 		</div>
 		<?php
 	}
@@ -78,7 +76,7 @@ function wppfm_check_backups() {
 add_action( 'admin_notices', 'wppfm_check_backups' );
 
 /**
- * Sets the global background process
+ * Sets the global background process. Gets triggered by the wp_loaded action.
  *
  * @since 1.10.0
  *
@@ -126,14 +124,12 @@ function initiate_background_process() {
 	}
 }
 
-// register the background process
 add_action( 'wp_loaded', 'initiate_background_process' );
 
 /**
- * Sets a day event schedule that can be used to activate important actions that need to run only once a day.
+ * Sets a day event schedule that can be used to activate important actions that need to run only once a day. Gets triggered by the wp_loaded action.
  *
  * @since 3.7.0.
- * @return void
  */
 function wppfm_setup_schedule_daily() {
 	if ( ! wp_next_scheduled( 'wppfm_daily_event' ) ) {
@@ -144,7 +140,7 @@ function wppfm_setup_schedule_daily() {
 add_action( 'wp_loaded', 'wppfm_setup_schedule_daily' );
 
 /**
- * Makes sure the automatic feed update cron schedule is still installed.
+ * Makes sure the automatic feed update cron schedule is still installed. Gets triggered by the admin_init action.
  *
  * @since 2.20.0
  */
@@ -154,23 +150,28 @@ function wppfm_verify_feed_update_schedule_registration() {
 
 add_action( 'admin_menu', 'wppfm_verify_feed_update_schedule_registration' );
 
-function wppfm_summer_promotion_notice() {
-	// Only show on the free version
+/**
+ * Generates a Sales Promotion notice for the free version of the plugin. Gets triggered by the admin_notices action.
+ *
+ * @return bool true if the notice has been displayed, false if not.
+ */
+function wppfm_sales_promotion_notice() {
+	// Only show on the free version.
 	if ( 'free' !== WPPFM_PLUGIN_VERSION_ID ) {
 		return false;
 	}
 
 	$current_date = date( 'Y-m-d' );
-	$start_date = '2024-07-10';
-	$end_date = '2024-08-31';
+	$start_date = '2024-11-25';
+	$end_date = '2024-12-08';
 
-	// Check the correct time frame
+	// Check the correct time frame.
 	if ( $current_date < $start_date || $current_date > $end_date ) {
 		return false;
 	}
 
-	// Check if the promotion message has been dismissed
-	if ( 'canceled' === get_option( 'wppfm_summer_promotion_2024_dismissed', 'keep_it_on' ) ) {
+	// Check if the promotion message has been dismissed.
+	if ( 'canceled' === get_option( 'wppfm_black_friday_promotion_2024_dismissed', 'keep_it_on' ) ) {
 		return false;
 	}
 
@@ -179,10 +180,55 @@ function wppfm_summer_promotion_notice() {
 	wp_register_style( 'wp-product-feed-manager-promotion-banner', WPPFM_PLUGIN_URL . '/css/wppfm-promotion-notice.css', '', WPPFM_VERSION_NUM, 'screen' );
 	wp_enqueue_style( 'wp-product-feed-manager-promotion-banner' );
 
-	// Show the summer promotion message
-	WPPFM_Notice::summer_promotion_2024();
+	// Show the sales promotion message.
+	WPPFM_Notice::render_sales_promotion_notice();
 
 	return true;
 }
 
-add_action( 'admin_notices', 'wppfm_summer_promotion_notice' );
+add_action( 'admin_notices', 'wppfm_sales_promotion_notice' );
+
+/**
+ * Adds the plugin product identifier field values to the quick edit form as soon as the quick edit option is opened. Gets triggered by the admin_footer action.
+ */
+function wppfm_add_product_identifiers_to_quick_edit_custom_fields() {
+	?>
+	<script type="text/javascript">
+			(function($) {
+				$('#the-list').on('click', '.editinline', function() {
+
+					var post_id = $(this).closest('tr').attr('id');
+					post_id = post_id.replace('post-', '');
+
+					var brand_field = $('#wppfm_product_brand_data_' + post_id).text();
+					$('input[name="wppfm_product_brand"]', '.inline-edit-row').val(brand_field);
+
+					var gtin_field = $('#wppfm_product_gtin_data_' + post_id).text();
+					$('input[name="wppfm_product_gtin"]', '.inline-edit-row').val(gtin_field);
+
+					var mpn_field = $('#wppfm_product_mpn_data_' + post_id).text();
+					$('input[name="wppfm_product_mpn"]', '.inline-edit-row').val(mpn_field);
+				});
+			})(jQuery);		</script>
+	<?php
+}
+
+add_action( 'admin_footer', 'wppfm_add_product_identifiers_to_quick_edit_custom_fields' );
+
+/**
+ * Adds the custom fields data to the products quick edit form by placing the data in a hidden data field. Gets triggered by the manage_product_posts_custom_column action.
+ *
+ * @param string $column  used to check if we are in the correct column.
+ * @param int    $post_id the post id.
+ */
+function wppfm_add_wc_quick_edit_custom_fields_data( $column, $post_id ){
+	if ( 'name' !== $column ) {
+		return;
+	}
+
+	echo '<div id="wppfm_product_brand_data_' . esc_html( $post_id ) . '" hidden>' . esc_html( get_post_meta( $post_id, 'wppfm_product_brand', true ) ) . '</div>
+	<div id="wppfm_product_gtin_data_' . esc_html( $post_id ) . '" hidden>' . esc_html( get_post_meta( $post_id, 'wppfm_product_gtin', true ) ) . '</div>
+	<div id="wppfm_product_mpn_data_' . esc_html( $post_id ) . '" hidden>' . esc_html( get_post_meta( $post_id, 'wppfm_product_mpn', true ) ) . '</div>';
+}
+
+add_action( 'manage_product_posts_custom_column', 'wppfm_add_wc_quick_edit_custom_fields_data', 10, 2 );

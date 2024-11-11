@@ -170,12 +170,12 @@ if ( ! class_exists( 'WPPRFM_Review_Feed_Processor' ) ) :
 
 					foreach ( $this->_pre_data['active_fields'] as $field ) {
 						// gets the metadata from a field
-						$field_meta_data = $this->get_meta_data_from_specific_field( $field, $this->_feed_data->attributes );
+						$attribute_meta_data = $this->get_meta_data_from_specific_attribute( $field, $this->_feed_data->attributes );
 
 						// processes the correct data to a field by checking filters and metadata
 						$review_object = $this->process_product_field(
 							$product_data,
-							$field_meta_data,
+							$attribute_meta_data,
 							'',
 							'',
 							'',

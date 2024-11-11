@@ -4,7 +4,6 @@
  * WP Product Feed Support Class.
  *
  * @package WP Product Feed Manager/Application/Classes
- * @version 1.1.2
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,10 +14,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( ! class_exists( 'WPPFM_Feed_Support' ) ) :
 
 	/**
-	 * Feed Support Class
+	 * Feed Support Class.
 	 */
 	class WPPFM_Feed_Support {
 
+		/**
+		 * Extract the query string from an object with query strings.
+		 *
+		 * @param object $query_object an object containing a query string.
+		 *
+		 * @return string|boolean with the query string or false if no string is found.
+		 */
 		public function get_query_string_from_query_object( $query_object ) {
 			// TODO: There's probably a better way to do this!
 			foreach ( $query_object as $value ) {
@@ -28,7 +34,15 @@ if ( ! class_exists( 'WPPFM_Feed_Support' ) ) :
 			return false;
 		}
 
-		public function find_relation( $feed_name, $relations_table ) {
+		/**
+		 * Extracts the database column title that is used for a specific feed field name, from the relation table.
+		 *
+		 * @param string $feed_name       the field name.
+		 * @param array  $relations_table the relation table.
+		 *
+		 * @return string the database column title.
+		 */
+		public function get_db_column_title( $feed_name, $relations_table ) {
 			$result = '';
 
 			foreach ( $relations_table as $relation ) {
@@ -44,8 +58,16 @@ if ( ! class_exists( 'WPPFM_Feed_Support' ) ) :
 			return $result;
 		}
 
-		public function category_is_selected( $term_id, $category_mapping ) {
-			for ( $i = 0; $i < count( $category_mapping ); $i ++ ) {
+		/**
+		 * Returns the category id of a specific categorie if it is selected in the category mapping table. Returns false if the category is not selected.
+		 *
+		 * @param int    $term_id          the id of the category.
+		 * @param object $category_mapping the category mapping object
+		 *
+		 * @return false|int the category id or false if the category is not selected.
+		 */
+		public function selected_category_id( $term_id, $category_mapping ) {
+			for ( $i = 0; $i < count( (array)$category_mapping ); $i ++ ) {
 				if ( (string) $term_id === $category_mapping[ $i ]->shopCategoryId ) {
 					return $i;
 				}
@@ -54,6 +76,14 @@ if ( ! class_exists( 'WPPFM_Feed_Support' ) ) :
 			return false;
 		}
 
+		/**
+		 * Runs a query on a specific product and returns true of that query is true for that product.
+		 *
+		 * @param array $query_split  contains the query data.
+		 * @param array $product_data contains the product data.
+		 *
+		 * @return bool true if the query is true for this product.
+		 */
 		public function check_query_result_on_specific_row( $query_split, $product_data ) {
 			$queries_class = new WPPFM_Feed_Queries;
 			$current_data  = key_exists( $query_split[1], $product_data ) ? $product_data[ $query_split[1] ] : '';
@@ -63,7 +93,7 @@ if ( ! class_exists( 'WPPFM_Feed_Support' ) ) :
 				$current_data = $this->format_weight_value( $current_data );
 			}
 
-			// the following attributes can or will contain an array so suppress the type warning for these attributes
+			// The following attributes can or will contain an array so suppress the type warning for these attributes.
 			$suppress_type_warning_attributes = apply_filters(
 				'wppfm_suppress_type_warning_attributes',
 				array(
@@ -71,7 +101,7 @@ if ( ! class_exists( 'WPPFM_Feed_Support' ) ) :
 				)
 			);
 
-			if ( is_array( $current_data ) && ! in_array( $query_split[1], $suppress_type_warning_attributes ) ) { // A user had this once where he had an attribute that only showed "Array()"  as value
+			if ( is_array( $current_data ) && ! in_array( $query_split[1], $suppress_type_warning_attributes ) ) { // A user had this once where he had an attribute that only showed "Array()"  as value.
 				$product_id    = key_exists( 'ID', $product_data ) ? $product_data['ID'] : 'unknown';
 				$product_title = key_exists( 'post_title', $product_data ) ? $product_data['post_title'] : 'unknown';
 
@@ -152,6 +182,18 @@ if ( ! class_exists( 'WPPFM_Feed_Support' ) ) :
 			return $result;
 		}
 
+		/**
+		 * Performs the "edit value" action on a feed value.
+		 *
+		 * @param string $current_value                the current value of the attribute.
+		 * @param string $edit_string                  a string containing the edit value query.
+		 * @param string $combination_string           a string containing combination values.
+		 * @param array|string $combined_data_elements an array with combined data elements or an empty string to be used in recalculation queries.
+		 * @param string $feed_language                selected Language in WPML add-on, leave empty if no exchange rate correction is required.
+		 * @param string $feed_currency                selected currency in WOOCS add-on, leave empty if no correction is required.
+		 *
+		 * @return string Result of the edit value query.
+		 */
 		public function edit_value( $current_value, $edit_string, $combination_string, $combined_data_elements, $feed_language, $feed_currency ) {
 			$value_editors = new WPPFM_Feed_Value_Editors;
 
@@ -187,7 +229,7 @@ if ( ! class_exists( 'WPPFM_Feed_Support' ) ) :
 					break;
 
 				case 'convert to child-element':
-					$result = $value_editors->convert_to_element( $query_split, $current_value );
+					$result = $value_editors->convert_to_child_element( $query_split, $current_value );
 					break;
 
 				case 'strip tags':
@@ -211,6 +253,13 @@ if ( ! class_exists( 'WPPFM_Feed_Support' ) ) :
 			return $result;
 		}
 
+		/**
+		 * Extracts the column names from the feed filter array.
+		 *
+		 * @param object $feed_filter_array the feed filter array, containing Feed Filter data strings.
+		 *
+		 * @return array with column names used in the Feed Filter.
+		 */
 		public function get_column_names_from_feed_filter_array( $feed_filter_array ) {
 			$empty_array  = array();
 			$filters      = $feed_filter_array ? json_decode( $feed_filter_array[0]['meta_value'] ) : $empty_array;
@@ -227,11 +276,11 @@ if ( ! class_exists( 'WPPFM_Feed_Support' ) ) :
 		}
 
 		/**
-		 * makes a unique feed for a copy of an existing feed
+		 * makes a unique feed name for a copy of an existing feed.
 		 *
-		 * @param string $current_feed_name
+		 * @param string $current_feed_name the name of the current feed.
 		 *
-		 * @return string
+		 * @return string containing a unique feed name.
 		 */
 		public function next_unique_feed_name( $current_feed_name ) {
 			$queries_class = new WPPFM_Queries();
@@ -256,11 +305,11 @@ if ( ! class_exists( 'WPPFM_Feed_Support' ) ) :
 		}
 
 		/**
-		 * Adds multiple single draft image urls to the product, specific for the Ricardo.ch channel
+		 * Adds multiple single draft image urls to the product, specific for the Ricardo.ch channel.
 		 *
 		 * @since 1.9.0
 		 *
-		 * @param array $product
+		 * @param array $product reference to the product placeholder.
 		 * @param array $images
 		 */
 		public function process_ricardo_draft_images( &$product, $images ) {
@@ -270,11 +319,11 @@ if ( ! class_exists( 'WPPFM_Feed_Support' ) ) :
 		}
 
 		/**
-		 * Corrects issues where the active list is not the same as the data keys
+		 * Corrects issues where the active list is not the same as the data keys.
 		 *
 		 * @since 1.9.0
 		 *
-		 * @param array $active_fields
+		 * @param array $active_fields reference to the array with active fields.
 		 */
 		public function correct_active_fields_list( &$active_fields ) {
 			// correct for draft images in Ricardo.ch feed
@@ -294,7 +343,7 @@ if ( ! class_exists( 'WPPFM_Feed_Support' ) ) :
 		 *
 		 * @param $weight
 		 *
-		 * @return string
+		 * @return string with the formatted weight.
 		 */
 		private function format_weight_value( $weight )
 		{

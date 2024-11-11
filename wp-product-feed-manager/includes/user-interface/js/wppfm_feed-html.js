@@ -432,7 +432,7 @@ function wppfm_filterPreCntrl( feedId, filterLevel, selectedValue ) {
 
 function wppfm_filterSourceCntrl( feedId, filterLevel, selectedValue ) {
 
-	return '<select class="wppfm-select-control input-select" id="filter-source-control-' + feedId + '-' + filterLevel + '" onchange="wppfm_filterChanged(' + feedId + ', ' + filterLevel + ')">'
+	return '<select class="wppfm-select-control wppfm-select2-selector input-select" id="filter-source-control-' + feedId + '-' + filterLevel + '" onchange="wppfm_filterChanged(' + feedId + ', ' + filterLevel + ')">'
 		+ '<option value="select">-- ' + wppfm_feed_settings_form_vars.select_a_source_field + ' --</option>'
 		+ wppfm_fixedSourcesList( selectedValue )
 		+ '</select>';

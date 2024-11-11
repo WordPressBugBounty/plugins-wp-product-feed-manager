@@ -118,7 +118,7 @@ if ( ! class_exists( 'WPPFM_Db_Management' ) ) :
 			// Store a copy of the new feed in the database.
 			$new_feed_id = $queries_class->create_feed( $feed_data_to_store, $feed_data_types );
 
-			return $new_feed_id > 0 ? $queries_class->insert_meta_data( $new_feed_id, $meta_data, $feed_filter_data, $category_mapping ) : false;
+			$new_feed_id > 0 ? $queries_class->insert_meta_data( $new_feed_id, $meta_data, $feed_filter_data, $category_mapping ) : false;
 		}
 
 		/**
@@ -126,9 +126,9 @@ if ( ! class_exists( 'WPPFM_Db_Management' ) ) :
 		 *
 		 * @since 1.7.2
 		 *
-		 * @param string $backup_file_name
+		 * @param string $backup_file_name the file name under which to store the backup.
 		 *
-		 * @return boolean
+		 * @return boolean true if the backup is successfull, false if not.
 		 */
 		public static function backup_database_tables( $backup_file_name ) {
 			$backup_class = new WPPFM_Backup();
@@ -137,7 +137,7 @@ if ( ! class_exists( 'WPPFM_Db_Management' ) ) :
 			$backup_file = WPPFM_BACKUP_DIR . '/' . $backup_file_name . '.sql';
 			$backup_path = str_replace( '\\', '/', $backup_file );
 
-			// prepare the folder structure to support saving backup files
+			// Prepare the folder structure to support saving backup files.
 			if ( ! file_exists( WPPFM_BACKUP_DIR ) ) {
 				WPPFM_Folders::make_backup_folder();
 			}
@@ -147,9 +147,7 @@ if ( ! class_exists( 'WPPFM_Db_Management' ) ) :
 
 				return $file_class->write_full_backup_file( $backup_path, $backup_file_text );
 			} else {
-				echo '<div id="error">' . __( 'A backup file with the selected name already exists. Please choose an other name or delete the existing file first.', 'wp-product-feed-manager' ) . '</div>';
-
-				return false;
+				return 'name_exists';
 			}
 		}
 
@@ -291,17 +289,18 @@ if ( ! class_exists( 'WPPFM_Db_Management' ) ) :
 		}
 
 		/**
-		 * Deletes an existing backup file
+		 * Deletes an existing backup file.
 		 *
 		 * @since 1.7.2
+		 * @since 3.11.0 changed the return value from a string to a boolean.
 		 *
-		 * @param string name of the backup file to be deleted
+		 * @param bool true if the backup file is deleted, false if not.
 		 */
 		public static function delete_backup_file( $backup_file_name ) {
-			$backup_file = WPPFM_BACKUP_DIR . '/' . $backup_file_name;
+			$backup_file = realpath( WPPFM_BACKUP_DIR . '/' . $backup_file_name );
 
 			/* translators: %s: Selected backup file */
-			echo file_exists( $backup_file ) ? unlink( $backup_file ) : wppfm_show_wp_error( sprintf( __( 'Could not find file %s.', 'wp-product-feed-manager' ), $backup_file ) );
+			return file_exists( $backup_file ) ? unlink( $backup_file ) : false;
 		}
 
 		/**
@@ -320,9 +319,9 @@ if ( ! class_exists( 'WPPFM_Db_Management' ) ) :
 
 			if ( ! copy( WPPFM_BACKUP_DIR . '/' . $backup_file_name, WPPFM_BACKUP_DIR . '/' . $new_backup_file_name ) ) {
 				/* translators: %s: selected backup file name */
-				sprintf( __( 'Failed to make a copy of %s', 'wp-product-feed-manager' ), $backup_file_name );
+				return sprintf( __( 'Failed to make a copy of %s', 'wp-product-feed-manager' ), $backup_file_name );
 			} else {
-				echo true;
+				return true;
 			}
 		}
 
@@ -332,6 +331,9 @@ if ( ! class_exists( 'WPPFM_Db_Management' ) ) :
 		public static function clean_options_table() {
 			// @since 2.10.0.
 			delete_option( 'wppfm_processed_products' );
+
+			// @since 3.11.0
+			delete_site_transient( 'wppfm_background_process_is_active' );
 
 			$queries_class = new WPPFM_Queries();
 			$queries_class->clear_feed_batch_options();

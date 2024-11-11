@@ -113,7 +113,7 @@ function include_classes() {
 	}
 	if ( ! class_exists( 'WPPFM_Add_Support_Page' ) ) {
 		require_once __DIR__ . '/user-interface/class-wppfm-add-support-page.php';
-	}
+	} // ref KWYBBVTR
 	if ( ! class_exists( 'WPPFM_Feed_List_Page' ) ) {
 		require_once __DIR__ . '/user-interface/class-wppfm-feed-list-page.php';
 	}
@@ -128,7 +128,7 @@ function include_classes() {
 	}
 	if ( ! class_exists( 'WPPFM_Support_Page' ) ) {
 		require_once __DIR__ . '/user-interface/class-wppfm-support-page.php';
-	}
+	} // ref KWYBBVTR
 	if ( ! class_exists( 'WPPFM_Feed_Form_Control' ) ) {
 		require_once __DIR__ . '/user-interface/class-wppfm-feed-form-control.php';
 	}
