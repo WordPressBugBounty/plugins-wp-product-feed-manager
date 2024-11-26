@@ -14,7 +14,6 @@ var _customFields                = [];
 var _inputFields                 = [];
 var _feedHolder                  = [];
 
-
 function wppfm_initializeStandardProductFeedForm( feedFileName, feedType = 'product-feed' ) {
 	// clear the previous form
 	jQuery( '#wppfm-main-input-map' ).empty();

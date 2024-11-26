@@ -7,10 +7,10 @@
  * Author URI: https://www.wpmarketingrobot.com
  * Developer: Michel Jongbloed
  * Developer URI: https://www.wpmarketingrobot.com
- * Version: 2.11.0
- * Modified: 10-11-2024
+ * Version: 2.11.2
+ * Modified: 26-11-2024
  * WC requires at least: 8.4
- * WC tested up to: 9.3.3
+ * WC tested up to: 9.4.1
  *
  * This plugin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
  * You can read the GNU General Public License here <http://www.gnu.org/licenses/>.
  * Requires at least: 6.5
  * Requires Plugins: woocommerce
- * Tested up to: 6.6
+ * Tested up to: 6.7
  *
  * @package WordPress
  *
@@ -52,7 +52,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		 *
 		 * @var string  Containing the version number of the plugin.
 		 */
-		public $version = '2.11.0';
+		public $version = '2.11.2';
 
 		/**
 		 * Author Name.
@@ -128,7 +128,8 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 			add_action( 'wp_ajax_dismiss_admin_notice', array( $this, 'dismiss_admin_notice' ) );
 
 			// Set up localisation.
-			add_action( 'plugins_loaded', array( $this, 'load_text_domain' ) );
+			// @since 2.11.0.- Changed from the plugins_loaded to the  after_setup_theme action to prevent a "Translation loading was triggered too early" error message.
+			add_action( 'after_setup_theme', array( $this, 'load_text_domain' ) );
 
 			// Declare compatibility with custom order tables.
 			add_action( 'before_woocommerce_init', array( $this, 'declare_compatibility_for_custom_order_tables' ) );

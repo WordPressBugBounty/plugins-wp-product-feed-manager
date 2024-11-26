@@ -150,6 +150,7 @@ function wppfm_verify_feed_update_schedule_registration() {
 
 add_action( 'admin_menu', 'wppfm_verify_feed_update_schedule_registration' );
 
+
 /**
  * Generates a Sales Promotion notice for the free version of the plugin. Gets triggered by the admin_notices action.
  *

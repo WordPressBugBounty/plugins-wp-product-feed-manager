@@ -188,7 +188,8 @@ if ( ! class_exists( 'WPPFM_Channel' ) ) :
 			);
 
 			// @since 2.3.0
-			if ( is_wp_error( $response ) ) {
+			// @since 3.11.0 - Added a wp_remote_retrieve_response_code check.
+			if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
 				wppfm_handle_wp_errors_response(
 					$response,
 					sprintf(

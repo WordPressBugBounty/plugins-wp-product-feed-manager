@@ -3,9 +3,9 @@ Contributors: WPMarketingRobot, Michel Jongbloed, AukeJomm
 Tags: product feed manager, Google product feed manager WooCommerce, WooCommerce product feed, WooCommerce Google product feed, WordPress feed manager
 Donate link: https://www.wpmarketingrobot.com/
 Requires at least: 6.5
-Tested up to: 6.7
+Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 2.11.0
+Stable tag: 2.11.2
 License: GPLv3 or later License
 URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -196,6 +196,16 @@ Are you still experiencing issues with our plugin? Follow these steps before con
 3. Save and generate your feed
 
 == Changelog ==
+= 2.11.2 2024-11-26
+* Tweak - Changed the dates of the Black Friday sale.
+
+= 2.11.1 2024-11-14 =
+* Tweak - Changed the subscribe for free message to a pop-up screen
+* Tweak - Delayed loading the translations to the moment the after_setup_theme hook is triggered, to prevent a warning.
+* Tweak - Updated the way the subscribe for free form to a get a free ebook form
+* Tested - Tested up to WordPress 6.7
+* Tested - Tested up to WooCommerce 9.4.1
+
 = 2.11.0 2024-11-11 =
 * Fixed - Fix an issue causing the WooCommerce source selector in a new optional attribute line would not convert to a Select2 selector.
 * Fixed - Fix an issue that could cause the plugin to get stuck in thinking a feed regeneration is in progress, even if its not. This prevented new feeds to regenerate.
@@ -354,5 +364,5 @@ Fixed an issue with a folder name with a capital letter that would cause error m
 
 === Upgrade Notice ===
 
-= 2.11.0 2024-11-11 =
+= 2.11.1 2024-11-14 =
 * Important: This update introduces additional tweaks and some bug fixes. We strongly recommend backing up your existing feeds before upgrading.

@@ -204,8 +204,6 @@ if ( ! class_exists( 'WPPFM_i18n_Scripts' ) ) :
 
 		public static function wppfm_support_i18n() {
 			$pars = array(
-				'chopping_checklist_send'  => esc_html__( 'Your Free Google Shopping Checklist is send to you by email.', 'wp-product-feed-manager' ),
-				'email_already_registered' => esc_html__( 'The email you entered is already on our news letter list.', 'wp-product-feed-manager' ),
 				'signup_failed'            => esc_html__( 'There was an unknown error with the sign up process, please contact us at info@wpmarketingrobot.com!', 'wp-product-feed-manager' ),
 				'email_not_valid'          => esc_html__( 'The email you entered is not a valid email address. Please check the address again.', 'wp-product-feed-manager' ),
 			);

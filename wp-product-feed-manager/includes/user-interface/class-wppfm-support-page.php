@@ -58,6 +58,7 @@ if ( ! class_exists( 'WPPFM_Support_Page' ) ) :
 
 			if ( 'free' === WPPFM_PLUGIN_VERSION_ID ) { // The check-in card is only for the free version
 				$this->get_google_shopping_checklist_card();
+				$this->google_shopping_checklist_popup();
 			}
 
 			$this->show_your_love_card();
@@ -228,6 +229,26 @@ if ( ! class_exists( 'WPPFM_Support_Page' ) ) :
 			$this->card_header( __( 'Free Google Shopping Checklist', 'wp-product-feed-manager' ) );
 			$this->card_content( $content_html );
 			echo '</div>';
+		}
+
+		/**
+		 * Renders a pop-up card that acknowledges the user's subscription to the Free Google Shopping Checklist.
+		 *
+		 * @since 3.11.0
+		 */
+		private function google_shopping_checklist_popup() {
+			$content_html  = '<p>' . esc_html__( 'Thank you for requesting the Google Shopping Checklist: The Complete Guide. Please check your email for the download link.', 'wp-product-feed-manager' ) . '</p>';
+			$content_html .= '<p>' . esc_html__( 'If you don\'t see it in your inbox, kindly check your spam or junk folder.', 'wp-product-feed-manager' ) . '</p>';
+
+			echo '<div id="wppfm-google-shopping-checklist-popup" class="wppfm-popup" style="display:none">
+				<div class="wppfm-popup__header">
+					<h3>' . esc_html__( 'Google Shopping Checklist', 'wp-product-feed-manager' ) . '</h3>
+					<div class="wppfm-popup__close-button"><b>X</b></div>
+				</div>
+				<div class="wppfm-popup__content">
+					' . $content_html . '
+				</div>
+			</div>';
 		}
 
 		/**

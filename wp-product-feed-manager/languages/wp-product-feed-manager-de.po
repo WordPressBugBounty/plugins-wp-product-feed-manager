@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WooCommerce Product Feed Manager\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-10 08:46+0100\n"
-"PO-Revision-Date: 2024-11-10 08:48+0100\n"
+"POT-Creation-Date: 2024-11-26 09:01+0100\n"
+"PO-Revision-Date: 2024-11-26 09:02+0100\n"
 "Last-Translator: webgo-admin <nobody@localhost>\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -42,13 +42,13 @@ msgstr ""
 "1430 - %s ist kein beschreibbarer Ordner. Stellen Sie sicher, dass Sie über "
 "Administratorrechte für diesen Ordner verfügen."
 
-#: includes/application/class-feed-master.php:630
+#: includes/application/class-feed-master.php:613
 #: includes/user-interface/class-wppfm-i18n-scripts.php:89
 msgid "Fill with a static value"
 msgstr "Mit einem statischen Wert füllen"
 
-#: includes/application/class-feed-master.php:631
-#: includes/application/class-feed-master.php:636
+#: includes/application/class-feed-master.php:614
+#: includes/application/class-feed-master.php:619
 msgid "Use the settings in the Merchant Center"
 msgstr "Einstellung im Merchant Center verwenden"
 
@@ -107,25 +107,18 @@ msgstr ""
 "Die Datei %s konnte nicht entfernt werden, weil sie anscheinend nicht "
 "existiert."
 
-#: includes/data/class-wppfm-ajax-file.php:147
-msgid ""
-"Could not update the feed file because the channel has not been installed"
-msgstr ""
-"Die Feed-Datei konnte nicht aktualisiert werden, weil der Kanal nicht "
-"installiert wurde"
-
-#: includes/data/class-wppfm-ajax-file.php:361
+#: includes/data/class-wppfm-ajax-file.php:356
 msgid "Failed to re-initialize the plugin. Please try again."
 msgstr ""
 "Fehler bei der erneuten Initialisierung des Plugins. Bitte versuchen Sie es "
 "erneut."
 
-#: includes/data/class-wppfm-ajax-file.php:381
+#: includes/data/class-wppfm-ajax-file.php:376
 msgid "Feed processing data cleared"
 msgstr "Feed-Verarbeitungsdaten gelöscht"
 
 #. translators: clearing the feed data failed
-#: includes/data/class-wppfm-ajax-file.php:384
+#: includes/data/class-wppfm-ajax-file.php:379
 msgid "Failed to clear the feed process. Please try again."
 msgstr "Fehler beim Löschen des Feed-Prozesses. Bitte versuchen Sie es erneut."
 
@@ -141,7 +134,7 @@ msgstr ""
 "ihn beschreibbar zu machen, und versuchen Sie dann, einen Channel erneut zu "
 "installieren."
 
-#: includes/data/class-wppfm-channel.php:197
+#: includes/data/class-wppfm-channel.php:198
 #, php-format
 msgid ""
 "2832 - Failed to connect with the wp marketingrobot server. Please wait a "
@@ -153,7 +146,7 @@ msgstr ""
 "einmal. Wenn das Problem weiterhin besteht, öffnen Sie ein Support-Ticket "
 "bei %s."
 
-#: includes/data/class-wppfm-channel.php:252
+#: includes/data/class-wppfm-channel.php:253
 #, php-format
 msgid ""
 "2141 - Your WooCommerce Product Feed Manager plugin is unable to check for "
@@ -168,7 +161,7 @@ msgstr ""
 "Support zu diesem Problem zu erhalten."
 
 #. translators: %s: Name of a channel
-#: includes/data/class-wppfm-channel.php:339
+#: includes/data/class-wppfm-channel.php:340
 #, php-format
 msgid ""
 "Channel %s is not installed correctly. Please try to Deactivate and then "
@@ -177,7 +170,7 @@ msgstr ""
 "Kanal %s ist nicht korrekt installiert. Bitte versuchen Sie, das Feed "
 "Manager Plugin auf Ihrer Plugin-Seite zu deaktivieren und zu reaktivieren."
 
-#: includes/data/class-wppfm-channel.php:439
+#: includes/data/class-wppfm-channel.php:440
 #, php-format
 msgid ""
 "Channel %s is not supported by your current plugin version. Please update "
@@ -229,30 +222,6 @@ msgstr "%s konnte nicht kopiert werden"
 msgid "Unable to open the file containing the categories"
 msgstr "Die Datei mit den Kategorien konnte nicht geöffnet werden"
 
-#: includes/libraries/wpmr_plugin_updater.php:240
-#, php-format
-msgid ""
-"There is a new version of %1$s available. %2$sView version %3$s details%4$s."
-msgstr ""
-"Es gibt eine neue Version von %1$s. %2$s Version %3$s Details%4$s ansehen."
-
-#: includes/libraries/wpmr_plugin_updater.php:248
-#, php-format
-msgid ""
-"There is a new version of %1$s available. %2$sView version %3$s details%4$s "
-"or %5$supdate now%6$s."
-msgstr ""
-"Es gibt eine neue Version von %1$s. %2$sVersion ansehen %3$s Details%4$s "
-"oder %5$supdate jetzt%6$s."
-
-#: includes/libraries/wpmr_plugin_updater.php:491
-msgid "You do not have permission to install plugin updates"
-msgstr "Sie haben keine Berechtigung, Plugin-Updates zu installieren"
-
-#: includes/libraries/wpmr_plugin_updater.php:491
-msgid "Error"
-msgstr "Fehler"
-
 #: includes/libraries/wppfm-background-process.php:728
 #, php-format
 msgid "Every %d minute"
@@ -278,12 +247,6 @@ msgstr ""
 "Der Logger Code ist nun im Feed Manager Plugin integriert. Um Konflikte zu "
 "vermeiden, deaktivieren und entfernen Sie das Plugin \"WooCommerce Product "
 "Feed Manager Logger\" von Ihrer Plugins-Seite."
-
-#: includes/packages/pll/includes/wppfm-pll-functions.php:16
-#: includes/packages/transpress/includes/wppfm-transpress-functions.php:23
-#: includes/packages/wpml/includes/wppfm-wpml-functions.php:22
-msgid "-- Select the language of the feed --"
-msgstr "-- Wählen Sie die Sprache des Feeds --"
 
 #: includes/packages/promotions-feed-manager/classes/class-wpppfm-data.php:63
 msgid "Local Inventory Ads"
@@ -330,14 +293,14 @@ msgid "Add"
 msgstr "Hinzufügen"
 
 #: includes/packages/promotions-feed-manager/classes/class-wpppfm-google-merchant-promotion-wrapper.php:55
-#: includes/user-interface/class-wppfm-i18n-scripts.php:238
+#: includes/user-interface/class-wppfm-i18n-scripts.php:236
 #: includes/user-interface/class-wppfm-list-table.php:249
 #: includes/user-interface/class-wppfm-list-table.php:280
 msgid "Delete"
 msgstr "Löschen"
 
 #: includes/packages/promotions-feed-manager/classes/class-wpppfm-google-merchant-promotion-wrapper.php:56
-#: includes/user-interface/class-wppfm-i18n-scripts.php:236
+#: includes/user-interface/class-wppfm-i18n-scripts.php:234
 #: includes/user-interface/class-wppfm-list-table.php:251
 msgid "Duplicate"
 msgstr "Duplizieren"
@@ -615,10 +578,6 @@ msgstr ""
 "Um das WooCommerce Google Produktbewertungsfeed Manager Add-on zu nutzen, "
 "benötigen Sie die aktuellste Version des WP Product Feed Manager Plugins."
 
-#: includes/packages/woocs/includes/wppfm-woocs-functions.php:18
-msgid "-- Select the WOOCS currency for the feed --"
-msgstr "-- Wählen Sie die WOOCS Währung des Feeds --"
-
 #: includes/user-interface/abstract-wppfm-attribute-mapping-wrapper.php:33
 msgid "Attribute Mapping"
 msgstr "Attributzuordnung"
@@ -674,17 +633,6 @@ msgstr "Installieren"
 #: includes/user-interface/class-wppfm-channel-manager-page.php:167
 msgid "Channel Info"
 msgstr "Kanal Info"
-
-#. translators: %s: channel name
-#: includes/user-interface/class-wppfm-feed-editor-page.php:68
-#, php-format
-msgid ""
-"This feed requires the \"%s\" channel to be installed. Please open the "
-"Manage Channels page and install this channel before opening this feed."
-msgstr ""
-"Für diesen Feed muss der Kanal \"%s\" installiert werden. Öffnen Sie die "
-"Seite Kanäle verwalten, und installieren Sie diesen Kanal, bevor Sie diesen "
-"Feed öffnen."
 
 #: includes/user-interface/class-wppfm-feed-form-control.php:29
 msgid "Select your product source"
@@ -1202,7 +1150,7 @@ msgid "Failed processing"
 msgstr "Fehlgeschlagene Verarbeitung"
 
 #: includes/user-interface/class-wppfm-i18n-scripts.php:133
-#: includes/user-interface/class-wppfm-i18n-scripts.php:239
+#: includes/user-interface/class-wppfm-i18n-scripts.php:237
 #: includes/user-interface/class-wppfm-list-table.php:188
 msgid "Ready (auto)"
 msgstr "Bereit (automatisch)"
@@ -1321,17 +1269,6 @@ msgid "The input is not a valid email address. Please try again."
 msgstr "Keine gültige E-Mail Adresse. Bitte überprüfen Sie Ihre Eingabe."
 
 #: includes/user-interface/class-wppfm-i18n-scripts.php:207
-msgid "Your Free Google Shopping Checklist is send to you by email."
-msgstr ""
-"Ihre kostenlose Google Shopping Checkliste wurde Ihnen per E-Mail zugesandt."
-
-#: includes/user-interface/class-wppfm-i18n-scripts.php:208
-msgid "The email you entered is already on our news letter list."
-msgstr ""
-"Die E-Mail-Adresse, die Sie eingegeben haben, befindet sich bereits auf "
-"unserer Newsletter-Liste."
-
-#: includes/user-interface/class-wppfm-i18n-scripts.php:209
 msgid ""
 "There was an unknown error with the sign up process, please contact us at "
 "info@wpmarketingrobot.com!"
@@ -1339,86 +1276,60 @@ msgstr ""
 "Es ist ein unbekannter Fehler bei der Anmeldeprozedur aufgetreten. Bitte "
 "kontaktieren Sie uns unter info@wpmarketingrobot.com!"
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:210
+#: includes/user-interface/class-wppfm-i18n-scripts.php:208
 msgid ""
 "The email you entered is not a valid email address. Please check the address "
 "again."
 msgstr "Keine gültige E-Mail Adresse. Bitte überprüfen Sie Ihre Eingabe."
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:226
+#: includes/user-interface/class-wppfm-i18n-scripts.php:224
 msgid "edit"
 msgstr "Bearbeiten"
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:227
+#: includes/user-interface/class-wppfm-i18n-scripts.php:225
 msgid "select"
 msgstr "Auswählen"
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:228
+#: includes/user-interface/class-wppfm-i18n-scripts.php:226
 msgid "selected"
 msgstr "Ausgewählt"
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:229
+#: includes/user-interface/class-wppfm-i18n-scripts.php:227
 msgid "delete"
 msgstr "Löschen"
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:230
+#: includes/user-interface/class-wppfm-i18n-scripts.php:228
 msgid "remove"
 msgstr "Entfernen"
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:231
+#: includes/user-interface/class-wppfm-i18n-scripts.php:229
 msgid "add"
 msgstr "Hinzufügen"
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:232
+#: includes/user-interface/class-wppfm-i18n-scripts.php:230
 msgid "if"
 msgstr "Wenn"
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:233
+#: includes/user-interface/class-wppfm-i18n-scripts.php:231
 msgid "or"
 msgstr "oder"
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:234
+#: includes/user-interface/class-wppfm-i18n-scripts.php:232
 msgid "and"
 msgstr "Und"
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:235
+#: includes/user-interface/class-wppfm-i18n-scripts.php:233
 msgid ""
 "All products from the selected Shop Categories will be included in the feed"
 msgstr ""
 "Alle Produkte aus den ausgewählten Shop-Kategorien werden in den Feed "
 "aufgenommen"
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:237
+#: includes/user-interface/class-wppfm-i18n-scripts.php:235
 #: includes/user-interface/class-wppfm-list-table.php:252
 #: includes/user-interface/class-wppfm-list-table.php:281
 msgid "Regenerate"
 msgstr "Regenerieren"
-
-#: includes/user-interface/class-wppfm-license-page.php:37
-msgid ""
-"Your key seems to be expired. If you are sure you have a valid key, please "
-"open a ticket at wpmarketingrobot.com/support/"
-msgstr ""
-"Ihr Schlüssel scheint abgelaufen zu sein. Wenn Sie sicher sind, dass Sie "
-"einen gültigen Schlüssel haben, öffnen Sie bitte ein Ticket unter "
-"wpmarketingrobot.com/support/support/"
-
-#: includes/user-interface/class-wppfm-license-page.php:39
-msgid "Plugin License Options"
-msgstr "Plugin Lizenz-Optionen"
-
-#: includes/user-interface/class-wppfm-license-page.php:44
-msgid "License Key"
-msgstr "Lizenzschlüssel"
-
-#: includes/user-interface/class-wppfm-license-page.php:50
-msgid "I accept your Terms and Conditions"
-msgstr "Ich akzeptiere die Allgemeinen Geschäftsbedingungen"
-
-#: includes/user-interface/class-wppfm-license-page.php:53
-#: includes/user-interface/class-wppfm-license-page.php:54
-msgid "Activate License"
-msgstr "Lizenz aktivieren"
 
 #: includes/user-interface/class-wppfm-main-header.php:73
 msgid "Feed List"
@@ -1431,33 +1342,32 @@ msgid "Feed Editor"
 msgstr "Feed-Editor"
 
 #: includes/user-interface/class-wppfm-main-header.php:83
-#: includes/user-interface/wppfm-admin-actions.php:66
 msgid "Channel Manager"
 msgstr "Kanal Manager"
 
 #: includes/user-interface/class-wppfm-main-header.php:88
-#: includes/user-interface/wppfm-admin-actions.php:77
-#: includes/user-interface/wppfm-admin-actions.php:78
+#: includes/user-interface/wppfm-admin-actions.php:41
+#: includes/user-interface/wppfm-admin-actions.php:42
 msgid "Settings"
 msgstr "Einstellungen"
 
 #: includes/user-interface/class-wppfm-main-header.php:91
-#: includes/user-interface/wppfm-admin-actions.php:87
-#: includes/user-interface/wppfm-admin-actions.php:88
+#: includes/user-interface/wppfm-admin-actions.php:51
+#: includes/user-interface/wppfm-admin-actions.php:52
 msgid "Support"
 msgstr "Support"
 
 #: includes/user-interface/class-wppfm-notice.php:30
-msgid "30% Black Friday SALE!!"
-msgstr "30 % Black Friday RABATT!!"
+msgid "50% Black Friday SALE!!"
+msgstr "50 % Black Friday RABATT!!"
 
 #: includes/user-interface/class-wppfm-notice.php:30
-msgid "Black Friday Sale: 30% Off"
-msgstr "Black Friday Angebot: 30 % Rabatt"
+msgid "Black Friday Sale: 50% Off"
+msgstr "Black Friday Angebot: 50 % Rabatt"
 
 #: includes/user-interface/class-wppfm-notice.php:30
-msgid "From November 29 to December 2, 2024."
-msgstr "Vom 29. November bis 2. Dezember 2024."
+msgid "From November 25 to December 8, 2024."
+msgstr "Vom 25. November bis 8. Dezember 2024."
 
 #: includes/user-interface/class-wppfm-notice.php:31
 msgid "Optimize your WooCommerce feed management with this limited-time offer!"
@@ -1706,7 +1616,7 @@ msgstr "Backup beenden"
 msgid "Feed Manager - Support"
 msgstr "Feed Manager - Support"
 
-#: includes/user-interface/class-wppfm-support-page.php:161
+#: includes/user-interface/class-wppfm-support-page.php:162
 msgid ""
 "Getting started with your WooCommerce Product Feed Manager is easier than "
 "you could imagine. All our customers are not feed marketeers and we want to "
@@ -1716,11 +1626,11 @@ msgstr ""
 "Sie sich vorstellen können. Alle unsere Kunden sind keine Feed-Marketer, und "
 "wir möchten Ihnen das Leben einfacher machen."
 
-#: includes/user-interface/class-wppfm-support-page.php:167
+#: includes/user-interface/class-wppfm-support-page.php:168
 msgid "Getting Started With Product Feed Manager"
 msgstr "\"Anfangen mit dem Produkt-Feed-Manager\""
 
-#: includes/user-interface/class-wppfm-support-page.php:178
+#: includes/user-interface/class-wppfm-support-page.php:179
 msgid ""
 "Please check the following articles to get started with your WooCommerce "
 "Product Feed Manager."
@@ -1728,75 +1638,75 @@ msgstr ""
 "Bitte überprüfen Sie die folgenden Artikel, um mit Ihrem WooCommerce Product "
 "Feed Manager zu beginnen."
 
-#: includes/user-interface/class-wppfm-support-page.php:180
+#: includes/user-interface/class-wppfm-support-page.php:181
 msgid "Create a basic product feed"
 msgstr "Erstellen Ihres ersten Feeds (English)"
 
-#: includes/user-interface/class-wppfm-support-page.php:181
+#: includes/user-interface/class-wppfm-support-page.php:182
 msgid "Navigating your plugin settings dashboard"
 msgstr "Navigieren durch das Einstellungen-Dashboard (English)"
 
-#: includes/user-interface/class-wppfm-support-page.php:182
+#: includes/user-interface/class-wppfm-support-page.php:183
 msgid "Category mapping"
 msgstr "Kategoriezuordnung (English)"
 
-#: includes/user-interface/class-wppfm-support-page.php:183
+#: includes/user-interface/class-wppfm-support-page.php:184
 msgid "Adding data to a product feed attribute"
 msgstr "Das Hinzufügen von Daten zu einem Attribut (English)"
 
-#: includes/user-interface/class-wppfm-support-page.php:184
+#: includes/user-interface/class-wppfm-support-page.php:185
 msgid "Using the unique product identifier function"
 msgstr ""
 "Verwendung der Funktion für eindeutige Produktidentifikatoren (English)"
 
-#: includes/user-interface/class-wppfm-support-page.php:185
+#: includes/user-interface/class-wppfm-support-page.php:186
 msgid "How to set automatic feed updates"
 msgstr "Automatische Feed-Aktualisierungen einrichten (English)"
 
-#: includes/user-interface/class-wppfm-support-page.php:186
+#: includes/user-interface/class-wppfm-support-page.php:187
 msgid "How to use data from unsupported plugins in the feed"
 msgstr "Verwendung von Daten aus nicht unterstützten Plugins im Feed (English)"
 
-#: includes/user-interface/class-wppfm-support-page.php:187
+#: includes/user-interface/class-wppfm-support-page.php:188
 msgid "How to create repeating fields in sub-attributes"
 msgstr "Wie man wiederholende Felder in Untereigenschaften erstellt (English)"
 
-#: includes/user-interface/class-wppfm-support-page.php:188
+#: includes/user-interface/class-wppfm-support-page.php:189
 msgid "How to use the advanced product filter"
 msgstr "Verwendung des erweiterten Produktfilters (English)"
 
-#: includes/user-interface/class-wppfm-support-page.php:189
+#: includes/user-interface/class-wppfm-support-page.php:190
 msgid "The Channel Manager explained"
 msgstr "Der Kanal-Manager erklärt (English)"
 
-#: includes/user-interface/class-wppfm-support-page.php:190
+#: includes/user-interface/class-wppfm-support-page.php:191
 msgid "Frequently asked questions"
 msgstr "Häufig gestellte Fragen (English)"
 
-#: includes/user-interface/class-wppfm-support-page.php:194
+#: includes/user-interface/class-wppfm-support-page.php:195
 msgid "User Guide"
 msgstr "Start-Anleitung"
 
-#: includes/user-interface/class-wppfm-support-page.php:203
+#: includes/user-interface/class-wppfm-support-page.php:204
 msgid ""
 "Our Experts would like to assist you with your query and any help you need."
 msgstr ""
 "Unsere Experten möchten Ihnen gerne bei Ihrer Anfrage und bei jeglicher "
 "Hilfe, die Sie benötigen, behilflich sein."
 
-#: includes/user-interface/class-wppfm-support-page.php:207
+#: includes/user-interface/class-wppfm-support-page.php:208
 msgid "Need Expert Support?"
 msgstr "Brauchen Sie Expertenunterstützung?"
 
-#: includes/user-interface/class-wppfm-support-page.php:209
+#: includes/user-interface/class-wppfm-support-page.php:210
 msgid "Contact Support"
 msgstr "Kontaktieren Sie den Support"
 
-#: includes/user-interface/class-wppfm-support-page.php:217
+#: includes/user-interface/class-wppfm-support-page.php:218
 msgid "Download"
 msgstr "Herunterladen"
 
-#: includes/user-interface/class-wppfm-support-page.php:220
+#: includes/user-interface/class-wppfm-support-page.php:221
 msgid ""
 "Improve your Google shopping campaigns with proven, actionable steps from "
 "our detailed Google Product Feed checklist."
@@ -1804,11 +1714,31 @@ msgstr ""
 "Verbessern Sie Ihre Google-Shopping-Kampagnen mit bewährten, umsetzbaren "
 "Schritten aus unserer detaillierten Google-Produkt-Feed-Checkliste."
 
-#: includes/user-interface/class-wppfm-support-page.php:228
+#: includes/user-interface/class-wppfm-support-page.php:229
 msgid "Free Google Shopping Checklist"
 msgstr "Kostenlose Google-Shopping-Checkliste"
 
-#: includes/user-interface/class-wppfm-support-page.php:237
+#: includes/user-interface/class-wppfm-support-page.php:240
+msgid ""
+"Thank you for requesting the Google Shopping Checklist: The Complete Guide. "
+"Please check your email for the download link."
+msgstr ""
+"Vielen Dank, dass Sie die Google Shopping Checklist: The Complete Guide "
+"(English) angefordert haben. Bitte überprüfen Sie Ihre E-Mails für den "
+"Download-Link."
+
+#: includes/user-interface/class-wppfm-support-page.php:241
+msgid ""
+"If you don't see it in your inbox, kindly check your spam or junk folder."
+msgstr ""
+"Wenn Sie die E-Mail nicht in Ihrem Posteingang sehen, überprüfen Sie bitte "
+"Ihren Spam- oder Junk-Ordner."
+
+#: includes/user-interface/class-wppfm-support-page.php:245
+msgid "Google Shopping Checklist"
+msgstr "Kostenlose Google-Shopping-Checkliste"
+
+#: includes/user-interface/class-wppfm-support-page.php:258
 msgid ""
 "We need your help to keep developing the plugin. Please review it and spread "
 "the love to keep us motivated."
@@ -1816,15 +1746,15 @@ msgstr ""
 "Wir benötigen Ihre Hilfe, um das Plugin weiterzuentwickeln. Bitte bewerten "
 "Sie es und verbreiten Sie die Liebe, um uns motiviert zu halten."
 
-#: includes/user-interface/class-wppfm-support-page.php:241
+#: includes/user-interface/class-wppfm-support-page.php:262
 msgid "Show Your Love"
 msgstr "Zeigen Sie Ihre Liebe"
 
-#: includes/user-interface/class-wppfm-support-page.php:243
+#: includes/user-interface/class-wppfm-support-page.php:264
 msgid "Leave a Review"
 msgstr "Eine Bewertung hinterlassen"
 
-#: includes/user-interface/class-wppfm-support-page.php:251
+#: includes/user-interface/class-wppfm-support-page.php:272
 msgid ""
 "Get detailed and guided instructions to level up your feeds with the "
 "necessary setup."
@@ -1832,15 +1762,15 @@ msgstr ""
 "Erhalten Sie detaillierte und geführte Anweisungen, um Ihre Feeds mit der "
 "erforderlichen Einrichtung zu optimieren."
 
-#: includes/user-interface/class-wppfm-support-page.php:255
+#: includes/user-interface/class-wppfm-support-page.php:276
 msgid "Documentation"
 msgstr "Dokumentation"
 
-#: includes/user-interface/class-wppfm-support-page.php:257
+#: includes/user-interface/class-wppfm-support-page.php:278
 msgid "Visit Documentation"
 msgstr "Dokumentation"
 
-#: includes/user-interface/class-wppfm-support-page.php:279
+#: includes/user-interface/class-wppfm-support-page.php:300
 msgid ""
 "If you need any feature on your WooCommerce Product Feed Manager that we "
 "currently do not have, please send us a request with your wishes and "
@@ -1850,8 +1780,8 @@ msgstr ""
 "die wir derzeit nicht haben, senden Sie uns bitte eine Anfrage mit Ihren "
 "Wünschen und Anforderungen."
 
-#: includes/user-interface/class-wppfm-support-page.php:283
-#: includes/user-interface/class-wppfm-support-page.php:285
+#: includes/user-interface/class-wppfm-support-page.php:304
+#: includes/user-interface/class-wppfm-support-page.php:306
 msgid "Request a Feature"
 msgstr "Fordern Sie eine Funktion an"
 
@@ -2043,20 +1973,7 @@ msgstr "WP Feed Manager"
 msgid "Feed Manager"
 msgstr "Feed Manager"
 
-#: includes/user-interface/wppfm-admin-actions.php:46
-#, php-format
-msgid "%d channel update"
-msgid_plural "%d channel updates"
-msgstr[0] "%d Kanal Update"
-msgstr[1] "%d Kanal Updates"
-
-#. translators: %d: Number of channel updates available
-#: includes/user-interface/wppfm-admin-actions.php:56
-#, php-format
-msgid "Channel Manager %s"
-msgstr "Kanal Manager %s"
-
-#: includes/user-interface/wppfm-admin-actions.php:106
+#: includes/user-interface/wppfm-admin-actions.php:70
 msgid ""
 "Due to an update of your Feed Manager plugin, your feed backups are no "
 "longer valid! Please open the Feed Manager Settings page, remove all current "
@@ -2065,64 +1982,6 @@ msgstr ""
 "Aufgrund des letzten Updates sind Ihre Feed Manager Backups nicht mehr "
 "gültig! Bitte öffnen Sie die Seite Feed Manager Einstellungen, entfernen Sie "
 "alle Ihre Backups und erstellen Sie ein neues."
-
-#. translators: %s: link to the support page
-#: includes/user-interface/wppfm-admin-actions.php:231
-#, php-format
-msgid ""
-"2121 - Activating your license failed. Please open a support ticket at %s "
-"for support on this issue."
-msgstr ""
-"2121 - Die Aktivierung Ihrer Lizenz ist fehlgeschlagen. Bitte öffnen Sie ein "
-"Support-Ticket unter %s für Support zu diesem Thema."
-
-#: includes/user-interface/wppfm-admin-actions.php:250
-#, php-format
-msgid ""
-"An error has occurred. It is possible that the wpmarketingrobot website is "
-"down.\n"
-"\t\t\t\t\t\tPlease check if wpmarketingrobot.com is still active. If not, or "
-"if this error consist, please contact\n"
-"\t\t\t\t\t\tauke@wpmarketingrobot.com. Error Message: %s"
-msgstr ""
-"Es ist ein Fehler aufgetreten. Es ist möglich, dass die Website von "
-"wpmarketingrobot nicht erreichbar ist. \n"
-"\t\t\t\tBitte überprüfen Sie, ob wpmarketingrobot.com noch aktiv ist. Wenn "
-"nicht, oder wenn dieser Fehler vorliegt, wenden Sie sich bitte an \n"
-"\t\t\t\tauke@wpmarketingrobot.com. Fehlermeldung: %s"
-
-#: includes/user-interface/wppfm-admin-actions.php:302
-#, php-format
-msgid ""
-"You have an invalid or expired license key for your %1$s plugin.\n"
-"\t\t\t\tPlease <a href=\"%2$scheckout/?"
-"edd_license_key=%3$s&utm_source=client-"
-"admin&utm_medium=renewal_link&utm_campaign=license_expired\">\n"
-"\t\t\t\tclick here to go to the Licenses renewal page</a> to keep the plugin "
-"working and your product feeds valid."
-msgstr ""
-"Sie haben einen ungültigen oder abgelaufenen Lizenzschlüssel für Ihr %1$s "
-"Plugin. \n"
-"\t\t\tBitte <a href=\"%2$scheckout/?edd_license_key=%3$s&utm_source=client-"
-"admin&utm_medium=renewal_link&utm_campaign=license_expired\"> \n"
-"\t\t\tKlicken Sie hier, um zur Seite Lizenzverlängerung zu gelangen</a>, "
-"damit das Plugin funktioniert und Ihre Produktfeeds gültig sind."
-
-#: includes/user-interface/wppfm-admin-actions.php:319
-#, php-format
-msgid ""
-"The license key for your %1$s plugin is expiring soon. If you wish, you can "
-"<a href=\"%2$scheckout/?edd_license_key=%3$s&utm_source=client-"
-"admin&utm_medium=renewal_link&utm_campaign=license_renewal\">\n"
-"\t\t\t\t\tclick here</a> to renew your license key directly so that you can "
-"be sure your product feeds keep working."
-msgstr ""
-"Der Lizenzschlüssel für Ihr %1$s Plugin läuft in Kürze ab. \n"
-"\t\t\tWenn Sie möchten, können Sie <a href=\"%2$scheckout/?"
-"edd_license_key=%3$s&utm_source=client-"
-"admin&utm_medium=renewal_link&utm_campaign=license_renewal\"> \n"
-"\t\t\tKlicken Sie hier</a>, um Ihren Lizenzschlüssel direkt zu verlängern, "
-"damit Sie sicher sein können, dass Ihre Produktfeeds weiterhin funktionieren."
 
 #: includes/user-interface/wppfm-admin-filters.php:25
 msgid "Starter Guide"
@@ -2135,15 +1994,6 @@ msgstr "Zur Premium-Version wechseln"
 #: includes/user-interface/wppfm-admin-filters.php:30
 msgid "Get Support"
 msgstr "Hilfe erhalten"
-
-#: includes/user-interface/wppfm-admin-menu-functions.php:281
-#, php-format
-msgid ""
-"2122 - Checking your license failed. Please open a support ticket at %s for "
-"support on this issue."
-msgstr ""
-"2122 - Die Überprüfung Ihrer Lizenz ist fehlgeschlagen. Bitte öffnen Sie ein "
-"Support-Ticket unter %s für Support zu diesem Thema."
 
 #: includes/user-interface/wppfm-edit-feed-form-functions.php:31
 msgid ""
@@ -2279,17 +2129,17 @@ msgstr ""
 "markieren. Verwenden Sie den Feed-Manager-Produktfilter, um markierte "
 "Produkte aus Feeds zu entfernen"
 
-#: wp-product-feed-manager.php:79
+#: wp-product-feed-manager.php:92
 msgid "Cloning is not allowed"
 msgstr "Das Klonen ist nicht erlaubt"
 
-#: wp-product-feed-manager.php:90
+#: wp-product-feed-manager.php:103
 msgid "Unserializing instances of this class is not allowed"
 msgstr "Das Entserialisieren von Instanzen dieser Klasse ist nicht erlaubt"
 
 #. Plugin Name of the plugin/theme
-msgid "WooCommerce Product Feed Manager"
-msgstr "WooCommerce Produkt Feed Manager"
+msgid "WP Product Feed Manager"
+msgstr "WP Produkt Feed Manager"
 
 #. Plugin URI of the plugin/theme
 #. Author URI of the plugin/theme
@@ -2307,6 +2157,164 @@ msgstr ""
 #. Author of the plugin/theme
 msgid "WP Marketing Robot"
 msgstr "WP Marketing Robot"
+
+#~ msgid ""
+#~ "Could not update the feed file because the channel has not been installed"
+#~ msgstr ""
+#~ "Die Feed-Datei konnte nicht aktualisiert werden, weil der Kanal nicht "
+#~ "installiert wurde"
+
+#, php-format
+#~ msgid ""
+#~ "There is a new version of %1$s available. %2$sView version %3$s "
+#~ "details%4$s."
+#~ msgstr ""
+#~ "Es gibt eine neue Version von %1$s. %2$s Version %3$s Details%4$s ansehen."
+
+#, php-format
+#~ msgid ""
+#~ "There is a new version of %1$s available. %2$sView version %3$s "
+#~ "details%4$s or %5$supdate now%6$s."
+#~ msgstr ""
+#~ "Es gibt eine neue Version von %1$s. %2$sVersion ansehen %3$s Details%4$s "
+#~ "oder %5$supdate jetzt%6$s."
+
+#~ msgid "You do not have permission to install plugin updates"
+#~ msgstr "Sie haben keine Berechtigung, Plugin-Updates zu installieren"
+
+#~ msgid "Error"
+#~ msgstr "Fehler"
+
+#~ msgid "-- Select the language of the feed --"
+#~ msgstr "-- Wählen Sie die Sprache des Feeds --"
+
+#~ msgid "-- Select the WOOCS currency for the feed --"
+#~ msgstr "-- Wählen Sie die WOOCS Währung des Feeds --"
+
+#, php-format
+#~ msgid ""
+#~ "This feed requires the \"%s\" channel to be installed. Please open the "
+#~ "Manage Channels page and install this channel before opening this feed."
+#~ msgstr ""
+#~ "Für diesen Feed muss der Kanal \"%s\" installiert werden. Öffnen Sie die "
+#~ "Seite Kanäle verwalten, und installieren Sie diesen Kanal, bevor Sie "
+#~ "diesen Feed öffnen."
+
+#~ msgid ""
+#~ "Your key seems to be expired. If you are sure you have a valid key, "
+#~ "please open a ticket at wpmarketingrobot.com/support/"
+#~ msgstr ""
+#~ "Ihr Schlüssel scheint abgelaufen zu sein. Wenn Sie sicher sind, dass Sie "
+#~ "einen gültigen Schlüssel haben, öffnen Sie bitte ein Ticket unter "
+#~ "wpmarketingrobot.com/support/support/"
+
+#~ msgid "Plugin License Options"
+#~ msgstr "Plugin Lizenz-Optionen"
+
+#~ msgid "License Key"
+#~ msgstr "Lizenzschlüssel"
+
+#~ msgid "I accept your Terms and Conditions"
+#~ msgstr "Ich akzeptiere die Allgemeinen Geschäftsbedingungen"
+
+#~ msgid "Activate License"
+#~ msgstr "Lizenz aktivieren"
+
+#, php-format
+#~ msgid "%d channel update"
+#~ msgid_plural "%d channel updates"
+#~ msgstr[0] "%d Kanal Update"
+#~ msgstr[1] "%d Kanal Updates"
+
+#, php-format
+#~ msgid "Channel Manager %s"
+#~ msgstr "Kanal Manager %s"
+
+#, php-format
+#~ msgid ""
+#~ "2121 - Activating your license failed. Please open a support ticket at %s "
+#~ "for support on this issue."
+#~ msgstr ""
+#~ "2121 - Die Aktivierung Ihrer Lizenz ist fehlgeschlagen. Bitte öffnen Sie "
+#~ "ein Support-Ticket unter %s für Support zu diesem Thema."
+
+#, php-format
+#~ msgid ""
+#~ "An error has occurred. It is possible that the wpmarketingrobot website "
+#~ "is down.\n"
+#~ "\t\t\t\t\t\tPlease check if wpmarketingrobot.com is still active. If not, "
+#~ "or if this error consist, please contact\n"
+#~ "\t\t\t\t\t\tauke@wpmarketingrobot.com. Error Message: %s"
+#~ msgstr ""
+#~ "Es ist ein Fehler aufgetreten. Es ist möglich, dass die Website von "
+#~ "wpmarketingrobot nicht erreichbar ist. \n"
+#~ "\t\t\t\tBitte überprüfen Sie, ob wpmarketingrobot.com noch aktiv ist. "
+#~ "Wenn nicht, oder wenn dieser Fehler vorliegt, wenden Sie sich bitte an \n"
+#~ "\t\t\t\tauke@wpmarketingrobot.com. Fehlermeldung: %s"
+
+#, php-format
+#~ msgid ""
+#~ "You have an invalid or expired license key for your %1$s plugin.\n"
+#~ "\t\t\t\tPlease <a href=\"%2$scheckout/?"
+#~ "edd_license_key=%3$s&utm_source=client-"
+#~ "admin&utm_medium=renewal_link&utm_campaign=license_expired\">\n"
+#~ "\t\t\t\tclick here to go to the Licenses renewal page</a> to keep the "
+#~ "plugin working and your product feeds valid."
+#~ msgstr ""
+#~ "Sie haben einen ungültigen oder abgelaufenen Lizenzschlüssel für Ihr %1$s "
+#~ "Plugin. \n"
+#~ "\t\t\tBitte <a href=\"%2$scheckout/?"
+#~ "edd_license_key=%3$s&utm_source=client-"
+#~ "admin&utm_medium=renewal_link&utm_campaign=license_expired\"> \n"
+#~ "\t\t\tKlicken Sie hier, um zur Seite Lizenzverlängerung zu gelangen</a>, "
+#~ "damit das Plugin funktioniert und Ihre Produktfeeds gültig sind."
+
+#, php-format
+#~ msgid ""
+#~ "The license key for your %1$s plugin is expiring soon. If you wish, you "
+#~ "can <a href=\"%2$scheckout/?edd_license_key=%3$s&utm_source=client-"
+#~ "admin&utm_medium=renewal_link&utm_campaign=license_renewal\">\n"
+#~ "\t\t\t\t\tclick here</a> to renew your license key directly so that you "
+#~ "can be sure your product feeds keep working."
+#~ msgstr ""
+#~ "Der Lizenzschlüssel für Ihr %1$s Plugin läuft in Kürze ab. \n"
+#~ "\t\t\tWenn Sie möchten, können Sie <a href=\"%2$scheckout/?"
+#~ "edd_license_key=%3$s&utm_source=client-"
+#~ "admin&utm_medium=renewal_link&utm_campaign=license_renewal\"> \n"
+#~ "\t\t\tKlicken Sie hier</a>, um Ihren Lizenzschlüssel direkt zu "
+#~ "verlängern, damit Sie sicher sein können, dass Ihre Produktfeeds "
+#~ "weiterhin funktionieren."
+
+#, php-format
+#~ msgid ""
+#~ "2122 - License verification failed. This may be due to a temporary issue "
+#~ "with our server. Please wait a few minutes and try again. If the problem "
+#~ "continues, feel free to open a support ticket at %s for further "
+#~ "assistance."
+#~ msgstr ""
+#~ "2122-Lizenzüberprüfung fehlgeschlagen. Dies kann auf ein temporäres "
+#~ "Problem mit unserem Server zurückzuführen sein. Bitte warten Sie ein paar "
+#~ "Minuten und versuchen Sie es erneut. Wenn das Problem weiterhin besteht, "
+#~ "können Sie gerne ein Support-Ticket bei %s eröffnen, um weitere "
+#~ "Unterstützung zu erhalten."
+
+#~ msgid "Your Free Google Shopping Checklist is send to you by email."
+#~ msgstr ""
+#~ "Ihre kostenlose Google Shopping Checkliste wurde Ihnen per E-Mail "
+#~ "zugesandt."
+
+#~ msgid "The email you entered is already on our news letter list."
+#~ msgstr ""
+#~ "Die E-Mail-Adresse, die Sie eingegeben haben, befindet sich bereits auf "
+#~ "unserer Newsletter-Liste."
+
+#, php-format
+#~ msgid ""
+#~ "2122 - Checking your license failed. Please open a support ticket at %s "
+#~ "for support on this issue."
+#~ msgstr ""
+#~ "2122 - Die Überprüfung Ihrer Lizenz ist fehlgeschlagen. Bitte öffnen Sie "
+#~ "ein Support-Ticket unter %s für Support zu diesem Thema."
 
 #~ msgid "You successfully signed up for our news letter."
 #~ msgstr "Sie haben sich erfolgreich für unseren Newsletter angemeldet."
