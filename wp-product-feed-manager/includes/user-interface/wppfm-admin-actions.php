@@ -85,7 +85,9 @@ add_action( 'admin_notices', 'wppfm_check_backups' );
 function initiate_background_process() {
 	global $background_process;
 
-	if ( isset( $_GET['feed-type'] ) ) {
+	$feed_type = filter_input( INPUT_GET, 'feed-type', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+
+	if ( $feed_type ) {
 		$active_tab = wppfm_get_url_parameter( 'feed-type' );
 		set_transient( 'wppfm_set_global_background_process', $active_tab, WPPFM_TRANSIENT_LIVE );
 	} else {
@@ -150,7 +152,6 @@ function wppfm_verify_feed_update_schedule_registration() {
 
 add_action( 'admin_menu', 'wppfm_verify_feed_update_schedule_registration' );
 
-
 /**
  * Generates a Sales Promotion notice for the free version of the plugin. Gets triggered by the admin_notices action.
  *
@@ -162,7 +163,7 @@ function wppfm_sales_promotion_notice() {
 		return false;
 	}
 
-	$current_date = date( 'Y-m-d' );
+	$current_date = gmdate( 'Y-m-d' );
 	$start_date = '2024-11-25';
 	$end_date = '2024-12-08';
 

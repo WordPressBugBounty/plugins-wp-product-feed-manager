@@ -390,6 +390,31 @@ function wppfm_wpml_use_full_url_resolution( selection, callback ) {
 	);
 }
 
+/**
+ * Stores the Omit price filters option.
+ *
+ * @since 3.12.0
+ *
+ * @param selection
+ * @param callback
+ */
+function wppfm_omit_price_filters( selection, callback ) {
+
+	jQuery.post(
+		myAjaxNonces.ajaxurl,
+		{
+			action: 'myajax-omit-price-filters-selection',
+			omitPriceFiltersSelection: selection,
+			omitPriceFiltersNonce: myAjaxNonces.setOmitPriceFiltersNonce,
+
+		},
+		function( response ) {
+
+			callback( response.trim() );
+		}
+	);
+}
+
 function wppfm_change_third_party_attribute_keywords( keywords, callback ) {
 
 	jQuery.post(

@@ -20,7 +20,7 @@ trait WPPFM_Feed_Processor_Functions {
 	 * @return boolean true if the format line has been added, false if it failed.
 	 */
 	private function add_file_format_line_to_feed( $line_data ) {
-		return false !== file_put_contents( $this->_feed_file_path, $line_data['file_format_line'], FILE_APPEND );
+		return false !== wppfm_append_line_to_file( $this->_feed_file_path, $line_data['file_format_line'] );
 	}
 
 	/**
@@ -31,7 +31,7 @@ trait WPPFM_Feed_Processor_Functions {
 	 * @return boolean true if the error message has been added, false if it failed.
 	 */
 	private function add_error_message_to_feed( $error_message_data ) {
-		return false !== file_put_contents( $this->_feed_file_path, $error_message_data['feed_line_message'], FILE_APPEND );
+		return false !== wppfm_append_line_to_file( $this->_feed_file_path, $error_message_data['feed_line_message'] );
 	}
 
 

@@ -328,6 +328,13 @@ jQuery( '#wppfm-wpml-use-full-resolution-urls' ).on(
 	}
 )
 
+jQuery( '#wppfm-omit-price-filters' ).on(
+	'change',
+	function() {
+		wppfm_omit_price_filters_changed();
+	}
+);
+
 jQuery( '#wppfm-third-party-attr-keys' ).on(
 	'focusout',
 	function() {

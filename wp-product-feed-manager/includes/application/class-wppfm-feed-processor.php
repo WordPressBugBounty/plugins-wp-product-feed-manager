@@ -228,7 +228,7 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 
 				$wpmr_variation_data = $class_data->get_own_variation_data( $product_id );
 
-				// Get correct variation data.
+				// Get the correct variation data.
 				WPPFM_Variations::fill_product_data_with_variation_data( $product_data, $wc_product, $wpmr_variation_data, $this->_feed_data->language, $this->_feed_data->currency );
 			}
 
@@ -325,7 +325,7 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 
 			$product_text = $this->generate_feed_text( $product_placeholder );
 
-			if ( false === file_put_contents( $this->_feed_file_path, $product_text, FILE_APPEND ) ) {
+			if ( false === wppfm_append_line_to_file( $this->_feed_file_path, $product_text ) ) {
 				wppfm_write_log_file( sprintf( 'Could not write product %s to the feed', $product_id ) );
 
 				return false;
@@ -341,7 +341,7 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 		 *
 		 * @return string
 		 */
-		protected function generate_feed_text( $product_placeholder ) {
+		private function generate_feed_text( $product_placeholder ) {
 			switch ( pathinfo( $this->_feed_file_path, PATHINFO_EXTENSION ) ) {
 				case 'xml':
 					return $this->convert_data_to_xml( $product_placeholder, $this->_channel_details['category_name'], $this->_channel_details['description_name'], $this->_channel_details['channel_id'] );

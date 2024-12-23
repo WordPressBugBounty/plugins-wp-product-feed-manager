@@ -17,10 +17,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 1.0.0
  */
 function include_classes() {
-	if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-		require_once 'setup/class-wppfm-prepare-taxonomy.php';
-	}
-
 	if ( ! class_exists( 'WPPFM_Schedules' ) ) {
 		require_once __DIR__ . '/application/class-wppfm-schedules.php';
 	}

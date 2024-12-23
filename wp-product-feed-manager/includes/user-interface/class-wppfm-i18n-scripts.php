@@ -41,8 +41,8 @@ if ( ! class_exists( 'WPPFM_i18n_Scripts' ) ) :
 				'feed_general_error'                => esc_html__( 'Generating the feed has failed! Error return code = %xmlResult%', 'wp-product-feed-manager' ),
 				/* translators: %feedname%: name of the feed */
 				'feed_status_unknown'               => esc_html__( 'The status of feed %feedname% is unknown.', 'wp-product-feed-manager' ),
-				/* translators: %feedname%: name of the feed */
-				'feed_status_ready'                 => esc_html__( 'Product feed %feedname% is now ready. It contains %prodnr% %feedtype%.', 'wp-product-feed-manager' ),
+				/* translators: 1: feedname is the name of the feed 2: prodnr the product id and 3: feedtype the feed type */
+				'feed_status_ready'                 => esc_html__( 'Product feed %1$s is now ready. It contains %2$s %3$s.', 'wp-product-feed-manager' ),
 				'feed_status_still_processing'      => esc_html__( 'Still processing the feed in the background. You can wait for it to finish, but you can also close this form if you want.', 'wp-product-feed-manager' ),
 				'feed_status_added_to_queue'        => esc_html__( 'This feed has been added to the feed queue and will be processed when it is next.', 'wp-product-feed-manager' ),
 				/* translators: %feedname%: name of the feed */
@@ -59,8 +59,8 @@ if ( ! class_exists( 'WPPFM_i18n_Scripts' ) ) :
 				'select_a_source_field_warning'     => esc_html__( 'Please select a source field first before you select the conditions.', 'wp-product-feed-manager' ),
 				'select_a_valid_source_warning'     => esc_html__( 'Please select a valid source before adding a condition to that source.', 'wp-product-feed-manager' ),
 				'advanced_filter_only_for_premium'  => esc_html__( 'The Advanced Filter option is not available in the free version. Unlock the Advanced Filter option by upgrading to the Premium plugin. For more information goto https://www.wpmarketingrobot.com/.', 'wp-product-feed-manager' ),
-				'all_products_except'               => esc_html__( 'except the ones where' ),
-				'fill_filter_warning'               => esc_html__( 'Please fill in the filter values before adding a new one' ),
+				'all_products_except'               => esc_html__( 'except the ones where', 'wp-product-feed-manager' ),
+				'fill_filter_warning'               => esc_html__( 'Please fill in the filter values before adding a new one', 'wp-product-feed-manager' ),
 				'no_separator'                      => esc_html__( 'No separator', 'wp-product-feed-manager' ),
 				'space'                             => esc_html__( 'space', 'wp-product-feed-manager' ),
 				'comma'                             => esc_html__( 'comma', 'wp-product-feed-manager' ),
@@ -186,10 +186,12 @@ if ( ! class_exists( 'WPPFM_i18n_Scripts' ) ) :
 				'file_duplicated'                      => esc_html__( '%backup_file_name% duplicated', 'wp-product-feed-manager' ),
 				'list_restore'                         => esc_html__( 'Restore', 'wp-product-feed-manager' ),
 				'backup_file_name_exists'              => esc_html__( 'A backup file with the selected name already exists. Please choose an other name or delete the existing file first.', 'wp-product-feed-manager' ),
+				/* translators: %s: name of the backup folder*/
 				'write_protected_file'                 => sprintf( esc_html__( '1432 - %s is not a writable folder. Make sure you have admin rights to this folder.', 'wp-product-feed-manager' ), WPPFM_BACKUP_DIR ),
 				/* translators: %backup_file_name%: name of the backup file*/
 				'could_not_write_file'                 => esc_html__( '1433 - Could not write the %backup_file_name% file.', 'wp-product-feed-manager' ),
 				'no_backup'                            => esc_html__( 'No backup found', 'wp-product-feed-manager' ),
+				'how_to_import_backup_file'            => esc_html__( 'To restore the exported backup file, please upload it to the "wp-content/uploads/wppfm-backups" folder of the server where you want to restore it on.', 'wp-product-feed-manager' ),
 				'invalid_email_address'                => esc_html__( 'The input is not a valid email address. Please try again.', 'wp-product-feed-manager' ),
 			);
 
@@ -232,6 +234,7 @@ if ( ! class_exists( 'WPPFM_i18n_Scripts' ) ) :
 			$pars['and']                   = esc_html__( 'and', 'wp-product-feed-manager' );
 			$pars['all_products_included'] = esc_html__( 'All products from the selected Shop Categories will be included in the feed', 'wp-product-feed-manager' );
 			$pars['list_duplicate']        = esc_html__( 'Duplicate', 'wp-product-feed-manager' );
+			$pars['list_export']           = esc_html__( 'Export', 'wp-product-feed-manager' );
 			$pars['list_regenerate']       = esc_html__( 'Regenerate', 'wp-product-feed-manager' );
 			$pars['list_delete']           = esc_html__( 'Delete', 'wp-product-feed-manager' );
 			$pars['ok']                    = esc_html__( 'Ready (auto)', 'wp-product-feed-manager' );

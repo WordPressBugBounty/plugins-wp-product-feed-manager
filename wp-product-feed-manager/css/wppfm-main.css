@@ -703,6 +703,10 @@ span#wppfm-make-backup-button {
     margin: 0 10px;
 }
 
+#wppfm-backup-action-column {
+    width: 250px;
+}
+
 /**************************/
 /*  Feed Manager Support  */
 /**************************/

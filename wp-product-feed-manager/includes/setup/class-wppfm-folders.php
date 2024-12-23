@@ -42,41 +42,24 @@ if ( ! class_exists( 'WPPFM_Folders' ) ) :
 		}
 
 		/**
-		 * Deletes a directory and all its content
+		 * Deletes a directory and all its content.
 		 *
-		 * @param string $folder_name
+		 * @since 3.12.0 - Switched from using file_put_contents to WP_Filesystem.
+		 * @param string $folder_name name and path of the folder.
 		 *
-		 * @return boolean true when the directory has been deleted
+		 * @return boolean true when the directory has been deleted.
 		 */
 		public static function delete_folder( $folder_name ) {
-			if ( is_dir( $folder_name ) ) {
+			$wp_filesystem = wppfm_get_wp_filesystem();
 
-				$dir_handle = opendir( $folder_name );
 
-				if ( ! $dir_handle ) {
-					return false;
-				}
-
-				while ( $file = readdir( $dir_handle ) ) {
-					if ( $file != "." && $file != ".." ) { // do not change this as it can cause serious issues with uninstalling the plugin
-						if ( ! is_dir( $folder_name . "/" . $file ) ) {
-							// only remove .xml, .js, .txt or .log files and a class-feed.php files. Do not delete .php or other system files
-							if ( preg_match( '/.*(.xml$|.js$|.txt$|.log$)|\b(class-feed.php)\b/', $file ) ) {
-								unlink( $folder_name . "/" . $file );
-							}
-						} else {
-							self::delete_folder( $folder_name . '/' . $file );
-						}
-					}
-				}
-
-				closedir( $dir_handle );
-				rmdir( $folder_name );
-
-				return true;
-			} else {
+			// Check if the folder exists
+			if ( ! $wp_filesystem->is_dir( $folder_name ) ) {
 				return false;
 			}
+
+			// Recursively delete the folder and its contents
+			return $wp_filesystem->delete( $folder_name, true );
 		}
 
 		public static function copy_folder( $source_folder, $target_folder ) {

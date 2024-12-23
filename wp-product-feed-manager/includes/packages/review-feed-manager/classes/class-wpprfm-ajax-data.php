@@ -40,7 +40,7 @@ if ( ! class_exists( 'WPPRFM_Ajax_Data' ) ) :
 					$product_review_feed_attributes = $data_class->fill_output_fields_with_metadata( $feed_id, $product_review_feed_attributes );
 				}
 
-				echo json_encode( $product_review_feed_attributes );
+				echo wp_json_encode( $product_review_feed_attributes );
 			}
 
 			// IMPORTANT: don't forget to exit
@@ -73,7 +73,7 @@ if ( ! class_exists( 'WPPRFM_Ajax_Data' ) ) :
 				$result[0]['include_variations'] = '0';
 				$result[0]['country']            = 'US';
 
-				echo json_encode( $result );
+				echo wp_json_encode( $result );
 			} else {
 				echo false;
 			}

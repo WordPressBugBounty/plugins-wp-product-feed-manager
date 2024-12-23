@@ -177,7 +177,7 @@ abstract class WPPFM_Async_Request {
 			'headers'   => array( // @since 3.9.0 added a header with empty Expect parameter
 				'Content-Type' => 'application/json',
 				'Expect' => '', ),
-			'body'      => json_encode( $this->data ), // encoding @since 2.41.0 to minimize the post-input var size.
+			'body'      => wp_json_encode( $this->data ), // encoding @since 2.41.0 to minimize the post-input var size.
 			'cookies'   => stripslashes_deep( $_COOKIE ),
 		);
 	}

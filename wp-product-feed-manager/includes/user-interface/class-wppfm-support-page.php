@@ -237,8 +237,8 @@ if ( ! class_exists( 'WPPFM_Support_Page' ) ) :
 		 * @since 3.11.0
 		 */
 		private function google_shopping_checklist_popup() {
-			$content_html  = '<p>' . esc_html__( 'Thank you for requesting the Google Shopping Checklist: The Complete Guide. Please check your email for the download link.', 'wp-product-feed-manager' ) . '</p>';
-			$content_html .= '<p>' . esc_html__( 'If you don\'t see it in your inbox, kindly check your spam or junk folder.', 'wp-product-feed-manager' ) . '</p>';
+			$first_centence_html  = __( 'Thank you for requesting the Google Shopping Checklist: The Complete Guide. Please check your email for the download link.', 'wp-product-feed-manager' );
+			$second_centence_html = __( 'If you don\'t see it in your inbox, kindly check your spam or junk folder.', 'wp-product-feed-manager' );
 
 			echo '<div id="wppfm-google-shopping-checklist-popup" class="wppfm-popup" style="display:none">
 				<div class="wppfm-popup__header">
@@ -246,7 +246,7 @@ if ( ! class_exists( 'WPPFM_Support_Page' ) ) :
 					<div class="wppfm-popup__close-button"><b>X</b></div>
 				</div>
 				<div class="wppfm-popup__content">
-					' . $content_html . '
+					<p>' . esc_html( $first_centence_html ) . '</p><p>' . esc_html( $second_centence_html ) . '</p>
 				</div>
 			</div>';
 		}

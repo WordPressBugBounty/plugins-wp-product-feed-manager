@@ -23,6 +23,7 @@ if ( ! class_exists( 'WPPFM_Channel_FTP' ) ) :
 		 * Gets the correct channel zip file from the wpmarketingrobot server
 		 *
 		 * @since 1.9.3 - switched from ftp to cURL procedures
+		 * @since 3.12.0 - switched from cURL to wp_remote_get
 		 *
 		 * @param string $channel
 		 * @param string $code
@@ -30,59 +31,59 @@ if ( ! class_exists( 'WPPFM_Channel_FTP' ) ) :
 		 * @return boolean
 		 */
 		public function get_channel_source_files( $channel, $code ) {
-			// make the channel folder if it does not exist
-			if ( ! file_exists( WPPFM_CHANNEL_DATA_DIR ) ) {
+			$wp_filesystem = wppfm_get_wp_filesystem();
+
+			// Make the channel folder if it does not exist
+			if ( ! $wp_filesystem->is_dir( WPPFM_CHANNEL_DATA_DIR ) ) {
 				WPPFM_Folders::make_channels_support_folder();
 			}
 
-			// and if it is writable
-			if ( ! is_writable( WPPFM_CHANNEL_DATA_DIR ) ) {
+			// Check if the directory is writable
+			if ( ! $wp_filesystem->is_writable( WPPFM_CHANNEL_DATA_DIR ) ) {
 				wppfm_show_wp_error(
 					sprintf(
 						/* translators: %s: Folder that contains the channel data */
-						__(
-							'You have no read/write permission to the %s folder.
-							Please update the file permissions of this folder to make it writable and then try installing a channel again.',
-							'wp-product-feed-manager'
-						),
+						__( 'You have no read/write permission to the %s folder. Please update the file permissions of this folder to make it writable and then try installing a channel again.', 'wp-product-feed-manager' ),
 						WPPFM_CHANNEL_DATA_DIR
 					)
 				);
-
 				return false;
 			}
 
+			// Define local file path and remote file URL
 			$local_file      = WPPFM_CHANNEL_DATA_DIR . '/' . $channel . '.zip';
-			$remote_file_url = esc_url( WPPFM_EDD_SL_STORE_URL . 'system/wp-content/uploads/wppfm_channel_downloads/' . $code . '.zip?ts=' . time() ); // @since 3.0.0. Added the time element to avoid caching issues.
+			$remote_file_url = esc_url( WPPFM_EDD_SL_STORE_URL . 'system/wp-content/uploads/wppfm_channel_downloads/' . $code . '.zip?ts=' . time() ); // Avoid caching issues
 
-			$zip_resource = fopen( $local_file, 'w' );
+			// Fetch the remote file using wp_remote_get
+			$response = wp_remote_get( $remote_file_url, [
+				'timeout' => 10,
+				'headers' => [
+					'Cache-Control' => 'no-cache',
+				],
+				'sslverify' => true, // Verify SSL for security
+			]);
 
-			// Get The Zip File From Server
-			$ch = curl_init();
-
-			curl_setopt( $ch, CURLOPT_URL, $remote_file_url );
-			curl_setopt( $ch, CURLOPT_FAILONERROR, true );
-			curl_setopt( $ch, CURLOPT_HTTPHEADER, array( 'Cache-Control: no-cache' ) );
-			curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true );
-			curl_setopt( $ch, CURLOPT_AUTOREFERER, true );
-			curl_setopt( $ch, CURLOPT_FRESH_CONNECT, true ); // @since 2.34.0.
-			curl_setopt( $ch, CURLOPT_TIMEOUT, 10 );
-			curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, 2 );
-			curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, 1 );
-			curl_setopt( $ch, CURLOPT_FILE, $zip_resource );
-
-			$page = curl_exec( $ch );
-
-			if ( ! $page ) {
-				wppfm_write_log_file( sprintf( 'Downloading a channel file failed with a curl_error. The error message is %s', curl_error( $ch ) ) );
+			if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
+				wppfm_write_log_file(
+					sprintf(
+						'Downloading a channel file failed. Error: %s',
+						is_wp_error( $response ) ? $response->get_error_message() : wp_remote_retrieve_response_message( $response )
+					)
+				);
+				return false;
 			}
 
-			curl_close( $ch );
-			fclose( $zip_resource );
+			// Get the file contents from the response
+			$file_contents = wp_remote_retrieve_body( $response );
 
-			return $page;
+			// Write the contents to the local file using the WordPress Filesystem API
+			if ( ! $wp_filesystem->put_contents( $local_file, $file_contents, FS_CHMOD_FILE ) ) {
+				wppfm_write_log_file( 'Failed to write the channel file to the local directory.' );
+				return false;
+			}
+
+			return true;
 		}
-
 	}
 
 	// end of WPPFM_Channel_FTP class

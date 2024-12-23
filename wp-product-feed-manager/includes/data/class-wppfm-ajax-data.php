@@ -135,7 +135,7 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 					$channel_class = new WPPFM_Channel();
 
 					// Read the output fields.
-					$outputs = apply_filters( 'wppfm_get_feed_attributes', $this->_files_class->get_output_fields_for_specific_channel( $channel ), $feed_id, $feed_type_id );
+					$outputs = apply_filters( 'wppfm_get_feed_attributes', $this->_files_class->get_attributes_for_specific_channel( $channel ), $feed_id, $feed_type_id );
 
 					// if the feed is a stored feed, look for metadata to add (a feed an id of -1 is a new feed that not yet has been saved)
 					if ( $feed_id >= 0 ) {

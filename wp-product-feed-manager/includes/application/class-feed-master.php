@@ -218,7 +218,9 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 				WPPFM_Folders::make_feed_support_folder();
 			}
 
-			if ( ! is_writable( WPPFM_FEEDS_DIR ) ) {
+			$wp_filesystem = wppfm_get_wp_filesystem();
+
+			if ( ! $wp_filesystem->is_writable( WPPFM_FEEDS_DIR ) ) {
 				/* translators: %s: Folder where the feeds are stored */
 				return sprintf( __( '1430 - %s is not a writable folder. Make sure you have admin rights to this folder.', 'wp-product-feed-manager' ), WPPFM_FEEDS_DIR );
 			}
@@ -240,7 +242,7 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 			$this->_feed_file_path = wppfm_get_file_path( $this->_feed->title . '.' . $file_extension );
 
 			// Clear the existing feed.
-			file_put_contents( $this->_feed_file_path, '' );
+			$wp_filesystem->put_contents( $this->_feed_file_path, '', FS_CHMOD_FILE );
 
 			// Clear the file size checker.
 			delete_transient( 'wppfm_feed_file_size' );

@@ -24,7 +24,7 @@ if ( ! class_exists( 'WPPPFM_Google_Merchant_Promotions_Feed_Product_Filters_Wra
 
 			// Start with the section code.
 			echo '<section class="wpppfm-edit-promotions-feed-form-element-wrapper wpppfm-product-filter-wrapper" id="wppfm-product-filter-map-' . esc_attr( $promotion_nr ) . '" style="display: none">
-			<div id="wpppfm-filter-header" class="wppfm-feed-editor-section__header"><h3>' . esc_html__( 'Product Filter Selector', 'wp-product-promotions-feed-manager' ) . ':</h3></div>
+			<div id="wpppfm-filter-header" class="wppfm-feed-editor-section__header"><h3>' . esc_html__( 'Product Filter Selector', 'wp-product-feed-manager' ) . ':</h3></div>
 			<table class="wppfm-product-filter-table widefat" id="wppfm-product-filter-table-' . esc_attr( $promotion_nr ) . '">';
 
 			$this->include_products_input( $promotion_nr );

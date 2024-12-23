@@ -366,7 +366,7 @@ if ( ! class_exists( 'WPPFM_Data' ) ) :
 
 			if ( ! $is_custom ) {
 				// read the output fields
-				$attributes_data = apply_filters( 'wppfm_get_feed_attributes', $this->_files_class->get_output_fields_for_specific_channel( $channel_name ), $feed_id, $feed_type_id );
+				$attributes_data = apply_filters( 'wppfm_get_feed_attributes', $this->_files_class->get_attributes_for_specific_channel( $channel_name ), $feed_id, $feed_type_id );
 
 				// if the feed is a stored feed, look for metadata to add (a feed an id of -1 is a new feed that not yet has been saved)
 				if ( $feed_id >= 0 ) {
@@ -578,7 +578,7 @@ if ( ! class_exists( 'WPPFM_Data' ) ) :
 
 			// read the output fields
 			if ( ! $is_custom ) {
-				$outputs = apply_filters( 'wppfm_get_feed_attributes', $this->_files_class->get_output_fields_for_specific_channel( $channel ), $feed_id, $main_feed_data[0]['feed_type_id'] );
+				$outputs = apply_filters( 'wppfm_get_feed_attributes', $this->_files_class->get_attributes_for_specific_channel( $channel ), $feed_id, $main_feed_data[0]['feed_type_id'] );
 			} else {
 				$outputs = $this->get_custom_fields_with_metadata( $feed_id );
 			}
@@ -649,7 +649,7 @@ if ( ! class_exists( 'WPPFM_Data' ) ) :
 				}
 			}
 
-			return json_encode( $categories );
+			return wp_json_encode( $categories );
 		}
 
 		// ALERT has a relation with the wppfm_setOutputAttributeLevels() function in the logic.js file

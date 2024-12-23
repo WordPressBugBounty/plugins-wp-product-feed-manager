@@ -35,6 +35,7 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 			add_action( 'wp_ajax_myajax-show-product-identifiers-selection', array( $this, 'myajax_show_product_identifiers_selection' ) );
 			add_action( 'wp_ajax_myajax-switch-to-manual-channel-update-selection', array( $this, 'myajax_switch_to_manual_channel_update' ) );
 			add_action( 'wp_ajax_myajax-wpml-use-full-url-resolution-selection', array( $this, 'myajax_wpml_use_full_url_resolution_selection' ) );
+			add_action( 'wp_ajax_myajax-omit-price-filters-selection', array( $this, 'myajax_omit_price_filters_selection' ) );
 			add_action( 'wp_ajax_myajax-third-party-attribute-keywords', array( $this, 'myajax_set_third_party_attribute_keywords' ) );
 			add_action( 'wp_ajax_myajax-set-notice-mailaddress', array( $this, 'myajax_set_notice_mailaddress' ) );
 			add_action( 'wp_ajax_myajax-clear-feed-process-data', array( $this, 'myajax_clear_feed_process_data' ) );
@@ -116,7 +117,7 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 				$file = realpath( WPPFM_FEEDS_DIR . '/' . basename( $file_name ) );
 
 				if ( file_exists( $file ) ) {
-					unlink( $file );
+					wp_delete_file( $file );
 				} else {
 					/* translators: %s: Title of the feed file */
 					echo '<div id="error">' . sprintf( esc_html__( 'Could not remove file %s because it does not seem to exist.', 'wp-product-feed-manager' ), esc_url( $file ) ) . '</div>';
@@ -296,6 +297,26 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 				update_option( 'wppfm_use_full_url_resolution', $selection );
 
 				echo esc_html( get_option( 'wppfm_use_full_url_resolution' ) );
+			} else {
+				$this->show_not_allowed_error_message();
+			}
+
+			// IMPORTANT: don't forget to exit.
+			exit;
+		}
+
+		/**
+		 * Changes the Omit price filters setting from the Settings page.
+		 *
+		 * @since 3.12.0
+		 */
+		public function myajax_omit_price_filters_selection() {
+			// Make sure this call is legal.
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'omitPriceFiltersNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-omit-price-filters-nonce', 'manage_options' ) ) {
+				$selection = filter_input( INPUT_POST, 'omitPriceFiltersSelection', FILTER_CALLBACK, ['options' => [$this, 'sanitize_true_false_string']] );
+				update_option( 'wppfm_omit_price_filters', $selection );
+
+				echo esc_html( get_option( 'wppfm_omit_price_filters' ) );
 			} else {
 				$this->show_not_allowed_error_message();
 			}

@@ -226,7 +226,7 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 				return array();
 			}
 
-			$category_string = strip_tags( $category_string );
+			$category_string = wp_strip_all_tags( $category_string );
 
 			$start_product_id = get_transient( 'wppfm_start_product_id' ) ? get_transient( 'wppfm_start_product_id' ) : -1;
 
@@ -601,7 +601,7 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 			return $this->_wpdb->update(
 				$main_table,
 				array(
-					'updated'  => date( 'Y-m-d H:i:s', current_time( 'timestamp' ) ),
+					'updated'  => gmdate( 'Y-m-d H:i:s', current_time( 'timestamp' ) ),
 					'url'      => $feed_url,
 					'products' => $nr_products,
 				),
@@ -633,30 +633,37 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 			return $this->_wpdb->update( $main_table, array( 'status_id' => $status ), array( 'product_feed_id' => $feed_id ), array( '%d' ), array( '%d' ) );
 		}
 
+		/**
+		 * Updates the metadata of a feed.
+		 *
+		 * @param string $feed_id
+		 * @param array  $meta_data
+		 *
+		 * @return int the number of affected rows.
+		 */
 		public function update_meta_data( $feed_id, $meta_data ) {
-			// TODO: The process below is not really efficient.
-
-			// first check if the feed_id is valid
+			// First check if the feed_id is valid.
 			if ( $feed_id <= 0 ) {
 				return 0;
 			}
 
 			$main_table = $this->_table_prefix . 'feedmanager_product_feedmeta';
 
-			// first, remove all metadata belonging to this feed except the product_filter_query
+			// First, remove all metadata belonging to this feed except the product_filter_query.
 			$this->_wpdb->query(
 				$this->_wpdb->prepare( "DELETE FROM $main_table WHERE product_feed_id = %d AND meta_key != %s", $feed_id, 'product_filter_query' ) );
 
 			$counter = 0;
 
-			for ( $i = 0; $i < count( $meta_data ); $i ++ ) {
-				if ( ! empty( $meta_data[ $i ]->value ) && '{}' !== $meta_data[ $i ]->value ) {
+			// Now insert the new metadata in the feedmanager_product_feedmeta table.
+			foreach( $meta_data as $meta ) {
+				if ( ! empty( $meta->value ) && '{}' !== $meta->value ) {
 					$result = $this->_wpdb->insert(
 						$main_table,
 						array(
 							'product_feed_id' => $feed_id,
-							'meta_key'        => $meta_data[ $i ]->key,
-							'meta_value'      => $meta_data[ $i ]->value,
+							'meta_key'        => $meta->key,
+							'meta_value'      => $meta->value,
 						),
 						array(
 							'%d',
@@ -703,6 +710,11 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 			}
 		}
 
+		/**
+		 * Resets the status_id of a specific feed.
+		 *
+		 * @param string $feed_id
+		 */
 		public function store_feed_filter( $feed_id, $filter ) {
 			$main_table = $this->_table_prefix . 'feedmanager_product_feedmeta';
 

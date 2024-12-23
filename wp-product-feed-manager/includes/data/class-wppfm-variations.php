@@ -62,6 +62,7 @@ if ( ! class_exists( 'WPPFM_Variations' ) ) :
 
 		private static function variation_conversion_table( $variation_data, $main_permalink, $feed_language, $feed_currency ) {
 			$attachment_url = wp_get_attachment_url( get_post_thumbnail_id( $variation_data->get_id() ) );
+			$price_context  = get_option( 'wppfm_omit_price_filters', false ) ? 'view' : 'feed'; // $since 3.12.0.
 
 			return array(
 				'ID'                     => (string) $variation_data->get_id(),
@@ -77,8 +78,8 @@ if ( ! class_exists( 'WPPFM_Variations' ) ) :
 				'_width'                 => $variation_data->get_width( 'feed' ),
 				'_height'                => $variation_data->get_height( 'feed' ),
 				'post_content'           => $variation_data->get_description( 'feed' ),
-				'_regular_price'         => wppfm_prep_money_values( $variation_data->get_regular_price( 'feed' ), $feed_language, $feed_currency ),
-				'_sale_price'            => wppfm_prep_money_values( $variation_data->get_sale_price( 'feed' ), $feed_language, $feed_currency ),
+				'_regular_price'         => wppfm_prep_money_values( $variation_data->get_regular_price( $price_context ), $feed_language, $feed_currency ),
+				'_sale_price'            => wppfm_prep_money_values( $variation_data->get_sale_price( $price_context ), $feed_language, $feed_currency ),
 				'_sale_price_dates_from' => $variation_data->get_date_on_sale_from( 'feed' ) && ( $date = $variation_data->get_date_on_sale_from( 'feed' )->getTimestamp() ) ? wppfm_convert_price_date_to_feed_format( $date ) : '',
 				'_sale_price_dates_to'   => $variation_data->get_date_on_sale_to( 'feed' ) && ( $date = $variation_data->get_date_on_sale_to( 'feed' )->getTimestamp() ) ? wppfm_convert_price_date_to_feed_format( $date ) : '',
 				'attachment_url'         => has_filter( 'wppfm_get_wpml_permalink' ) && is_plugin_active( 'wpml-media-translation/plugin.php' ) ? apply_filters( 'wppfm_get_wpml_permalink', $attachment_url, $feed_language ) : $attachment_url,

@@ -97,7 +97,7 @@ if ( ! class_exists( 'WPPFM_Feed_Value_Editors' ) ) :
 		 * @return string the resulting value.
 		 */
 		public function strip_tags_from_value( $current_value ) {
-			return strip_tags( $current_value );
+			return wp_strip_all_tags( $current_value );
 		}
 
 		/**

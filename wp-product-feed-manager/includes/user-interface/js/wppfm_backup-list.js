@@ -9,7 +9,7 @@ function wppfm_resetBackupsList() {
 			if ( '0' !== list ) {
 				backupListData = JSON.parse( list );
 
-				// convert the data to html code
+				// convert the data to HTML code
 				listHtml = wppfm_backupsTable( backupListData );
 			} else {
 				listHtml = wppfm_emptyBackupsTable();
@@ -58,7 +58,8 @@ function wppfm_backupsTable( list ) {
 		htmlCode += '<td id="wppfm-backup-table-file-date">' + fileDate + '</td>';
 		htmlCode += '<td id="wppfm-backup-table-actions"><strong><a href="javascript:void(0);" id="wppfm-delete-' + fileName.replace('.', '-') + '-backup-action" onclick="wppfm_deleteBackupFile(\'' + fileName + '\')">' + wppfm_setting_form_vars.list_delete + ' </a>';
 		htmlCode += '| <a href="javascript:void(0);" id="wppfm-restore-' + fileName.replace('.', '-') + '-backup-action" onclick="wppfm_restoreBackupFile(\'' + fileName + '\')">' + wppfm_setting_form_vars.list_restore + ' </a>';
-		htmlCode += '| <a href="javascript:void(0);" id="wppfm-duplicate-' + fileName.replace('.', '-') + '-backup-action" onclick="wppfm_duplicateBackupFile(\'' + fileName + '\')">' + wppfm_setting_form_vars.list_duplicate + ' </a></strong></td>';
+		htmlCode += '| <a href="javascript:void(0);" id="wppfm-duplicate-' + fileName.replace('.', '-') + '-backup-action" onclick="wppfm_duplicateBackupFile(\'' + fileName + '\')">' + wppfm_setting_form_vars.list_duplicate + ' </a>';
+		htmlCode += '| <a href="javascript:void(0);" id="wppfm-export-' + fileName.replace('.', '-') + '-backup-action" onclick="wppfm_exportBackupFile(\'' + fileName + '\')">' + wppfm_setting_form_vars.list_export + ' </a></strong></td>';
 		htmlCode += '</tr>';
 	}
 

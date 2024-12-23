@@ -60,20 +60,20 @@ if ( ! class_exists( 'WPPPFM_Data' ) ) :
 			return array(
 				array(
 					'id'   => 'local_inventory_ads',
-					'text' => __( 'Local Inventory Ads', 'wp-product-promotions-feed-manager' ),
+					'text' => __( 'Local Inventory Ads', 'wp-product-feed-manager' ),
 				),
 				array(
 					'id'       => 'shopping_ads',
-					'text'     => __( 'Shopping Ads', 'wp-product-promotions-feed-manager' ),
+					'text'     => __( 'Shopping Ads', 'wp-product-feed-manager' ),
 					'selected' => 'true',
 				),
 				array(
 					'id'   => 'buy_on_google_listings',
-					'text' => __( 'Buy on Google Listings', 'wp-product-promotions-feed-manager' ),
+					'text' => __( 'Buy on Google Listings', 'wp-product-feed-manager' ),
 				),
 				array(
 					'id'       => 'free_listings',
-					'text'     => __( 'Free Listings', 'wp-product-promotions-feed-manager' ),
+					'text'     => __( 'Free Listings', 'wp-product-feed-manager' ),
 					'selected' => 'true',
 				),
 			);
@@ -120,32 +120,32 @@ if ( ! class_exists( 'WPPPFM_Data' ) ) :
 			$types->children = array(
 				array(
 					'id'        => 'simple',
-					'text'      => __( 'Simple', 'wp-product-promotions-feed-manager' ),
+					'text'      => __( 'Simple', 'wp-product-feed-manager' ),
 					'attribute' => 'product_type',
 				),
 				array(
 					'id'        => 'grouped',
-					'text'      => __( 'Grouped', 'wp-product-promotions-feed-manager' ),
+					'text'      => __( 'Grouped', 'wp-product-feed-manager' ),
 					'attribute' => 'product_type',
 				),
 				array(
 					'id'        => 'virtual',
-					'text'      => __( 'Virtual', 'wp-product-promotions-feed-manager' ),
+					'text'      => __( 'Virtual', 'wp-product-feed-manager' ),
 					'attribute' => 'product_type',
 				),
 				array(
 					'id'        => 'downloadable',
-					'text'      => __( 'Downloadable', 'wp-product-promotions-feed-manager' ),
+					'text'      => __( 'Downloadable', 'wp-product-feed-manager' ),
 					'attribute' => 'product_type',
 				),
 				array(
 					'id'        => 'external',
-					'text'      => __( 'External/affiliate', 'wp-product-promotions-feed-manager' ),
+					'text'      => __( 'External/affiliate', 'wp-product-feed-manager' ),
 					'attribute' => 'product_type',
 				),
 				array(
 					'id'        => 'variable',
-					'text'      => __( 'Variable', 'wp-product-promotions-feed-manager' ),
+					'text'      => __( 'Variable', 'wp-product-feed-manager' ),
 					'attribute' => 'product_type',
 				),
 			);

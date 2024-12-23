@@ -5,7 +5,7 @@ Donate link: https://www.wpmarketingrobot.com/
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 2.11.2
+Stable tag: 2.12.0
 License: GPLv3 or later License
 URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -196,8 +196,16 @@ Are you still experiencing issues with our plugin? Follow these steps before con
 3. Save and generate your feed
 
 == Changelog ==
-= 2.11.2 2024-11-26
-* Tweak - Changed the dates of the Black Friday sale.
+= 2.12.0 2024-12-23 =
+* Tweak - Moved the product identifiers from the Products Inventory tab to the Product Feed tab.
+* Fixed - Fixed an issue where the WPML Language Selector, the Currency selectors of the FOX Currency Switcher, the Polylang Language Selector the Transpress Language Selector would not show up anymore.
+* Tweak - Made several code improvements en did some code cleanup.
+* Tested - Tested up to WooCommerce 9.5.1
+* Added - Added the Omit price filter option to give users the option to switch off third party filters that could influence prices in the feeds.
+
+= 2.11.2 2024-11-30 =
+* Added - Added an option to export existing backup files from the Settings page.
+* Fixed - Fixed a function name that had no prefix and could therefor cause a duplicate function conflict.
 
 = 2.11.1 2024-11-14 =
 * Tweak - Changed the subscribe for free message to a pop-up screen
@@ -329,40 +337,7 @@ Fixed an issue with a folder name with a capital letter that would cause error m
 * Fixed an issue that caused the error log to be placed in the wrong folder
 * Added a > symbol to the selectable separator options
 
-= 1.51.0 - 29/08/2023 =
-* Further extended the Feed Process logging.
-* Tested on WooCommerce 8.0
-
-= 1.50.0 - 01/08/2023 =
-* Added a check that makes sure that no spaces can be used in attribute names for an xml feed. Spaces will be replaced by underscores.
-* Extended the Feed Process logging.
-* Tested on WooCommerce 7.9.
-
-= 1.49.1 - 24/04/2023 =
-* Fixed an issue with an incorrect path to the review feed files in the cron functions file.
-
-= 1.49.0 - 17/04/2023 =
-* Tested compatibility with the WooCommerce High-Performance Order Storage update.
-* Fixed an issue where the "View feed" functions would not work if the user has the "Relative URL" plugin active.
-* Fixed an issue where trying to make a Feed Backup with an existing backup name, would show an incorrect message.
-* Tested on WooCommerce 7.6.0.
-
-= 1.48.0 - 07/03/2023 =
-* Fixed an issue where a feed that was duplicated could not be set to auto update before a screen reset was performed.
-* Added the option to sort the Feed List table items on the Name, Updated and Products columns.
-* Tested on WooCommerce 7.4.1.
-
-= 1.47.1 - 15/02/2023 =
-* Fixed an issue with a not correctly minified js file that would cause an error when opening the Edit Feed form.
-
-= 1.47.0 - 01/02/2023 =
-* Tested on WooCommerce 7.3.0.
-* Added the code to handle min and max variation prices for non variation products.
-
-= 1.46.1 - 14/01/2023 =
-* Fixed an issue where the price could not be filtered on "Sale Price is empty".
-
 === Upgrade Notice ===
 
-= 2.11.1 2024-11-14 =
+= 2.12.0 2024-12-23 =
 * Important: This update introduces additional tweaks and some bug fixes. We strongly recommend backing up your existing feeds before upgrading.

@@ -230,7 +230,7 @@ if ( ! class_exists( 'WPPRFM_Review_Feed_Processor' ) ) :
 
 			$review_text .= '</review>';
 
-			if ( false === file_put_contents( $this->_feed_file_path, $review_text, FILE_APPEND ) ) {
+			if ( false === wppfm_append_line_to_file( $this->_feed_file_path, $review_text ) ) {
 				wppfm_write_log_file( sprintf( 'Could not write product review %s to the feed', $review_id ) );
 
 				return false;

@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WooCommerce Product Feed Manager\n"
-"POT-Creation-Date: 2024-11-26 09:01+0100\n"
+"POT-Creation-Date: 2024-12-22 11:09+0100\n"
 "PO-Revision-Date: 2018-08-20 20:39+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -28,20 +28,20 @@ msgid ""
 msgstr ""
 
 #. translators: %s: Folder where the feeds are stored
-#: includes/application/class-feed-master.php:223
+#: includes/application/class-feed-master.php:225
 #, php-format
 msgid ""
 "1430 - %s is not a writable folder. Make sure you have admin rights to this "
 "folder."
 msgstr ""
 
-#: includes/application/class-feed-master.php:613
+#: includes/application/class-feed-master.php:632
 #: includes/user-interface/class-wppfm-i18n-scripts.php:89
 msgid "Fill with a static value"
 msgstr ""
 
-#: includes/application/class-feed-master.php:614
-#: includes/application/class-feed-master.php:619
+#: includes/application/class-feed-master.php:633
+#: includes/application/class-feed-master.php:638
 msgid "Use the settings in the Merchant Center"
 msgstr ""
 
@@ -79,30 +79,36 @@ msgid "Feed"
 msgstr ""
 
 #. translators: %s: Title of the feed file
-#: includes/data/class-wppfm-ajax-file.php:122
+#: includes/data/class-wppfm-ajax-file.php:123
 #, php-format
 msgid "Could not remove file %s because it does not seem to exist."
 msgstr ""
 
-#: includes/data/class-wppfm-ajax-file.php:356
+#: includes/data/class-wppfm-ajax-file.php:148
+msgid ""
+"Could not update the feed file because the channel has not been installed"
+msgstr ""
+
+#: includes/data/class-wppfm-ajax-file.php:382
 msgid "Failed to re-initialize the plugin. Please try again."
 msgstr ""
 
-#: includes/data/class-wppfm-ajax-file.php:376
+#: includes/data/class-wppfm-ajax-file.php:402
 msgid "Feed processing data cleared"
 msgstr ""
 
 #. translators: clearing the feed data failed
-#: includes/data/class-wppfm-ajax-file.php:379
+#: includes/data/class-wppfm-ajax-file.php:405
 msgid "Failed to clear the feed process. Please try again."
 msgstr ""
 
-#: includes/data/class-wppfm-channel-ftp.php:44
+#. translators: %s: Folder that contains the channel data
+#: includes/data/class-wppfm-channel-ftp.php:46
 #, php-format
 msgid ""
-"You have no read/write permission to the %s folder.\n"
-"\t\t\t\t\t\t\tPlease update the file permissions of this folder to make it "
-"writable and then try installing a channel again."
+"You have no read/write permission to the %s folder. Please update the file "
+"permissions of this folder to make it writable and then try installing a "
+"channel again."
 msgstr ""
 
 #: includes/data/class-wppfm-channel.php:198
@@ -145,29 +151,55 @@ msgid ""
 "\t\t\t\t\t\t\tAlso try to deactivate and then activate the plugin."
 msgstr ""
 
-#: includes/data/class-wppfm-db-management.php:56
+#: includes/data/class-wppfm-db-management.php:68
 msgid "Feed needs to be generated first"
 msgstr ""
 
-#: includes/data/class-wppfm-db-management.php:216
+#: includes/data/class-wppfm-db-management.php:232
 msgid ""
 "The backup file is of an older version of the database and can not be "
 "restored as it is not compatible with the current database."
 msgstr ""
 
-#: includes/data/class-wppfm-db-management.php:287
+#: includes/data/class-wppfm-db-management.php:303
 msgid "A backup file with the selected name does not exists."
 msgstr ""
 
 #. translators: %s: selected backup file name
-#: includes/data/class-wppfm-db-management.php:322
+#: includes/data/class-wppfm-db-management.php:338
 #, php-format
 msgid "Failed to make a copy of %s"
 msgstr ""
 
-#: includes/data/class-wppfm-file.php:47 includes/data/class-wppfm-file.php:90
-#: includes/data/class-wppfm-file.php:128
-msgid "Unable to open the file containing the categories"
+#: includes/data/class-wppfm-file.php:101
+msgid "Unable to read the file containing the categories"
+msgstr ""
+
+#: includes/data/wppfm-admin-functions.php:228
+msgid "Unable to initialize WP_Filesystem"
+msgstr ""
+
+#. translators: %1$: plugin name, %2$: version number, %3$: link start, %4$: link end
+#: includes/libraries/wpmr_plugin_updater.php:241
+#, php-format
+msgid ""
+"There is a new version of %1$s available. %2$sView version %3$s details%4$s."
+msgstr ""
+
+#. translators: %1$: plugin name, %2$: version number, %3$: link start, %4$: link end
+#: includes/libraries/wpmr_plugin_updater.php:250
+#, php-format
+msgid ""
+"There is a new version of %1$s available. %2$sView version %3$s details%4$s "
+"or %5$supdate now%6$s."
+msgstr ""
+
+#: includes/libraries/wpmr_plugin_updater.php:493
+msgid "You do not have permission to install plugin updates"
+msgstr ""
+
+#: includes/libraries/wpmr_plugin_updater.php:493
+msgid "Error"
 msgstr ""
 
 #: includes/libraries/wppfm-background-process.php:728
@@ -188,6 +220,12 @@ msgid ""
 "The logger code is now integrated in the Feed Manager plugin. To prevent "
 "conflicts please deactivate and remove the \"WooCommerce Product Feed "
 "Manager Logger\" plugin from your Plugins page."
+msgstr ""
+
+#: includes/packages/pll/includes/wppfm-pll-functions.php:17
+#: includes/packages/transpress/includes/wppfm-transpress-functions.php:24
+#: includes/packages/wpml/includes/wppfm-wpml-functions.php:23
+msgid "-- Select the language of the feed --"
 msgstr ""
 
 #: includes/packages/promotions-feed-manager/classes/class-wpppfm-data.php:63
@@ -235,14 +273,14 @@ msgid "Add"
 msgstr ""
 
 #: includes/packages/promotions-feed-manager/classes/class-wpppfm-google-merchant-promotion-wrapper.php:55
-#: includes/user-interface/class-wppfm-i18n-scripts.php:236
+#: includes/user-interface/class-wppfm-i18n-scripts.php:239
 #: includes/user-interface/class-wppfm-list-table.php:249
 #: includes/user-interface/class-wppfm-list-table.php:280
 msgid "Delete"
 msgstr ""
 
 #: includes/packages/promotions-feed-manager/classes/class-wpppfm-google-merchant-promotion-wrapper.php:56
-#: includes/user-interface/class-wppfm-i18n-scripts.php:234
+#: includes/user-interface/class-wppfm-i18n-scripts.php:236
 #: includes/user-interface/class-wppfm-list-table.php:251
 msgid "Duplicate"
 msgstr ""
@@ -259,7 +297,7 @@ msgstr ""
 
 #: includes/packages/promotions-feed-manager/classes/elements/class-wpppfm-main-input-selector-element.php:24
 #: includes/packages/review-feed-manager/classes/elements/class-wpprfm-main-input-selector-element.php:23
-#: includes/user-interface/class-wppfm-settings-page.php:192
+#: includes/user-interface/class-wppfm-settings-page.php:205
 #: includes/user-interface/elements/class-wppfm-main-input-selector-element.php:24
 msgid "File Name"
 msgstr ""
@@ -516,6 +554,10 @@ msgid ""
 "to use the Google Review Feed add-on."
 msgstr ""
 
+#: includes/packages/woocs/includes/wppfm-woocs-functions.php:19
+msgid "-- Select the WOOCS currency for the feed --"
+msgstr ""
+
 #: includes/user-interface/abstract-wppfm-attribute-mapping-wrapper.php:33
 msgid "Attribute Mapping"
 msgstr ""
@@ -565,6 +607,14 @@ msgstr ""
 
 #: includes/user-interface/class-wppfm-channel-manager-page.php:167
 msgid "Channel Info"
+msgstr ""
+
+#. translators: %s: channel name
+#: includes/user-interface/class-wppfm-feed-editor-page.php:68
+#, php-format
+msgid ""
+"This feed requires the \"%s\" channel to be installed. Please open the "
+"Manage Channels page and install this channel before opening this feed."
 msgstr ""
 
 #: includes/user-interface/class-wppfm-feed-form-control.php:29
@@ -642,7 +692,7 @@ msgid "Status"
 msgstr ""
 
 #: includes/user-interface/class-wppfm-feed-list-page.php:94
-#: includes/user-interface/class-wppfm-settings-page.php:194
+#: includes/user-interface/class-wppfm-settings-page.php:207
 msgid "Actions"
 msgstr ""
 
@@ -720,9 +770,10 @@ msgstr ""
 msgid "The status of feed %feedname% is unknown."
 msgstr ""
 
-#. translators: %feedname%: name of the feed
+#. translators: 1: feedname is the name of the feed 2: prodnr the product id and 3: feedtype the feed type
 #: includes/user-interface/class-wppfm-i18n-scripts.php:45
-msgid "Product feed %feedname% is now ready. It contains %prodnr% %feedtype%."
+#, php-format
+msgid "Product feed %1$s is now ready. It contains %2$s %3$s."
 msgstr ""
 
 #: includes/user-interface/class-wppfm-i18n-scripts.php:46
@@ -1025,7 +1076,7 @@ msgid "Failed processing"
 msgstr ""
 
 #: includes/user-interface/class-wppfm-i18n-scripts.php:133
-#: includes/user-interface/class-wppfm-i18n-scripts.php:237
+#: includes/user-interface/class-wppfm-i18n-scripts.php:240
 #: includes/user-interface/class-wppfm-list-table.php:188
 msgid "Ready (auto)"
 msgstr ""
@@ -1109,7 +1160,8 @@ msgid ""
 "name or delete the existing file first."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:189
+#. translators: %s: name of the backup folder
+#: includes/user-interface/class-wppfm-i18n-scripts.php:190
 #, php-format
 msgid ""
 "1432 - %s is not a writable folder. Make sure you have admin rights to this "
@@ -1117,76 +1169,109 @@ msgid ""
 msgstr ""
 
 #. translators: %backup_file_name%: name of the backup file
-#: includes/user-interface/class-wppfm-i18n-scripts.php:191
+#: includes/user-interface/class-wppfm-i18n-scripts.php:192
 #, no-php-format
 msgid "1433 - Could not write the %backup_file_name% file."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:192
+#: includes/user-interface/class-wppfm-i18n-scripts.php:193
 msgid "No backup found"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:193
+#: includes/user-interface/class-wppfm-i18n-scripts.php:194
+msgid ""
+"To restore the exported backup file, please upload it to the \"wp-content/"
+"uploads/wppfm-backups\" folder of the server where you want to restore it on."
+msgstr ""
+
+#: includes/user-interface/class-wppfm-i18n-scripts.php:195
 msgid "The input is not a valid email address. Please try again."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:207
+#: includes/user-interface/class-wppfm-i18n-scripts.php:209
 msgid ""
 "There was an unknown error with the sign up process, please contact us at "
 "info@wpmarketingrobot.com!"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:208
+#: includes/user-interface/class-wppfm-i18n-scripts.php:210
 msgid ""
 "The email you entered is not a valid email address. Please check the address "
 "again."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:224
+#: includes/user-interface/class-wppfm-i18n-scripts.php:226
 msgid "edit"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:225
+#: includes/user-interface/class-wppfm-i18n-scripts.php:227
 msgid "select"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:226
+#: includes/user-interface/class-wppfm-i18n-scripts.php:228
 msgid "selected"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:227
+#: includes/user-interface/class-wppfm-i18n-scripts.php:229
 msgid "delete"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:228
+#: includes/user-interface/class-wppfm-i18n-scripts.php:230
 msgid "remove"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:229
+#: includes/user-interface/class-wppfm-i18n-scripts.php:231
 msgid "add"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:230
+#: includes/user-interface/class-wppfm-i18n-scripts.php:232
 msgid "if"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:231
+#: includes/user-interface/class-wppfm-i18n-scripts.php:233
 msgid "or"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:232
+#: includes/user-interface/class-wppfm-i18n-scripts.php:234
 msgid "and"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:233
+#: includes/user-interface/class-wppfm-i18n-scripts.php:235
 msgid ""
 "All products from the selected Shop Categories will be included in the feed"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:235
+#: includes/user-interface/class-wppfm-i18n-scripts.php:237
+msgid "Export"
+msgstr ""
+
+#: includes/user-interface/class-wppfm-i18n-scripts.php:238
 #: includes/user-interface/class-wppfm-list-table.php:252
 #: includes/user-interface/class-wppfm-list-table.php:281
 msgid "Regenerate"
+msgstr ""
+
+#: includes/user-interface/class-wppfm-license-page.php:37
+msgid ""
+"Your key seems to be expired. If you are sure you have a valid key, please "
+"open a ticket at wpmarketingrobot.com/support/"
+msgstr ""
+
+#: includes/user-interface/class-wppfm-license-page.php:39
+msgid "Plugin License Options"
+msgstr ""
+
+#: includes/user-interface/class-wppfm-license-page.php:44
+msgid "License Key"
+msgstr ""
+
+#: includes/user-interface/class-wppfm-license-page.php:50
+msgid "I accept your Terms and Conditions"
+msgstr ""
+
+#: includes/user-interface/class-wppfm-license-page.php:53
+#: includes/user-interface/class-wppfm-license-page.php:54
+msgid "Activate License"
 msgstr ""
 
 #: includes/user-interface/class-wppfm-main-header.php:73
@@ -1200,18 +1285,19 @@ msgid "Feed Editor"
 msgstr ""
 
 #: includes/user-interface/class-wppfm-main-header.php:83
+#: includes/user-interface/wppfm-admin-actions.php:66
 msgid "Channel Manager"
 msgstr ""
 
 #: includes/user-interface/class-wppfm-main-header.php:88
-#: includes/user-interface/wppfm-admin-actions.php:41
-#: includes/user-interface/wppfm-admin-actions.php:42
+#: includes/user-interface/wppfm-admin-actions.php:77
+#: includes/user-interface/wppfm-admin-actions.php:78
 msgid "Settings"
 msgstr ""
 
 #: includes/user-interface/class-wppfm-main-header.php:91
-#: includes/user-interface/wppfm-admin-actions.php:51
-#: includes/user-interface/wppfm-admin-actions.php:52
+#: includes/user-interface/wppfm-admin-actions.php:87
+#: includes/user-interface/wppfm-admin-actions.php:88
 msgid "Support"
 msgstr ""
 
@@ -1224,7 +1310,7 @@ msgid "Black Friday Sale: 50% Off"
 msgstr ""
 
 #: includes/user-interface/class-wppfm-notice.php:30
-msgid "From November 25 to December 8, 2024."
+msgid "From November 29 to December 2, 2024."
 msgstr ""
 
 #: includes/user-interface/class-wppfm-notice.php:31
@@ -1251,178 +1337,193 @@ msgstr ""
 msgid "Feed Manager - Settings"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:76
+#: includes/user-interface/class-wppfm-settings-page.php:78
 msgid "Auto feed fix"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:81
+#: includes/user-interface/class-wppfm-settings-page.php:83
 msgid "Automatically try regenerating feeds that are failed (default off)."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:82
+#: includes/user-interface/class-wppfm-settings-page.php:84
 msgid ""
 "Leaving this option on can put extra strain on your server when feeds keep "
 "failing."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:86
+#: includes/user-interface/class-wppfm-settings-page.php:88
 msgid "Disable background processing"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:91
+#: includes/user-interface/class-wppfm-settings-page.php:93
 msgid ""
 "Process feeds directly instead of in the background (default off). Try this "
 "option when feeds keep getting stuck in processing. "
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:92
+#: includes/user-interface/class-wppfm-settings-page.php:94
 msgid ""
 "WARNING: When this option is selected the system can only update one feed at "
 "a time. Make sure to de-conflict your feeds auto-update schedules to prevent "
 "more than one feed auto-updates at a time."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:96
+#: includes/user-interface/class-wppfm-settings-page.php:98
 msgid "Feed process logger"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:101
+#: includes/user-interface/class-wppfm-settings-page.php:103
 msgid ""
 "When switched on, generates an extensive log of the feed process (default "
 "off)."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:102
+#: includes/user-interface/class-wppfm-settings-page.php:104
 msgid "Switch this option only on request of the help desk. "
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:107
+#: includes/user-interface/class-wppfm-settings-page.php:109
 msgid "Show product identifiers"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:112
+#: includes/user-interface/class-wppfm-settings-page.php:114
 msgid ""
 "When switched on, adds Brand, GTIN and MPN product identifiers to the "
 "products (default off)."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:113
+#: includes/user-interface/class-wppfm-settings-page.php:115
 msgid ""
 "This option will add product identifier input fields to the Inventory card "
 "of your products. The MPN identifier is also added to the product variations."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:120
+#: includes/user-interface/class-wppfm-settings-page.php:122
 msgid "WPML: Use full resolution URLs"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:125
+#: includes/user-interface/class-wppfm-settings-page.php:127
 msgid "Enables full conversion of hard-coded URLs (default off)."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:126
+#: includes/user-interface/class-wppfm-settings-page.php:128
 msgid ""
 "Use this option if you're using WPML and are getting incorrect URLs in your "
 "feed. This option will slightly increase the load on the database when "
 "processing a feed."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:133
-msgid "Manual channel update"
-msgstr ""
-
-#: includes/user-interface/class-wppfm-settings-page.php:138
-msgid "When switched on, you need to manually update channels (default off)."
+#: includes/user-interface/class-wppfm-settings-page.php:134
+msgid "Omit price filters"
 msgstr ""
 
 #: includes/user-interface/class-wppfm-settings-page.php:139
+msgid "Omits filters that are used on the prices in your feeds (default off)."
+msgstr ""
+
+#: includes/user-interface/class-wppfm-settings-page.php:140
+msgid ""
+"Enable this option to prevent third-party plugins or custom filters from "
+"altering the prices in your product feeds. Use this if you notice incorrect "
+"prices in your feed."
+msgstr ""
+
+#: includes/user-interface/class-wppfm-settings-page.php:146
+msgid "Manual channel update"
+msgstr ""
+
+#: includes/user-interface/class-wppfm-settings-page.php:151
+msgid "When switched on, you need to manually update channels (default off)."
+msgstr ""
+
+#: includes/user-interface/class-wppfm-settings-page.php:152
 msgid ""
 "By default your channels are updated automatically as soon as an update is "
 "available. This option allows your to switch off the automatic channel "
 "updates and keep your channels manually up to date."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:144
+#: includes/user-interface/class-wppfm-settings-page.php:157
 msgid "Clear feed process"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:148
+#: includes/user-interface/class-wppfm-settings-page.php:161
 msgid "Clear Feed Process"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:151
+#: includes/user-interface/class-wppfm-settings-page.php:164
 msgid ""
 "Use this option when feeds get stuck processing - does not delete your "
 "current feeds or settings."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:155
+#: includes/user-interface/class-wppfm-settings-page.php:168
 msgid "Third party attributes"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:160
+#: includes/user-interface/class-wppfm-settings-page.php:173
 msgid ""
 "Enter comma separated keywords and wildcards to use third party attributes."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:161
+#: includes/user-interface/class-wppfm-settings-page.php:174
 msgid ""
 "Use specific wildcards. Do not use to broad wildcards like %_% because that "
 "will include default WooCommerce attributes and can sometimes result in "
 "incorrect feed outputs."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:165
+#: includes/user-interface/class-wppfm-settings-page.php:178
 msgid "Notice recipient"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:170
+#: includes/user-interface/class-wppfm-settings-page.php:183
 msgid "Email address of the feed manager."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:171
+#: includes/user-interface/class-wppfm-settings-page.php:184
 msgid ""
 "Enter the email address of the person you want to be notified when a feed "
 "fails during an automatic feed update. This option requires an SMTP server "
 "for WordPress to be installed on your server."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:175
+#: includes/user-interface/class-wppfm-settings-page.php:188
 msgid "Re-initialize"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:179
+#: includes/user-interface/class-wppfm-settings-page.php:192
 msgid "Re-initiate Plugin"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:182
+#: includes/user-interface/class-wppfm-settings-page.php:195
 msgid "Resets and updates the plugin."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:183
+#: includes/user-interface/class-wppfm-settings-page.php:196
 msgid ""
 "Updates and cleans the tables if required, re-initiates the cron events and "
 "resets the stored license - does not delete your current feeds or settings. "
 "You need to re-enter your license after this action."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:187
+#: includes/user-interface/class-wppfm-settings-page.php:200
 msgid "Backups"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:193
+#: includes/user-interface/class-wppfm-settings-page.php:206
 msgid "Backup Date"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:200
+#: includes/user-interface/class-wppfm-settings-page.php:213
 msgid "Add New Backup"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:205
+#: includes/user-interface/class-wppfm-settings-page.php:218
 msgid "Backup current feeds"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-settings-page.php:206
+#: includes/user-interface/class-wppfm-settings-page.php:219
 msgid "Cancel backup"
 msgstr ""
 
@@ -1761,11 +1862,63 @@ msgstr ""
 msgid "Feed Manager"
 msgstr ""
 
-#: includes/user-interface/wppfm-admin-actions.php:70
+#: includes/user-interface/wppfm-admin-actions.php:46
+#, php-format
+msgid "%d channel update"
+msgid_plural "%d channel updates"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: Number of channel updates available
+#: includes/user-interface/wppfm-admin-actions.php:56
+#, php-format
+msgid "Channel Manager %s"
+msgstr ""
+
+#: includes/user-interface/wppfm-admin-actions.php:106
 msgid ""
 "Due to an update of your Feed Manager plugin, your feed backups are no "
 "longer valid! Please open the Feed Manager Settings page, remove all current "
 "backups, and make a new one."
+msgstr ""
+
+#. translators: %s: link to the support page
+#: includes/user-interface/wppfm-admin-actions.php:235
+#, php-format
+msgid ""
+"2121 - Activating your license failed. Please open a support ticket at %s "
+"for support on this issue."
+msgstr ""
+
+#: includes/user-interface/wppfm-admin-actions.php:254
+#, php-format
+msgid ""
+"An error has occurred. It is possible that the wpmarketingrobot website is "
+"down.\n"
+"\t\t\t\t\t\tPlease check if wpmarketingrobot.com is still active. If not, or "
+"if this error consist, please contact\n"
+"\t\t\t\t\t\tauke@wpmarketingrobot.com. Error Message: %s"
+msgstr ""
+
+#: includes/user-interface/wppfm-admin-actions.php:306
+#, php-format
+msgid ""
+"You have an invalid or expired license key for your %1$s plugin.\n"
+"\t\t\t\tPlease <a href=\"%2$scheckout/?"
+"edd_license_key=%3$s&utm_source=client-"
+"admin&utm_medium=renewal_link&utm_campaign=license_expired\">\n"
+"\t\t\t\tclick here to go to the Licenses renewal page</a> to keep the plugin "
+"working and your product feeds valid."
+msgstr ""
+
+#: includes/user-interface/wppfm-admin-actions.php:323
+#, php-format
+msgid ""
+"The license key for your %1$s plugin is expiring soon. If you wish, you can "
+"<a href=\"%2$scheckout/?edd_license_key=%3$s&utm_source=client-"
+"admin&utm_medium=renewal_link&utm_campaign=license_renewal\">\n"
+"\t\t\t\t\tclick here</a> to renew your license key directly so that you can "
+"be sure your product feeds keep working."
 msgstr ""
 
 #: includes/user-interface/wppfm-admin-filters.php:25
@@ -1778,6 +1931,14 @@ msgstr ""
 
 #: includes/user-interface/wppfm-admin-filters.php:30
 msgid "Get Support"
+msgstr ""
+
+#: includes/user-interface/wppfm-admin-menu-functions.php:290
+#, php-format
+msgid ""
+"2122 - License verification failed. This may be due to a temporary issue "
+"with our server. Please wait a few minutes and try again. If the problem "
+"continues, feel free to open a support ticket at %s for further assistance."
 msgstr ""
 
 #: includes/user-interface/wppfm-edit-feed-form-functions.php:31
@@ -1841,30 +2002,30 @@ msgid ""
 msgstr ""
 
 #: includes/user-interface/wppfm-product-identifiers.php:34
-#: includes/user-interface/wppfm-product-identifiers.php:104
+#: includes/user-interface/wppfm-product-identifiers.php:106
 msgid ""
 "GTIN refers to a products Global Trade Item Number. You can also use a UPC, "
 "EAN, JAN, ISBN or ITF-14 number here."
 msgstr ""
 
 #: includes/user-interface/wppfm-product-identifiers.php:45
-#: includes/user-interface/wppfm-product-identifiers.php:93
+#: includes/user-interface/wppfm-product-identifiers.php:95
 msgid "Add your product's Manufacturer Part Number (MPN)."
 msgstr ""
 
-#: includes/user-interface/wppfm-product-identifiers.php:91
+#: includes/user-interface/wppfm-product-identifiers.php:93
 msgid "Product MPN"
 msgstr ""
 
-#: includes/user-interface/wppfm-product-identifiers.php:139
+#: includes/user-interface/wppfm-product-identifiers.php:143
 msgid "Brand"
 msgstr ""
 
-#: includes/user-interface/wppfm-product-identifiers.php:150
+#: includes/user-interface/wppfm-product-identifiers.php:154
 msgid "GTIN"
 msgstr ""
 
-#: includes/user-interface/wppfm-product-identifiers.php:161
+#: includes/user-interface/wppfm-product-identifiers.php:165
 msgid "MPN"
 msgstr ""
 
@@ -1872,33 +2033,33 @@ msgstr ""
 msgid "Product Feed"
 msgstr ""
 
-#: includes/user-interface/wppfm-woocommerce-actions.php:40
-#: includes/user-interface/wppfm-woocommerce-actions.php:74
+#: includes/user-interface/wppfm-woocommerce-actions.php:42
+#: includes/user-interface/wppfm-woocommerce-actions.php:88
 msgid "Exclude from Feed"
 msgstr ""
 
-#: includes/user-interface/wppfm-woocommerce-actions.php:41
+#: includes/user-interface/wppfm-woocommerce-actions.php:43
 msgid ""
-"Select this option to mark this product for exclusion. Use the Feed Manager "
-"Product Filter to remove marked products from feeds"
+"Activate this option to mark this product for exclusion. Use the Feed "
+"Manager Product Filter to remove marked products from feeds"
 msgstr ""
 
-#: includes/user-interface/wppfm-woocommerce-actions.php:73
+#: includes/user-interface/wppfm-woocommerce-actions.php:87
 msgid ""
-"Select this option to mark this product variation for exclusion. Use the "
+"Activate this option to mark this product variation for exclusion. Use the "
 "Feed Manager Product Filter to remove marked products from feeds"
 msgstr ""
 
-#: wp-product-feed-manager.php:92
+#: wp-product-feed-manager.php:79
 msgid "Cloning is not allowed"
 msgstr ""
 
-#: wp-product-feed-manager.php:103
+#: wp-product-feed-manager.php:90
 msgid "Unserializing instances of this class is not allowed"
 msgstr ""
 
 #. Plugin Name of the plugin/theme
-msgid "WP Product Feed Manager"
+msgid "WooCommerce Product Feed Manager"
 msgstr ""
 
 #. Plugin URI of the plugin/theme

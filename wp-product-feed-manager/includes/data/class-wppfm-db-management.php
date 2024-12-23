@@ -18,14 +18,26 @@ if ( ! class_exists( 'WPPFM_Db_Management' ) ) :
 	 */
 	class WPPFM_Db_Management {
 
+		/**
+		 * Checks if a table exists in the database.
+		 *
+		 * @param   string  $table_name Name of the table to check.
+		 *
+		 * @return  boolean true if the table exists, false if not.
+		 */
 		public static function table_exists( $table_name ) {
 			global $wpdb;
 
-			if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->prefix . $table_name ) ) === $wpdb->prefix . $table_name ) {
-				return true;
-			} else {
-				return false;
-			}
+			// Use the wpdb::get_results() method to check table existence
+			$query = $wpdb->prepare(
+				'SELECT 1 FROM information_schema.tables WHERE table_schema = %s AND table_name = %s',
+				DB_NAME,
+				$wpdb->prefix . $table_name
+			);
+
+			$result = $wpdb->get_results( $query );
+
+			return ! empty( $result );
 		}
 
 		/**
@@ -155,6 +167,7 @@ if ( ! class_exists( 'WPPFM_Db_Management' ) ) :
 		 * Checks the existing backup files for non-compliant versions
 		 *
 		 * @since 1.8.0
+		 * @since 3.12.0 - Switched from using file_put_contents to WP_Filesystem.
 		 *
 		 * @return boolean true if a non-compliant backup file exists
 		 */
@@ -163,14 +176,15 @@ if ( ! class_exists( 'WPPFM_Db_Management' ) ) :
 				return false;
 			}
 
-			$files = wppfm_list_sql_files( WPPFM_BACKUP_DIR );
+			$wp_filesystem = wppfm_get_wp_filesystem();
+			$files         = wppfm_list_sql_files( WPPFM_BACKUP_DIR );
 
 			if ( count( $files ) === 0 ) {
 				return false;
 			}
 
 			foreach ( $files as $file ) {
-				$backup_string = file_get_contents( $file );
+				$backup_string = $wp_filesystem->get_contents( $file );
 
 				// get the db version
 				$backup_version_string = ltrim( substr( $backup_string, stripos( $backup_string, '#' ) ), '#' );
@@ -188,13 +202,15 @@ if ( ! class_exists( 'WPPFM_Db_Management' ) ) :
 		 * Restores the data from a backup file
 		 *
 		 * @since 1.7.2
+		 * @since 3.12.0 - Switched from using file_put_contents to WP_Filesystem.
 		 *
 		 * @param string name of the backup file
 		 *
 		 * @return boolean if restored successfully, string when not
 		 */
 		public static function restore_backup( $backup_file_name ) {
-			$backup_class = new WPPFM_Backup();
+			$backup_class  = new WPPFM_Backup();
+			$wp_filesystem = wppfm_get_wp_filesystem();
 
 			$backup_file = WPPFM_BACKUP_DIR . '/' . $backup_file_name;
 			$backup_path = str_replace( '\\', '/', $backup_file );
@@ -203,7 +219,7 @@ if ( ! class_exists( 'WPPFM_Db_Management' ) ) :
 
 			if ( file_exists( $backup_path ) ) {
 				$table_queries = array();
-				$backup_string = file_get_contents( $backup_file );
+				$backup_string = $wp_filesystem->get_contents( $backup_file );
 
 				// remove the date string
 				$backup_string = substr( $backup_string, stripos( $backup_string, '#' ) );
@@ -300,7 +316,7 @@ if ( ! class_exists( 'WPPFM_Db_Management' ) ) :
 			$backup_file = realpath( WPPFM_BACKUP_DIR . '/' . $backup_file_name );
 
 			/* translators: %s: Selected backup file */
-			return file_exists( $backup_file ) ? unlink( $backup_file ) : false;
+			return file_exists( $backup_file ) ? wp_delete_file( $backup_file ) : false;
 		}
 
 		/**

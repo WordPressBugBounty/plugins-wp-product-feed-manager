@@ -7,10 +7,10 @@
  * Author URI: https://www.wpmarketingrobot.com
  * Developer: Michel Jongbloed
  * Developer URI: https://www.wpmarketingrobot.com
- * Version: 2.11.2
- * Modified: 26-11-2024
+ * Version: 2.12.0
+ * Modified: 22-12-2024
  * WC requires at least: 8.4
- * WC tested up to: 9.4.1
+ * WC tested up to: 9.5.1
  *
  * This plugin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		 *
 		 * @var string  Containing the version number of the plugin.
 		 */
-		public $version = '2.11.2';
+		public $version = '2.12.0';
 
 		/**
 		 * Author Name.
@@ -128,7 +128,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 			add_action( 'wp_ajax_dismiss_admin_notice', array( $this, 'dismiss_admin_notice' ) );
 
 			// Set up localisation.
-			// @since 2.11.0.- Changed from the plugins_loaded to the  after_setup_theme action to prevent a "Translation loading was triggered too early" error message.
+			// @since 3.11.0.- Changed from the plugins_loaded to the  after_setup_theme action to prevent a "Translation loading was triggered too early" error message.
 			add_action( 'after_setup_theme', array( $this, 'load_text_domain' ) );
 
 			// Declare compatibility with custom order tables.
@@ -270,7 +270,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		private function includes() {
 			// Include the WordPress pluggable.php file on forehand to prevent a "Call to undefined function wp_get_current_user()" error.
 			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			if ( is_admin() && basename( $_SERVER['PHP_SELF'] ) === 'options-general.php' && 'email_template' === filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL_SPECIAL_CHARS) ) {
+			if ( is_admin() && isset( $_SERVER['PHP_SELF'] ) && basename( wp_unslash( $_SERVER['PHP_SELF'] ) ) === 'options-general.php' && 'email_template' === filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL_SPECIAL_CHARS) ) {
 				require_once ABSPATH . 'wp-includes/pluggable.php';
 			}
 

@@ -119,16 +119,16 @@ if ( ! class_exists( 'WPPPFM_Promotions_Feed_Processor' ) ) :
 			$this->add_file_format_line_to_feed( $file_header ); // XML Header line
 
 			foreach ( $this->_feed_data->promotions as $promotion ) {
-				file_put_contents( $this->_feed_file_path, '<promotion>' . "\r\n", FILE_APPEND ); // XML Start promotion element
+				wppfm_append_line_to_file( $this->_feed_file_path, '<promotion>' . "\r\n" );
 
 				foreach ( $promotion as $key => $value ) {
 					$this->handle_promotion_elements( $key, $value );
 				}
 
-				file_put_contents( $this->_feed_file_path, '</promotion>' . "\r\n", FILE_APPEND ); // XML End promotion element
+				wppfm_append_line_to_file( $this->_feed_file_path, '</promotion>' . "\r\n" );
 			}
 
-			file_put_contents( $this->_feed_file_path, '</rss>', FILE_APPEND ); // XML Footer line
+			wppfm_append_line_to_file( $this->_feed_file_path, '</rss>' ); // XML Footer line
 
 			return 'promotions added';
 		}

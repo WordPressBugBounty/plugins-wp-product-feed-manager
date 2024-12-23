@@ -26,6 +26,8 @@ if ( ! class_exists( 'WPPFM_File' ) ) :
 		/**
 		 * Reads the correct categories from a channel-specific taxonomy text file
 		 *
+		 * @since 3.12.0 - Switched from using file_put_contents to WP_Filesystem.
+		 *
 		 * @param int $channel_id
 		 * @param string $search_level
 		 * @param string $parent_category
@@ -35,6 +37,7 @@ if ( ! class_exists( 'WPPFM_File' ) ) :
 		 */
 		public function get_categories_for_list( $channel_id, $search_level, $parent_category, $language_code ) {
 			$channel_class = new WPPFM_Channel();
+			$wp_filesystem = wppfm_get_wp_filesystem();
 
 			$last_cat     = '';
 			$categories   = array();
@@ -42,127 +45,158 @@ if ( ! class_exists( 'WPPFM_File' ) ) :
 
 			$path = WPPFM_CHANNEL_DATA_DIR . "/$channel_name/taxonomy.$language_code.txt";
 
-			if ( file_exists( $path ) ) {
-				$file = fopen( $path, 'r' )
-				or die( esc_html__( 'Unable to open the file containing the categories', 'wp-product-feed-manager' ) );
+			if ( $wp_filesystem->exists( $path ) ) {
+				$file_content = $wp_filesystem->get_contents( $path );
 
-				// step over the first lines that do not contain categories
-				while ( strpos( fgets( $file ), '#' ) ) {
-					/** @noinspection PhpUnnecessaryStopStatementInspection */
-					continue;
+				if ( false === $file_content ) {
+					return $categories;
 				}
 
-				// step through all the lines in the file
-				while ( ! feof( $file ) ) {
-					// get the line
-					$line = trim( fgets( $file ) );
+				$lines = explode( "\n", $file_content );
 
-					// split the line into pieces using the > separator
+				// step over the first lines that do not contain categories
+				$lines = array_filter( $lines, function( $line ) {
+					return strpos($line, '#') === false;
+				});
+
+				// step through all the lines in the file
+				foreach ( $lines as $line ) {
 					$category_line_array = explode( '>', $line );
 
 					if ( 0 === $search_level ) {
-						if ( trim( $category_line_array [ $search_level ] ) !== $last_cat ) {
-							$categories[] = trim( $category_line_array [ $search_level ] );
-							$last_cat     = trim( $category_line_array [ $search_level ] );
+						if ( trim( $category_line_array[ $search_level ] ) !== $last_cat ) {
+							$categories[] = trim( $category_line_array[ $search_level ] );
+							$last_cat     = trim( $category_line_array[ $search_level ] );
 						}
-					} elseif ( count( $category_line_array ) > $search_level && $search_level > 0 && trim( $category_line_array [ $search_level - 1 ] ) === trim( $parent_category ) ) {
-						if ( trim( $category_line_array [ $search_level ] ) !== $last_cat ) {
-							$categories[] = trim( $category_line_array [ $search_level ] );
-							$last_cat     = trim( $category_line_array [ $search_level ] );
+					} elseif ( count( $category_line_array ) > $search_level && $search_level > 0 && trim( $category_line_array[ $search_level - 1 ] ) === trim( $parent_category ) ) {
+						if ( trim( $category_line_array[ $search_level ] ) !== $last_cat ) {
+							$categories[] = trim( $category_line_array[ $search_level ] );
+							$last_cat     = trim( $category_line_array[ $search_level ] );
 						}
 					}
 				}
-
-				// don't forget to free the resources
-				fclose( $file );
 			}
 
 			return $categories;
 		}
 
-		public function get_output_fields_for_specific_channel( $channel ) {
-			$fields = array();
+		/**
+		 * Reads the correct attributes from a channel-specific taxonomy text file.
+		 *
+		 * @since 3.12.0 - Switched from using file_put_contents to WP_Filesystem.
+		 *
+		 * @param string $channel the name of the channel.
+		 *
+		 * @return array containing the output fields.
+		 */
+		public function get_attributes_for_specific_channel( $channel ) {
+			$attributes    = array();
+			$path          = WPPFM_CHANNEL_DATA_DIR . "/$channel/$channel.txt";
+			$wp_filesystem = wppfm_get_wp_filesystem();
 
-			$path = WPPFM_CHANNEL_DATA_DIR . "/$channel/$channel.txt";
+			if ( $wp_filesystem->exists( $path ) ) {
+				$file_contents = $wp_filesystem->get_contents( $path );
 
-			if ( file_exists( $path ) ) {
-				$file = fopen( $path, 'r' )
-				or die( esc_html__( 'Unable to open the file containing the categories', 'wp-product-feed-manager' ) );
+				if ( $file_contents === false ) {
+					die( esc_html__( 'Unable to read the file containing the categories', 'wp-product-feed-manager' ) );
+				}
 
-				// step through all the lines in the file
-				while ( ! feof( $file ) ) {
+				// Split the file contents into lines
+				$lines = explode( "\n", $file_contents );
+
+				// Step through all the lines in the file
+				foreach ( $lines as $line ) {
 					$field_object = new stdClass();
 
-					// get the line
-					/** @noinspection PhpRedundantOptionalArgumentInspection */
-					$line = fgetcsv( $file, 0, "\t", "\"", "\\" );
+					// Parse the line as CSV using tab delimiter
+					$line_data = str_getcsv( $line, "\t", "\"", "\\" );
 
-					if ( is_array( $line ) && ! empty( $line[0] ) ) {
-						$field_object->field_id    = $line[0];
-						$field_object->category_id = $line[1];
-						$field_object->field_label = $line[2];
+					if ( ! empty( $line_data[0] ) ) {
+						$field_object->field_id    = $line_data[0];
+						$field_object->category_id = $line_data[1];
+						$field_object->field_label = $line_data[2];
 
-						$fields[] = $field_object;
+						$attributes[] = $field_object;
 					}
 				}
 			}
 
-			return $fields;
+			return $attributes;
 		}
 
 		/**
-		 * Check the standard backup folder and return the .sql file names in it
+		 * Check the standard backup folder and return the .sql file names in it.
 		 *
-		 * @return array
+		 * @since 3.12.0 - Switched from using file_put_contents to WP_Filesystem.
+		 * @return array containing the backup file names.
 		 */
 		public function make_list_of_active_backups() {
-			$backups = array();
+			$backups       = array();
+			$path          = WPPFM_BACKUP_DIR;
+			$wp_filesystem = wppfm_get_wp_filesystem();
 
-			$path = WPPFM_BACKUP_DIR;
+			// List all .sql files in the directory
+			$files = glob( $path . '/*.sql' );
 
-			foreach ( glob( $path . '/*.sql' ) as $file ) {
-				if ( ! file_exists( $file ) ) {
-					continue;
+			if ( is_array( $files ) ) {
+				foreach ( $files as $file ) {
+					if ( ! $wp_filesystem->exists( $file ) ) {
+						continue;
+					}
+
+					// Read the first line of the file
+					$file_contents = $wp_filesystem->get_contents( $file );
+					if ( $file_contents === false ) {
+						continue; // Skip if the file couldn't be read
+					}
+
+					$lines = explode( "\n", $file_contents );
+					$first_line = $lines[0] ?? '';
+
+					$file_name   = str_replace( WPPFM_BACKUP_DIR . '/', '', $file );
+					$date_string = strtok( $first_line, '#' );
+					$file_date   = strlen( $date_string ) < 15 ? gmdate( 'Y-m-d H:i:s', $date_string ) : 'unknown';
+
+					$backups[] = $file_name . '&&' . $file_date;
 				}
-
-				$feed = fopen( $file, 'r' ) or die( esc_html__( 'Unable to open the file containing the categories', 'wp-product-feed-manager' ) );
-
-				$line = fgets( $feed );
-				if ( is_resource( $feed ) ) {
-					fclose( $feed );
-				}
-
-				$file_name   = str_replace( WPPFM_BACKUP_DIR . '/', '', $file );
-				$date_string = strtok( $line, '#' );
-				$file_date   = strlen( $date_string ) < 15 ? gmdate( 'Y-m-d H:i:s', $date_string ) : 'unknown';
-
-				$backups[] = $file_name . '&&' . $file_date;
 			}
 
 			return $backups;
 		}
 
+		/**
+		 * Write the backup string to a .sql file in the backup folder.
+		 *
+		 * @since 3.12.0 - Switched from using file_put_contents to WP_Filesystem.
+		 *
+		 * @param string $backup_file   the name of the backup file.
+		 * @param string $backup_string a string containing the content of the backup.
+		 *
+		 * @return string with the result of the backup.
+		 */
 		public function write_full_backup_file( $backup_file, $backup_string ) {
-			if ( is_writable( WPPFM_BACKUP_DIR ) ) {
-				$feed = fopen( $backup_file, 'w' );
-			} else {
+			$wp_filesystem = wppfm_get_wp_filesystem();
+
+			// Check if the backup directory is writable
+			if ( ! $wp_filesystem->is_writable( WPPFM_BACKUP_DIR ) ) {
 				return 'write_protected';
 			}
 
-			if ( false !== $feed ) {
-				$result = fwrite( $feed, $backup_string );
-				fclose( $feed );
+			// Write the backup string to the file
+			$result = $wp_filesystem->put_contents( $backup_file, $backup_string, FS_CHMOD_FILE );
 
-				if ( false !== $result ) {
-					return 'success';
-				} else {
-					return 'backup_failed';
-				}
+			if ( false !== $result ) {
+				return 'success';
 			} else {
 				return 'backup_failed';
 			}
 		}
 
+		/**
+		 * Get the names of the installed channels.
+		 *
+		 * @return array with the installed channels.
+		 */
 		public function get_installed_channels_from_file() {
 			$active_channels = array();
 
@@ -181,18 +215,18 @@ if ( ! class_exists( 'WPPFM_File' ) ) :
 		}
 
 		/**
-		 * Takes the installed channel .zip file and unzips it in the channels folder
+		 * Takes the installed channel .zip file and unzips it in the channel folder.
 		 *
-		 * @param string $channel_name
+		 * @param string $channel_name the name of the channel.
 		 *
-		 * @return bool false if installing the channel failed
+		 * @return bool false if installing the channel failed.
 		 */
 		public function unzip_channel_file( $channel_name ) {
 			if ( ! file_exists( WPPFM_CHANNEL_DATA_DIR ) ) {
 				WPPFM_Folders::make_channels_support_folder();
 			}
 
-			WP_Filesystem();
+			wppfm_get_wp_filesystem();
 
 			$zip_file         = WPPFM_CHANNEL_DATA_DIR . '/' . $channel_name . '.zip';
 			$destination_path = WPPFM_CHANNEL_DATA_DIR . '/';
@@ -209,11 +243,16 @@ if ( ! class_exists( 'WPPFM_File' ) ) :
 				wppfm_handle_wp_errors_response( $unzip_result, sprintf( 'The installation of channel %s failed. Unable to unpack the channel file in folder %s.', $channel_name, WPPFM_CHANNEL_DATA_DIR ) );
 			}
 
-			unlink( $zip_file ); // clean up the zip file
+			wp_delete_file( $zip_file ); // clean up the zip file
 
 			return true;
 		}
 
+		/**
+		 * Deletes the channel source files and the channel folder.
+		 *
+		 * @param string $channel_short_name the short name of the channel.
+		 */
 		public function delete_channel_source_files( $channel_short_name ) {
 			$channel_folder = WPPFM_CHANNEL_DATA_DIR . '/' . $channel_short_name;
 
@@ -231,6 +270,11 @@ if ( ! class_exists( 'WPPFM_File' ) ) :
 			}
 		}
 
+		/**
+		 * Deletes the channel feed files.
+		 *
+		 * @param int $channel_id the id of the channel.
+		 */
 		public function delete_channel_feed_files( $channel_id ) {
 			$feeds = $this->_queries->get_feeds_from_specific_channel( $channel_id );
 
@@ -240,7 +284,7 @@ if ( ! class_exists( 'WPPFM_File' ) ) :
 				$file_path = WPPFM_FEEDS_DIR . '/' . $file_name;
 
 				if ( file_exists( $file_path ) ) {
-					unlink( $file_path );
+					wp_delete_file( $file_path );
 				}
 			}
 		}

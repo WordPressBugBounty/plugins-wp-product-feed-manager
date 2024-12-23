@@ -26,7 +26,7 @@ if ( ! class_exists( 'WPPRFM_Data' ) ) :
 				$product_review_feed_attributes = $data_class->fill_output_fields_with_metadata( $feed_id, $product_review_feed_attributes );
 			}
 
-			return json_encode( $product_review_feed_attributes );
+			return wp_json_encode( $product_review_feed_attributes );
 		}
 	}
 

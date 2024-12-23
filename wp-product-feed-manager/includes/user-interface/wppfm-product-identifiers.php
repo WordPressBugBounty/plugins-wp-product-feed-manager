@@ -47,20 +47,22 @@ function wppfm_create_gtin_wc_support_field() {
 	);
 }
 
-add_action( 'woocommerce_product_options_inventory_product_data', 'wppfm_create_gtin_wc_support_field' );
+add_action( 'wppfm_woocommerce_product_feed_panel', 'wppfm_create_gtin_wc_support_field' );
 
 /**
  * Function for the woocommerce_process_product_meta action-hook. Saves the custom fields' data.
  *
  * @param mixed $post_id Post ID of the product.
+ *
+ * @since 3.12.0 - Switched to using an input filter to sanitize the input.
  */
 function wppfm_save_custom_fields( $post_id ) {
 	$product = wc_get_product( $post_id );
 
 	// Get the custom fields' data.
-	$brand = sanitize_text_field( $_POST['wppfm_product_brand'] ) ?? '';
-	$gtin  = sanitize_text_field( $_POST['wppfm_product_gtin'] ) ?? '';
-	$mpn   = sanitize_text_field( $_POST['wppfm_product_mpn'] ) ?? '';
+	$brand = filter_input( INPUT_POST, 'wppfm_product_brand', FILTER_SANITIZE_SPECIAL_CHARS ) ?? '';
+	$gtin  = filter_input( INPUT_POST, 'wppfm_product_gtin', FILTER_SANITIZE_SPECIAL_CHARS ) ?? '';
+	$mpn   = filter_input( INPUT_POST, 'wppfm_product_mpn', FILTER_SANITIZE_SPECIAL_CHARS ) ?? '';
 
 	// Save the custom fields' data.
 	$product->update_meta_data( 'wppfm_product_brand', $brand );
@@ -115,12 +117,14 @@ add_action( 'woocommerce_variation_options', 'wppfm_create_mpn_wc_variation_supp
  * Function for the woocommerce_save_product_variation action-hook. Saves the custom fields data of the product variations.
  *
  * @param int $post_id
+ *
+ * @since 3.12.0 - Switched to using an input filter to sanitize the input.
  */
 function wppfm_save_variation_custom_fields( $post_id ) {
 
 	// Get the variations mpn and gtin.
-	$woocommerce_mpn_field  = sanitize_text_field( $_POST['wppfm_product_mpn'][ $post_id ] );
-	$woocommerce_gtin_field = sanitize_text_field( $_POST['wppfm_product_gtin'][ $post_id ] );
+	$woocommerce_mpn_field  = filter_input( INPUT_POST, 'wppfm_product_mpn', FILTER_SANITIZE_SPECIAL_CHARS ) ?? '';
+	$woocommerce_gtin_field = filter_input( INPUT_POST, 'wppfm_product_gtin', FILTER_SANITIZE_SPECIAL_CHARS ) ?? '';
 
 	// Update.
 	update_post_meta( $post_id, 'wppfm_product_mpn', $woocommerce_mpn_field );
@@ -136,7 +140,7 @@ function wppfm_show_wc_quick_edit_custom_fields() {
 	// Add the Brand field.
 	?>
 	<label>
-		<span class="title"><?php esc_html_e('Brand', 'woocommerce'); ?></span>
+		<span class="title"><?php esc_html_e('Brand', 'wp-product-feed-manager'); ?></span>
 		<span class="input-text-wrap">
             <input type="text" name="wppfm_product_brand" class="text wppfm_product_brand" value="">
         </span>
@@ -147,7 +151,7 @@ function wppfm_show_wc_quick_edit_custom_fields() {
 	// Add the GTIN field.
 	?>
 	<label>
-		<span class="title"><?php esc_html_e('GTIN', 'woocommerce'); ?></span>
+		<span class="title"><?php esc_html_e('GTIN', 'wp-product-feed-manager'); ?></span>
 		<span class="input-text-wrap">
             <input type="text" name="wppfm_product_gtin" class="text wppfm_product_gtin" value="">
         </span>
@@ -158,7 +162,7 @@ function wppfm_show_wc_quick_edit_custom_fields() {
 	// Add the MPN field.
 	?>
 	<label>
-		<span class="title"><?php esc_html_e('MPN', 'woocommerce'); ?></span>
+		<span class="title"><?php esc_html_e('MPN', 'wp-product-feed-manager'); ?></span>
 		<span class="input-text-wrap">
             <input type="text" name="wppfm_product_mpn" class="text wppfm_product_mpn" value="">
         </span>
@@ -173,13 +177,15 @@ add_action( 'woocommerce_product_quick_edit_start', 'wppfm_show_wc_quick_edit_cu
  * Function for the woocommerce_product_quick_edit_save action-hook. Saves the custom fields data of the products quick edit form.
  *
  * @param object $product
+ *
+ * @since 3.12.0 - Switched to using an input filter to sanitize the input.
  */
 function wppfm_save_wc_quick_edit_custom_fields( $product ) {
 	if ( function_exists('wppfm_create_gtin_wc_support_field' ) ) {
 		// Get the custom fields' data.
-		$brand = sanitize_text_field( $_POST['wppfm_product_brand'] ) ?? '';
-		$gtin  = sanitize_text_field( $_POST['wppfm_product_gtin'] ) ?? '';
-		$mpn   = sanitize_text_field( $_POST['wppfm_product_mpn'] ) ?? '';
+		$brand = filter_input( INPUT_POST, 'wppfm_product_brand', FILTER_SANITIZE_SPECIAL_CHARS ) ?? '';
+		$gtin  = filter_input( INPUT_POST, 'wppfm_product_gtin', FILTER_SANITIZE_SPECIAL_CHARS ) ?? '';
+		$mpn   = filter_input( INPUT_POST, 'wppfm_product_mpn', FILTER_SANITIZE_SPECIAL_CHARS ) ?? '';
 
 		// Save the custom fields' data.
 		$product->update_meta_data( 'wppfm_product_brand', $brand );

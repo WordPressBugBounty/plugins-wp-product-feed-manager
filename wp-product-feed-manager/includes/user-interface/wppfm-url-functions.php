@@ -24,13 +24,14 @@ function wppfm_on_any_own_plugin_page() {
  * Also returns true when the current page cannot be defined
  *
  * @since 2.3.4
- * @since 2.30.0 Modified the function to use the actual parameters and not the url as a string.
- * @since 3.3.0 Modified the function to include the new pages added from the Project Blue update.
+ * @since 2.30.0 - Modified the function to use the actual parameters and not the url as a string.
+ * @since 3.3.0 - Modified the function to include the new pages added from the Project Blue update.
+ * @since 3.12.0 - Added the use of wp_unslash() to prevent possible security issues.
  *
  * @return boolean
  */
 function wppfm_on_own_main_plugin_page() {
-	$ref_url = esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' );
+	$ref_url = isset($_SERVER['REQUEST_URI']) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 
 	// return true if the current page url has not been identified
 	if ( empty( $ref_url ) ) {

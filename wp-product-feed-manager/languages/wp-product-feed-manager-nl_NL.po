@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WooCommerce Product Feed Manager\n"
-"POT-Creation-Date: 2024-11-26 09:03+0100\n"
-"PO-Revision-Date: 2024-11-26 09:04+0100\n"
+"POT-Creation-Date: 2024-12-22 11:12+0100\n"
+"PO-Revision-Date: 2024-12-22 11:13+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nl_NL\n"
@@ -28,7 +28,7 @@ msgid ""
 msgstr "Hier kunt u de parameters van uw Google Product Review feed bewerken."
 
 #. translators: %s: Folder where the feeds are stored
-#: includes/application/class-feed-master.php:223
+#: includes/application/class-feed-master.php:225
 #, php-format
 msgid ""
 "1430 - %s is not a writable folder. Make sure you have admin rights to this "
@@ -37,13 +37,13 @@ msgstr ""
 "1430 - De %s map is niet schrijfbaar. Zorg dat u administrator rechten heeft "
 "voor deze map."
 
-#: includes/application/class-feed-master.php:613
+#: includes/application/class-feed-master.php:632
 #: includes/user-interface/class-wppfm-i18n-scripts.php:89
 msgid "Fill with a static value"
 msgstr "Vul met een statische waarde"
 
-#: includes/application/class-feed-master.php:614
-#: includes/application/class-feed-master.php:619
+#: includes/application/class-feed-master.php:633
+#: includes/application/class-feed-master.php:638
 msgid "Use the settings in the Merchant Center"
 msgstr "Gebruik de instellingen uit het Merchant Center"
 
@@ -94,35 +94,42 @@ msgid "Feed"
 msgstr "Feed"
 
 #. translators: %s: Title of the feed file
-#: includes/data/class-wppfm-ajax-file.php:122
+#: includes/data/class-wppfm-ajax-file.php:123
 #, php-format
 msgid "Could not remove file %s because it does not seem to exist."
 msgstr "Kon het bestand %s niet verwijderen omdat het niet lijkt te bestaan."
 
-#: includes/data/class-wppfm-ajax-file.php:356
+#: includes/data/class-wppfm-ajax-file.php:148
+msgid ""
+"Could not update the feed file because the channel has not been installed"
+msgstr ""
+"Kon het feedbestand niet bijwerken omdat het kanaal niet is geïnstalleerd"
+
+#: includes/data/class-wppfm-ajax-file.php:382
 msgid "Failed to re-initialize the plugin. Please try again."
 msgstr ""
 "Het opnieuw initialiseren van de plug-in is mislukt. Probeer het opnieuw."
 
-#: includes/data/class-wppfm-ajax-file.php:376
+#: includes/data/class-wppfm-ajax-file.php:402
 msgid "Feed processing data cleared"
 msgstr "Gegevens over het verwerken van product feeds gewist"
 
 #. translators: clearing the feed data failed
-#: includes/data/class-wppfm-ajax-file.php:379
+#: includes/data/class-wppfm-ajax-file.php:405
 msgid "Failed to clear the feed process. Please try again."
 msgstr "Het wissen van het feed-proces is mislukt. Probeer het opnieuw."
 
-#: includes/data/class-wppfm-channel-ftp.php:44
+#. translators: %s: Folder that contains the channel data
+#: includes/data/class-wppfm-channel-ftp.php:46
 #, php-format
 msgid ""
-"You have no read/write permission to the %s folder.\n"
-"\t\t\t\t\t\t\tPlease update the file permissions of this folder to make it "
-"writable and then try installing a channel again."
+"You have no read/write permission to the %s folder. Please update the file "
+"permissions of this folder to make it writable and then try installing a "
+"channel again."
 msgstr ""
-"U hebt geen lees-en schrijfmachtiging voor de map %s. \n"
-"\t\t\t\t\tWerk de bestandspermissies van deze map bij om deze schrijfbaar te "
-"maken en probeer opnieuw een kanaal te installeren."
+"U heeft geen lees-/schrijfrechten voor de map %s. Werk de "
+"bestandsmachtigingen van deze map bij om deze beschrijfbaar te maken en "
+"probeer vervolgens opnieuw een kanaal te installeren."
 
 #: includes/data/class-wppfm-channel.php:198
 #, php-format
@@ -181,11 +188,11 @@ msgstr ""
 "\t\t\t\t\t\t\t\t\tU kunt ook proberen de plugin te deactiveren en weer te "
 "reactiveren."
 
-#: includes/data/class-wppfm-db-management.php:56
+#: includes/data/class-wppfm-db-management.php:68
 msgid "Feed needs to be generated first"
 msgstr "Feed moet eerst worden gegenereerd"
 
-#: includes/data/class-wppfm-db-management.php:216
+#: includes/data/class-wppfm-db-management.php:232
 msgid ""
 "The backup file is of an older version of the database and can not be "
 "restored as it is not compatible with the current database."
@@ -193,20 +200,50 @@ msgstr ""
 "Het back-upbestand is van een oudere versie van de database en kan niet "
 "worden teruggezet omdat het niet compatibel is met de huidige database."
 
-#: includes/data/class-wppfm-db-management.php:287
+#: includes/data/class-wppfm-db-management.php:303
 msgid "A backup file with the selected name does not exists."
 msgstr "Er bestaat geen back-upbestand met de geselecteerde naam."
 
 #. translators: %s: selected backup file name
-#: includes/data/class-wppfm-db-management.php:322
+#: includes/data/class-wppfm-db-management.php:338
 #, php-format
 msgid "Failed to make a copy of %s"
 msgstr "Een kopie maken van %s is mislukt"
 
-#: includes/data/class-wppfm-file.php:47 includes/data/class-wppfm-file.php:90
-#: includes/data/class-wppfm-file.php:128
-msgid "Unable to open the file containing the categories"
-msgstr "Kan het bestand met de categorieën niet openen"
+#: includes/data/class-wppfm-file.php:101
+msgid "Unable to read the file containing the categories"
+msgstr "Het bestand met de categorieën kan niet worden gelezen"
+
+#: includes/data/wppfm-admin-functions.php:228
+msgid "Unable to initialize WP_Filesystem"
+msgstr "Kan WP_Filesystem niet initialiseren"
+
+#. translators: %1$: plugin name, %2$: version number, %3$: link start, %4$: link end
+#: includes/libraries/wpmr_plugin_updater.php:241
+#, php-format
+msgid ""
+"There is a new version of %1$s available. %2$sView version %3$s details%4$s."
+msgstr ""
+"Er is een nieuwe versie van %1$s beschikbaar; %2$sbekijk de versie%3$s-"
+"details%4$s."
+
+#. translators: %1$: plugin name, %2$: version number, %3$: link start, %4$: link end
+#: includes/libraries/wpmr_plugin_updater.php:250
+#, php-format
+msgid ""
+"There is a new version of %1$s available. %2$sView version %3$s details%4$s "
+"or %5$supdate now%6$s."
+msgstr ""
+"Er is een nieuwe versie van %1$s beschikbaar; %2$sbekijk versie%3$s-"
+"details%4$s of %5$supdate nu%6$s."
+
+#: includes/libraries/wpmr_plugin_updater.php:493
+msgid "You do not have permission to install plugin updates"
+msgstr "U heeft geen toestemming om de plugin updates te installeren"
+
+#: includes/libraries/wpmr_plugin_updater.php:493
+msgid "Error"
+msgstr "Fout"
 
 #: includes/libraries/wppfm-background-process.php:728
 #, php-format
@@ -232,6 +269,12 @@ msgstr ""
 "De Feed Manager Logger add-on is nu geïntegreerd in de Feed Manager plugin. "
 "Om conflicten te voorkomen, deactiveer en verwijder de \"WooCommerce Product "
 "Feed Manager Logger\" plugin via uw Plugins pagina."
+
+#: includes/packages/pll/includes/wppfm-pll-functions.php:17
+#: includes/packages/transpress/includes/wppfm-transpress-functions.php:24
+#: includes/packages/wpml/includes/wppfm-wpml-functions.php:23
+msgid "-- Select the language of the feed --"
+msgstr "-- Selecteer de taal van de feed --"
 
 #: includes/packages/promotions-feed-manager/classes/class-wpppfm-data.php:63
 msgid "Local Inventory Ads"
@@ -278,14 +321,14 @@ msgid "Add"
 msgstr "Toevoegen"
 
 #: includes/packages/promotions-feed-manager/classes/class-wpppfm-google-merchant-promotion-wrapper.php:55
-#: includes/user-interface/class-wppfm-i18n-scripts.php:236
+#: includes/user-interface/class-wppfm-i18n-scripts.php:239
 #: includes/user-interface/class-wppfm-list-table.php:249
 #: includes/user-interface/class-wppfm-list-table.php:280
 msgid "Delete"
 msgstr "Verwijder"
 
 #: includes/packages/promotions-feed-manager/classes/class-wpppfm-google-merchant-promotion-wrapper.php:56
-#: includes/user-interface/class-wppfm-i18n-scripts.php:234
+#: includes/user-interface/class-wppfm-i18n-scripts.php:236
 #: includes/user-interface/class-wppfm-list-table.php:251
 msgid "Duplicate"
 msgstr "Dupliceer"
@@ -302,7 +345,7 @@ msgstr "Product Feed Bewerker"
 
 #: includes/packages/promotions-feed-manager/classes/elements/class-wpppfm-main-input-selector-element.php:24
 #: includes/packages/review-feed-manager/classes/elements/class-wpprfm-main-input-selector-element.php:23
-#: includes/user-interface/class-wppfm-settings-page.php:192
+#: includes/user-interface/class-wppfm-settings-page.php:205
 #: includes/user-interface/elements/class-wppfm-main-input-selector-element.php:24
 msgid "File Name"
 msgstr "Bestandsnaam"
@@ -563,6 +606,10 @@ msgstr ""
 "Om de Google Review Feed Manager add-on te kunnen gebruiken, moet u een "
 "nieuwere versie van de Feed Manager plugin hebben."
 
+#: includes/packages/woocs/includes/wppfm-woocs-functions.php:19
+msgid "-- Select the WOOCS currency for the feed --"
+msgstr "-- Selecteer de WOOCS munteenheid van de feed --"
+
 #: includes/user-interface/abstract-wppfm-attribute-mapping-wrapper.php:33
 msgid "Attribute Mapping"
 msgstr "Toewijzing Producteigenschappen"
@@ -618,6 +665,17 @@ msgstr "Installeer"
 #: includes/user-interface/class-wppfm-channel-manager-page.php:167
 msgid "Channel Info"
 msgstr "Kanaal Info"
+
+#. translators: %s: channel name
+#: includes/user-interface/class-wppfm-feed-editor-page.php:68
+#, php-format
+msgid ""
+"This feed requires the \"%s\" channel to be installed. Please open the "
+"Manage Channels page and install this channel before opening this feed."
+msgstr ""
+"Om deze feed te kunnen genereren moet kanaal \"%s\"  geïnstalleerd zijn. "
+"Open de Channels beheren pagina en installeer dit kanaal voordat u de feed "
+"regenereert."
 
 #: includes/user-interface/class-wppfm-feed-form-control.php:29
 msgid "Select your product source"
@@ -696,7 +754,7 @@ msgid "Status"
 msgstr "Status"
 
 #: includes/user-interface/class-wppfm-feed-list-page.php:94
-#: includes/user-interface/class-wppfm-settings-page.php:194
+#: includes/user-interface/class-wppfm-settings-page.php:207
 msgid "Actions"
 msgstr "Acties"
 
@@ -788,11 +846,11 @@ msgstr ""
 msgid "The status of feed %feedname% is unknown."
 msgstr "De status van product feed %feedname% is onbekend."
 
-#. translators: %feedname%: name of the feed
+#. translators: 1: feedname is the name of the feed 2: prodnr the product id and 3: feedtype the feed type
 #: includes/user-interface/class-wppfm-i18n-scripts.php:45
-msgid "Product feed %feedname% is now ready. It contains %prodnr% %feedtype%."
-msgstr ""
-"Product feed %feedname% is nu gereed. De feed bevat %prodnr% %feedtype%."
+#, php-format
+msgid "Product feed %1$s is now ready. It contains %2$s %3$s."
+msgstr "De productfeed %1$s is nu klaar. Het bevat %2$s %3$s."
 
 #: includes/user-interface/class-wppfm-i18n-scripts.php:46
 msgid ""
@@ -1119,7 +1177,7 @@ msgid "Failed processing"
 msgstr "Fout in de verwerking"
 
 #: includes/user-interface/class-wppfm-i18n-scripts.php:133
-#: includes/user-interface/class-wppfm-i18n-scripts.php:237
+#: includes/user-interface/class-wppfm-i18n-scripts.php:240
 #: includes/user-interface/class-wppfm-list-table.php:188
 msgid "Ready (auto)"
 msgstr "Gereed (automatisch)"
@@ -1211,7 +1269,8 @@ msgstr ""
 "Er bestaat al een back-upbestand met de geselecteerde naam. Kies een andere "
 "naam of verwijder eerst het bestaande bestand."
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:189
+#. translators: %s: name of the backup folder
+#: includes/user-interface/class-wppfm-i18n-scripts.php:190
 #, php-format
 msgid ""
 "1432 - %s is not a writable folder. Make sure you have admin rights to this "
@@ -1221,20 +1280,29 @@ msgstr ""
 "beheerdersrechten hebt voor deze map."
 
 #. translators: %backup_file_name%: name of the backup file
-#: includes/user-interface/class-wppfm-i18n-scripts.php:191
+#: includes/user-interface/class-wppfm-i18n-scripts.php:192
 #, no-php-format
 msgid "1433 - Could not write the %backup_file_name% file."
 msgstr "1433 - Kan niet naar bestand %backup_file_name% schrijven."
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:192
+#: includes/user-interface/class-wppfm-i18n-scripts.php:193
 msgid "No backup found"
 msgstr "Geen back-up gevonden"
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:193
+#: includes/user-interface/class-wppfm-i18n-scripts.php:194
+msgid ""
+"To restore the exported backup file, please upload it to the \"wp-content/"
+"uploads/wppfm-backups\" folder of the server where you want to restore it on."
+msgstr ""
+"Om het geëxporteerde back-upbestand te herstellen, uploadt u het naar de map "
+"\"wp-content/uploads/wppfm-backups\" op de server waarop u het wilt "
+"herstellen."
+
+#: includes/user-interface/class-wppfm-i18n-scripts.php:195
 msgid "The input is not a valid email address. Please try again."
 msgstr "Ongeldig e-mailadres. Controleer uw invoer."
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:207
+#: includes/user-interface/class-wppfm-i18n-scripts.php:209
 msgid ""
 "There was an unknown error with the sign up process, please contact us at "
 "info@wpmarketingrobot.com!"
@@ -1242,7 +1310,7 @@ msgstr ""
 "Er is een onbekende fout opgetreden. Neem contact met ons op via "
 "info@wpmarketingrobot.com!"
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:208
+#: includes/user-interface/class-wppfm-i18n-scripts.php:210
 msgid ""
 "The email you entered is not a valid email address. Please check the address "
 "again."
@@ -1250,54 +1318,83 @@ msgstr ""
 "Het email adres dat u heeft ingevoerd is ongeldig. Controleer uw invoer "
 "opnieuw."
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:224
+#: includes/user-interface/class-wppfm-i18n-scripts.php:226
 msgid "edit"
 msgstr "bewerk"
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:225
+#: includes/user-interface/class-wppfm-i18n-scripts.php:227
 msgid "select"
 msgstr "selecteer"
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:226
+#: includes/user-interface/class-wppfm-i18n-scripts.php:228
 msgid "selected"
 msgstr "geselecteerd"
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:227
+#: includes/user-interface/class-wppfm-i18n-scripts.php:229
 msgid "delete"
 msgstr "verwijderen"
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:228
+#: includes/user-interface/class-wppfm-i18n-scripts.php:230
 msgid "remove"
 msgstr "verwijderen"
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:229
+#: includes/user-interface/class-wppfm-i18n-scripts.php:231
 msgid "add"
 msgstr "toevoegen"
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:230
+#: includes/user-interface/class-wppfm-i18n-scripts.php:232
 msgid "if"
 msgstr "als"
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:231
+#: includes/user-interface/class-wppfm-i18n-scripts.php:233
 msgid "or"
 msgstr "of"
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:232
+#: includes/user-interface/class-wppfm-i18n-scripts.php:234
 msgid "and"
 msgstr "en"
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:233
+#: includes/user-interface/class-wppfm-i18n-scripts.php:235
 msgid ""
 "All products from the selected Shop Categories will be included in the feed"
 msgstr ""
 "Alle producten uit de geselecteerde winkelcategorieën zullen worden "
 "opgenomen in de product feed"
 
-#: includes/user-interface/class-wppfm-i18n-scripts.php:235
+#: includes/user-interface/class-wppfm-i18n-scripts.php:237
+msgid "Export"
+msgstr "Exporteren"
+
+#: includes/user-interface/class-wppfm-i18n-scripts.php:238
 #: includes/user-interface/class-wppfm-list-table.php:252
 #: includes/user-interface/class-wppfm-list-table.php:281
 msgid "Regenerate"
 msgstr "Regenereren"
+
+#: includes/user-interface/class-wppfm-license-page.php:37
+msgid ""
+"Your key seems to be expired. If you are sure you have a valid key, please "
+"open a ticket at wpmarketingrobot.com/support/"
+msgstr ""
+"Uw sleutel lijkt te zijn verstreken. Als u zeker weet dat u een geldige "
+"sleutel heeft, open dan een ticket op wpmarketingrobot.com/support/"
+
+#: includes/user-interface/class-wppfm-license-page.php:39
+msgid "Plugin License Options"
+msgstr "Plugin licentie opties"
+
+#: includes/user-interface/class-wppfm-license-page.php:44
+msgid "License Key"
+msgstr "Licentiesleutel"
+
+#: includes/user-interface/class-wppfm-license-page.php:50
+msgid "I accept your Terms and Conditions"
+msgstr "Ik accepteer de algemene voorwaarden"
+
+#: includes/user-interface/class-wppfm-license-page.php:53
+#: includes/user-interface/class-wppfm-license-page.php:54
+msgid "Activate License"
+msgstr "Activeer Licentie"
 
 #: includes/user-interface/class-wppfm-main-header.php:73
 msgid "Feed List"
@@ -1310,18 +1407,19 @@ msgid "Feed Editor"
 msgstr "Feed Bewerker"
 
 #: includes/user-interface/class-wppfm-main-header.php:83
+#: includes/user-interface/wppfm-admin-actions.php:66
 msgid "Channel Manager"
 msgstr "Beheer Kanalen"
 
 #: includes/user-interface/class-wppfm-main-header.php:88
-#: includes/user-interface/wppfm-admin-actions.php:41
-#: includes/user-interface/wppfm-admin-actions.php:42
+#: includes/user-interface/wppfm-admin-actions.php:77
+#: includes/user-interface/wppfm-admin-actions.php:78
 msgid "Settings"
 msgstr "Instellingen"
 
 #: includes/user-interface/class-wppfm-main-header.php:91
-#: includes/user-interface/wppfm-admin-actions.php:51
-#: includes/user-interface/wppfm-admin-actions.php:52
+#: includes/user-interface/wppfm-admin-actions.php:87
+#: includes/user-interface/wppfm-admin-actions.php:88
 msgid "Support"
 msgstr "Ondersteuning"
 
@@ -1334,8 +1432,8 @@ msgid "Black Friday Sale: 50% Off"
 msgstr "Black Friday Sale: 50% Off"
 
 #: includes/user-interface/class-wppfm-notice.php:30
-msgid "From November 25 to December 8, 2024."
-msgstr "Van 25 november tot en met 8 december 2024."
+msgid "From November 29 to December 2, 2024."
+msgstr "Van 29 november tot en met 2 december 2024."
 
 #: includes/user-interface/class-wppfm-notice.php:31
 msgid "Optimize your WooCommerce feed management with this limited-time offer!"
@@ -1361,28 +1459,28 @@ msgstr "Google Campaign URL Bouwer"
 msgid "Feed Manager - Settings"
 msgstr "Feed Manager-instellingen"
 
-#: includes/user-interface/class-wppfm-settings-page.php:76
+#: includes/user-interface/class-wppfm-settings-page.php:78
 msgid "Auto feed fix"
 msgstr "Herstel feeds automatisch"
 
-#: includes/user-interface/class-wppfm-settings-page.php:81
+#: includes/user-interface/class-wppfm-settings-page.php:83
 msgid "Automatically try regenerating feeds that are failed (default off)."
 msgstr ""
 "Probeert product feeds die mislukt zijn automatisch opnieuw te genereren "
 "(standaard uit). Wijzig deze instelling als een feed langdurig niet meer "
 "werkt."
 
-#: includes/user-interface/class-wppfm-settings-page.php:82
+#: includes/user-interface/class-wppfm-settings-page.php:84
 msgid ""
 "Leaving this option on can put extra strain on your server when feeds keep "
 "failing."
 msgstr "Deze optie kan uw server extra belasten als een feed blijft falen."
 
-#: includes/user-interface/class-wppfm-settings-page.php:86
+#: includes/user-interface/class-wppfm-settings-page.php:88
 msgid "Disable background processing"
 msgstr "Achtergrondverwerking uitschakelen"
 
-#: includes/user-interface/class-wppfm-settings-page.php:91
+#: includes/user-interface/class-wppfm-settings-page.php:93
 msgid ""
 "Process feeds directly instead of in the background (default off). Try this "
 "option when feeds keep getting stuck in processing. "
@@ -1390,7 +1488,7 @@ msgstr ""
 "Verwerkt uw feeds direct in plaats van op de achtergrond (standaard uit). "
 "Probeer deze optie wanneer feeds blijven steken in de verwerking. "
 
-#: includes/user-interface/class-wppfm-settings-page.php:92
+#: includes/user-interface/class-wppfm-settings-page.php:94
 msgid ""
 "WARNING: When this option is selected the system can only update one feed at "
 "a time. Make sure to de-conflict your feeds auto-update schedules to prevent "
@@ -1400,11 +1498,11 @@ msgstr ""
 "tegelijk bijwerken. Zorg er voor dat de auto-update planning van uw feeds "
 "zodanig is verdeeld dat geen feeds tegelijk automatisch worden bijgewerkt."
 
-#: includes/user-interface/class-wppfm-settings-page.php:96
+#: includes/user-interface/class-wppfm-settings-page.php:98
 msgid "Feed process logger"
 msgstr "Feed verwerking logger"
 
-#: includes/user-interface/class-wppfm-settings-page.php:101
+#: includes/user-interface/class-wppfm-settings-page.php:103
 msgid ""
 "When switched on, generates an extensive log of the feed process (default "
 "off)."
@@ -1412,15 +1510,15 @@ msgstr ""
 "Activeert een logger waarmee het feed verwerkingsproces wordt gelogd "
 "(standaard uit)."
 
-#: includes/user-interface/class-wppfm-settings-page.php:102
+#: includes/user-interface/class-wppfm-settings-page.php:104
 msgid "Switch this option only on request of the help desk. "
 msgstr "Schakel deze optie alleen aan op verzoek van de helpdesk. "
 
-#: includes/user-interface/class-wppfm-settings-page.php:107
+#: includes/user-interface/class-wppfm-settings-page.php:109
 msgid "Show product identifiers"
 msgstr "Product identificatoren weergeven"
 
-#: includes/user-interface/class-wppfm-settings-page.php:112
+#: includes/user-interface/class-wppfm-settings-page.php:114
 msgid ""
 "When switched on, adds Brand, GTIN and MPN product identifiers to the "
 "products (default off)."
@@ -1428,7 +1526,7 @@ msgstr ""
 "Wanneer deze optie is ingeschakeld, worden merk-, GTIN- en MPN invoervelden "
 "toegevoegd aan de producten (standaard uitgeschakeld)."
 
-#: includes/user-interface/class-wppfm-settings-page.php:113
+#: includes/user-interface/class-wppfm-settings-page.php:115
 msgid ""
 "This option will add product identifier input fields to the Inventory card "
 "of your products. The MPN identifier is also added to the product variations."
@@ -1437,16 +1535,16 @@ msgstr ""
 "voorraadkaart van uw producten. De MPN-id wordt ook toegevoegd aan de "
 "product variaties."
 
-#: includes/user-interface/class-wppfm-settings-page.php:120
+#: includes/user-interface/class-wppfm-settings-page.php:122
 msgid "WPML: Use full resolution URLs"
 msgstr "WPML: Gebruik URLs met volledige resolutie"
 
-#: includes/user-interface/class-wppfm-settings-page.php:125
+#: includes/user-interface/class-wppfm-settings-page.php:127
 msgid "Enables full conversion of hard-coded URLs (default off)."
 msgstr ""
 "Maakt volledige conversie van hardgecodeerde URL's mogelijk (standaard uit)."
 
-#: includes/user-interface/class-wppfm-settings-page.php:126
+#: includes/user-interface/class-wppfm-settings-page.php:128
 msgid ""
 "Use this option if you're using WPML and are getting incorrect URLs in your "
 "feed. This option will slightly increase the load on the database when "
@@ -1456,17 +1554,37 @@ msgstr ""
 "Deze optie verhoogt de belasting van de database iets bij het verwerken van "
 "een feed."
 
-#: includes/user-interface/class-wppfm-settings-page.php:133
+#: includes/user-interface/class-wppfm-settings-page.php:134
+msgid "Omit price filters"
+msgstr "Prijsfilters uitzetten"
+
+#: includes/user-interface/class-wppfm-settings-page.php:139
+msgid "Omits filters that are used on the prices in your feeds (default off)."
+msgstr ""
+"Laat filters weg die worden toegepast op de prijzen in uw feeds (standaard "
+"uitgeschakeld)."
+
+#: includes/user-interface/class-wppfm-settings-page.php:140
+msgid ""
+"Enable this option to prevent third-party plugins or custom filters from "
+"altering the prices in your product feeds. Use this if you notice incorrect "
+"prices in your feed."
+msgstr ""
+"Schakel deze optie in om te voorkomen dat plug-ins van derden of aangepaste "
+"filters de prijzen in uw productfeeds wijzigen. Gebruik dit als u onjuiste "
+"prijzen in uw feed opmerkt."
+
+#: includes/user-interface/class-wppfm-settings-page.php:146
 msgid "Manual channel update"
 msgstr "Kanaal updates handmatig"
 
-#: includes/user-interface/class-wppfm-settings-page.php:138
+#: includes/user-interface/class-wppfm-settings-page.php:151
 msgid "When switched on, you need to manually update channels (default off)."
 msgstr ""
 "Indien geselecteerd moet u updates van uw kanalen handmatig uitvoeren "
 "(standaard uit)."
 
-#: includes/user-interface/class-wppfm-settings-page.php:139
+#: includes/user-interface/class-wppfm-settings-page.php:152
 msgid ""
 "By default your channels are updated automatically as soon as an update is "
 "available. This option allows your to switch off the automatic channel "
@@ -1477,15 +1595,15 @@ msgstr ""
 "kanaal update functie uit te schakelen en toekomstige kanaal updates "
 "handmatig uit te voeren."
 
-#: includes/user-interface/class-wppfm-settings-page.php:144
+#: includes/user-interface/class-wppfm-settings-page.php:157
 msgid "Clear feed process"
 msgstr "Feed verwerking opschonen"
 
-#: includes/user-interface/class-wppfm-settings-page.php:148
+#: includes/user-interface/class-wppfm-settings-page.php:161
 msgid "Clear Feed Process"
 msgstr "Feed verwerking resetten"
 
-#: includes/user-interface/class-wppfm-settings-page.php:151
+#: includes/user-interface/class-wppfm-settings-page.php:164
 msgid ""
 "Use this option when feeds get stuck processing - does not delete your "
 "current feeds or settings."
@@ -1493,18 +1611,18 @@ msgstr ""
 "Gebruik deze optie iedere keer wanneer een product feed vast is komen te "
 "zitten in het verwerkingsprocess-verwijdert geen feeds of instellingen."
 
-#: includes/user-interface/class-wppfm-settings-page.php:155
+#: includes/user-interface/class-wppfm-settings-page.php:168
 msgid "Third party attributes"
 msgstr "Producteigenschappen van andere plugins"
 
-#: includes/user-interface/class-wppfm-settings-page.php:160
+#: includes/user-interface/class-wppfm-settings-page.php:173
 msgid ""
 "Enter comma separated keywords and wildcards to use third party attributes."
 msgstr ""
 "Voer komma's gescheiden sleutelwoorden in om producteigenschappen van andere "
 "plugins te kunnen gebruiken."
 
-#: includes/user-interface/class-wppfm-settings-page.php:161
+#: includes/user-interface/class-wppfm-settings-page.php:174
 msgid ""
 "Use specific wildcards. Do not use to broad wildcards like %_% because that "
 "will include default WooCommerce attributes and can sometimes result in "
@@ -1514,15 +1632,15 @@ msgstr ""
 "deze ook standaard WooCommerce attributen zullen meenemen wat soms in een "
 "verkeerde output kan resulteren."
 
-#: includes/user-interface/class-wppfm-settings-page.php:165
+#: includes/user-interface/class-wppfm-settings-page.php:178
 msgid "Notice recipient"
 msgstr "Notificatie ontvanger"
 
-#: includes/user-interface/class-wppfm-settings-page.php:170
+#: includes/user-interface/class-wppfm-settings-page.php:183
 msgid "Email address of the feed manager."
 msgstr "Email adres van de feed manager."
 
-#: includes/user-interface/class-wppfm-settings-page.php:171
+#: includes/user-interface/class-wppfm-settings-page.php:184
 msgid ""
 "Enter the email address of the person you want to be notified when a feed "
 "fails during an automatic feed update. This option requires an SMTP server "
@@ -1531,19 +1649,19 @@ msgstr ""
 "Voer het email adres in van de persoon die gewaarschuwd moet worden als een "
 "automatische feed update fout gaat (benodigd een SMTP server voor WordPress)."
 
-#: includes/user-interface/class-wppfm-settings-page.php:175
+#: includes/user-interface/class-wppfm-settings-page.php:188
 msgid "Re-initialize"
 msgstr "Opnieuw initialiseren"
 
-#: includes/user-interface/class-wppfm-settings-page.php:179
+#: includes/user-interface/class-wppfm-settings-page.php:192
 msgid "Re-initiate Plugin"
 msgstr "Plugin opnieuw initialiseren"
 
-#: includes/user-interface/class-wppfm-settings-page.php:182
+#: includes/user-interface/class-wppfm-settings-page.php:195
 msgid "Resets and updates the plugin."
 msgstr "Reset en updates de plugin."
 
-#: includes/user-interface/class-wppfm-settings-page.php:183
+#: includes/user-interface/class-wppfm-settings-page.php:196
 msgid ""
 "Updates and cleans the tables if required, re-initiates the cron events and "
 "resets the stored license - does not delete your current feeds or settings. "
@@ -1553,23 +1671,23 @@ msgstr ""
 "opgeslagen licentie - verwijdert geen opgeslagen product feeds of "
 "instellingen."
 
-#: includes/user-interface/class-wppfm-settings-page.php:187
+#: includes/user-interface/class-wppfm-settings-page.php:200
 msgid "Backups"
 msgstr "Backups"
 
-#: includes/user-interface/class-wppfm-settings-page.php:193
+#: includes/user-interface/class-wppfm-settings-page.php:206
 msgid "Backup Date"
 msgstr "Backup datum"
 
-#: includes/user-interface/class-wppfm-settings-page.php:200
+#: includes/user-interface/class-wppfm-settings-page.php:213
 msgid "Add New Backup"
 msgstr "Nieuwe backup toevoegen"
 
-#: includes/user-interface/class-wppfm-settings-page.php:205
+#: includes/user-interface/class-wppfm-settings-page.php:218
 msgid "Backup current feeds"
 msgstr "Back-up huidige datafeeds"
 
-#: includes/user-interface/class-wppfm-settings-page.php:206
+#: includes/user-interface/class-wppfm-settings-page.php:219
 msgid "Cancel backup"
 msgstr "Back-up annuleren"
 
@@ -1693,10 +1811,8 @@ msgstr ""
 "ongewenste map."
 
 #: includes/user-interface/class-wppfm-support-page.php:245
-#, fuzzy
-#| msgid "Free Google Shopping Checklist"
 msgid "Google Shopping Checklist"
-msgstr "Gratis Google Shopping-checklist"
+msgstr "Google Shopping-checklist"
 
 #: includes/user-interface/class-wppfm-support-page.php:258
 msgid ""
@@ -1935,7 +2051,20 @@ msgstr "WP Feed Manager"
 msgid "Feed Manager"
 msgstr "Feed Manager"
 
-#: includes/user-interface/wppfm-admin-actions.php:70
+#: includes/user-interface/wppfm-admin-actions.php:46
+#, php-format
+msgid "%d channel update"
+msgid_plural "%d channel updates"
+msgstr[0] "%d Channel update"
+msgstr[1] "%d Channel updates"
+
+#. translators: %d: Number of channel updates available
+#: includes/user-interface/wppfm-admin-actions.php:56
+#, php-format
+msgid "Channel Manager %s"
+msgstr "Beheer Kanalen %s"
+
+#: includes/user-interface/wppfm-admin-actions.php:106
 msgid ""
 "Due to an update of your Feed Manager plugin, your feed backups are no "
 "longer valid! Please open the Feed Manager Settings page, remove all current "
@@ -1944,6 +2073,61 @@ msgstr ""
 "Als gevolg van de laatste update van de Feed Manager plugin zijn uw back-up "
 "bestanden niet langer geldig! Open de Feed Manager - Instellingen pagina, "
 "verwijder uw oude back-ups en maak een nieuwe."
+
+#. translators: %s: link to the support page
+#: includes/user-interface/wppfm-admin-actions.php:235
+#, php-format
+msgid ""
+"2121 - Activating your license failed. Please open a support ticket at %s "
+"for support on this issue."
+msgstr ""
+"2121-Het activeren van uw licentie is mislukt. Open een support ticket op %s "
+"voor ondersteuning op dit punt."
+
+#: includes/user-interface/wppfm-admin-actions.php:254
+#, php-format
+msgid ""
+"An error has occurred. It is possible that the wpmarketingrobot website is "
+"down.\n"
+"\t\t\t\t\t\tPlease check if wpmarketingrobot.com is still active. If not, or "
+"if this error consist, please contact\n"
+"\t\t\t\t\t\tauke@wpmarketingrobot.com. Error Message: %s"
+msgstr ""
+"Er is een fout opgetreden. Het is mogelijk dat de wpmarketingrobot website "
+"tijdelijk in niet beschikbaar is. \n"
+"\t\t\t\tControleer of wpmarketingrobot.com nog actief is. Zo niet, of als "
+"deze fout blijft bestaan, neem dan contact op met auke@wpmarketingrobot.com. "
+"Foutbericht: %s"
+
+#: includes/user-interface/wppfm-admin-actions.php:306
+#, php-format
+msgid ""
+"You have an invalid or expired license key for your %1$s plugin.\n"
+"\t\t\t\tPlease <a href=\"%2$scheckout/?"
+"edd_license_key=%3$s&utm_source=client-"
+"admin&utm_medium=renewal_link&utm_campaign=license_expired\">\n"
+"\t\t\t\tclick here to go to the Licenses renewal page</a> to keep the plugin "
+"working and your product feeds valid."
+msgstr ""
+"U hebt een ongeldige of verlopen licentiecode voor uw %1$s plugin. \n"
+"\t\t\t<a href=\"%2$scheckout/?edd_license_key=%3$s&utm_source=client-"
+"admin&utm_medium=renewal_link&utm_campaign=license_expired\"> Klik hier om "
+"uw licenties te beheren</a> en uw datafeeds actueel te houden."
+
+#: includes/user-interface/wppfm-admin-actions.php:323
+#, php-format
+msgid ""
+"The license key for your %1$s plugin is expiring soon. If you wish, you can "
+"<a href=\"%2$scheckout/?edd_license_key=%3$s&utm_source=client-"
+"admin&utm_medium=renewal_link&utm_campaign=license_renewal\">\n"
+"\t\t\t\t\tclick here</a> to renew your license key directly so that you can "
+"be sure your product feeds keep working."
+msgstr ""
+"Uw licentie voor uw %1$s plugin verloopt binnenkort. Als u wilt kunt u <a "
+"href=\"%2$scheckout/?edd_license_key=%3$s&utm_source=client-"
+"admin&utm_medium=renewal_link&utm_campaign=license_renewal\">\n"
+"\t\t\t\t\thier</a> uw licentie verlengen zodat u er zeker van kunt zijn dat "
+"uw product feeds blijven werken."
 
 #: includes/user-interface/wppfm-admin-filters.php:25
 msgid "Starter Guide"
@@ -1956,6 +2140,18 @@ msgstr "Go Premium"
 #: includes/user-interface/wppfm-admin-filters.php:30
 msgid "Get Support"
 msgstr "Support Aanvragen"
+
+#: includes/user-interface/wppfm-admin-menu-functions.php:290
+#, php-format
+msgid ""
+"2122 - License verification failed. This may be due to a temporary issue "
+"with our server. Please wait a few minutes and try again. If the problem "
+"continues, feel free to open a support ticket at %s for further assistance."
+msgstr ""
+"2122 - Licentiecontrole mislukt. Dit kan te wijten zijn aan een tijdelijk "
+"probleem met onze server. Wacht een paar minuten en probeer het opnieuw. Als "
+"het probleem aanhoudt, kunt u gerust een supportticket openen bij %s voor "
+"verdere ondersteuning."
 
 #: includes/user-interface/wppfm-edit-feed-form-functions.php:31
 msgid ""
@@ -2036,7 +2232,7 @@ msgstr ""
 "van de fabrikant of leverancier gebruiken."
 
 #: includes/user-interface/wppfm-product-identifiers.php:34
-#: includes/user-interface/wppfm-product-identifiers.php:104
+#: includes/user-interface/wppfm-product-identifiers.php:106
 msgid ""
 "GTIN refers to a products Global Trade Item Number. You can also use a UPC, "
 "EAN, JAN, ISBN or ITF-14 number here."
@@ -2045,23 +2241,23 @@ msgstr ""
 "UPC-, EAN-, JAN-, ISBN- of ITF-14-nummer gebruiken."
 
 #: includes/user-interface/wppfm-product-identifiers.php:45
-#: includes/user-interface/wppfm-product-identifiers.php:93
+#: includes/user-interface/wppfm-product-identifiers.php:95
 msgid "Add your product's Manufacturer Part Number (MPN)."
 msgstr "Voeg hier het onderdeelnummer (MPN) van uw product toe."
 
-#: includes/user-interface/wppfm-product-identifiers.php:91
+#: includes/user-interface/wppfm-product-identifiers.php:93
 msgid "Product MPN"
 msgstr "Product MPN"
 
-#: includes/user-interface/wppfm-product-identifiers.php:139
+#: includes/user-interface/wppfm-product-identifiers.php:143
 msgid "Brand"
 msgstr "Merk"
 
-#: includes/user-interface/wppfm-product-identifiers.php:150
+#: includes/user-interface/wppfm-product-identifiers.php:154
 msgid "GTIN"
 msgstr "GTIN"
 
-#: includes/user-interface/wppfm-product-identifiers.php:161
+#: includes/user-interface/wppfm-product-identifiers.php:165
 msgid "MPN"
 msgstr "MPN"
 
@@ -2069,39 +2265,40 @@ msgstr "MPN"
 msgid "Product Feed"
 msgstr "Product Feed"
 
-#: includes/user-interface/wppfm-woocommerce-actions.php:40
-#: includes/user-interface/wppfm-woocommerce-actions.php:74
+#: includes/user-interface/wppfm-woocommerce-actions.php:42
+#: includes/user-interface/wppfm-woocommerce-actions.php:88
 msgid "Exclude from Feed"
 msgstr "Uit de feed uitsluiten"
 
-#: includes/user-interface/wppfm-woocommerce-actions.php:41
+#: includes/user-interface/wppfm-woocommerce-actions.php:43
 msgid ""
-"Select this option to mark this product for exclusion. Use the Feed Manager "
-"Product Filter to remove marked products from feeds"
+"Activate this option to mark this product for exclusion. Use the Feed "
+"Manager Product Filter to remove marked products from feeds"
 msgstr ""
-"Selecteer deze optie om dit product voor uitsluiting te markeren. Gebruik de "
-"Feed Manager-productfilter om gemarkeerde producten uit feeds te verwijderen"
-
-#: includes/user-interface/wppfm-woocommerce-actions.php:73
-msgid ""
-"Select this option to mark this product variation for exclusion. Use the "
-"Feed Manager Product Filter to remove marked products from feeds"
-msgstr ""
-"Selecteer deze optie om deze productvariant voor uitsluiting te markeren. "
-"Gebruik de Feed Manager-productfilter om gemarkeerde producten uit feeds te "
+"Activeer deze optie om dit product voor uitsluiting te markeren. Gebruik de "
+"productfilter van de Feed Manager om gemarkeerde producten uit feeds te "
 "verwijderen"
 
-#: wp-product-feed-manager.php:92
+#: includes/user-interface/wppfm-woocommerce-actions.php:87
+msgid ""
+"Activate this option to mark this product variation for exclusion. Use the "
+"Feed Manager Product Filter to remove marked products from feeds"
+msgstr ""
+"Activeer deze optie om deze productvariant voor uitsluiting te markeren. "
+"Gebruik de productfilter van de Feed Manager om gemarkeerde producten uit "
+"feeds te verwijderen"
+
+#: wp-product-feed-manager.php:79
 msgid "Cloning is not allowed"
 msgstr "Klonen is niet toegestaan"
 
-#: wp-product-feed-manager.php:103
+#: wp-product-feed-manager.php:90
 msgid "Unserializing instances of this class is not allowed"
 msgstr "Niet-serializende exemplaren van deze klasse zijn niet toegestaan"
 
 #. Plugin Name of the plugin/theme
-msgid "WP Product Feed Manager"
-msgstr "WP Product feed Manager"
+msgid "WooCommerce Product Feed Manager"
+msgstr "WooCommerce Product feed Manager"
 
 #. Plugin URI of the plugin/theme
 #. Author URI of the plugin/theme
@@ -2119,139 +2316,6 @@ msgstr ""
 #. Author of the plugin/theme
 msgid "WP Marketing Robot"
 msgstr "WP Marketing Robot"
-
-#~ msgid ""
-#~ "Could not update the feed file because the channel has not been installed"
-#~ msgstr ""
-#~ "Kon het feedbestand niet bijwerken omdat het kanaal niet is geïnstalleerd"
-
-#, php-format
-#~ msgid ""
-#~ "There is a new version of %1$s available. %2$sView version %3$s "
-#~ "details%4$s."
-#~ msgstr ""
-#~ "Er is een nieuwe versie van %1$s beschikbaar; %2$sbekijk de versie%3$s-"
-#~ "details%4$s."
-
-#, php-format
-#~ msgid ""
-#~ "There is a new version of %1$s available. %2$sView version %3$s "
-#~ "details%4$s or %5$supdate now%6$s."
-#~ msgstr ""
-#~ "Er is een nieuwe versie van %1$s beschikbaar; %2$sbekijk versie%3$s-"
-#~ "details%4$s of %5$supdate nu%6$s."
-
-#~ msgid "You do not have permission to install plugin updates"
-#~ msgstr "U heeft geen toestemming om de plugin updates te installeren"
-
-#~ msgid "Error"
-#~ msgstr "Fout"
-
-#~ msgid "-- Select the language of the feed --"
-#~ msgstr "-- Selecteer de taal van de feed --"
-
-#~ msgid "-- Select the WOOCS currency for the feed --"
-#~ msgstr "-- Selecteer de WOOCS munteenheid van de feed --"
-
-#, php-format
-#~ msgid ""
-#~ "This feed requires the \"%s\" channel to be installed. Please open the "
-#~ "Manage Channels page and install this channel before opening this feed."
-#~ msgstr ""
-#~ "Om deze feed te kunnen genereren moet kanaal \"%s\"  geïnstalleerd zijn. "
-#~ "Open de Channels beheren pagina en installeer dit kanaal voordat u de "
-#~ "feed regenereert."
-
-#~ msgid ""
-#~ "Your key seems to be expired. If you are sure you have a valid key, "
-#~ "please open a ticket at wpmarketingrobot.com/support/"
-#~ msgstr ""
-#~ "Uw sleutel lijkt te zijn verstreken. Als u zeker weet dat u een geldige "
-#~ "sleutel heeft, open dan een ticket op wpmarketingrobot.com/support/"
-
-#~ msgid "Plugin License Options"
-#~ msgstr "Plugin licentie opties"
-
-#~ msgid "License Key"
-#~ msgstr "Licentiesleutel"
-
-#~ msgid "I accept your Terms and Conditions"
-#~ msgstr "Ik accepteer de algemene voorwaarden"
-
-#~ msgid "Activate License"
-#~ msgstr "Activeer Licentie"
-
-#, php-format
-#~ msgid "%d channel update"
-#~ msgid_plural "%d channel updates"
-#~ msgstr[0] "%d Channel update"
-#~ msgstr[1] "%d Channel updates"
-
-#, php-format
-#~ msgid "Channel Manager %s"
-#~ msgstr "Beheer Kanalen %s"
-
-#, php-format
-#~ msgid ""
-#~ "2121 - Activating your license failed. Please open a support ticket at %s "
-#~ "for support on this issue."
-#~ msgstr ""
-#~ "2121-Het activeren van uw licentie is mislukt. Open een support ticket op "
-#~ "%s voor ondersteuning op dit punt."
-
-#, php-format
-#~ msgid ""
-#~ "An error has occurred. It is possible that the wpmarketingrobot website "
-#~ "is down.\n"
-#~ "\t\t\t\t\t\tPlease check if wpmarketingrobot.com is still active. If not, "
-#~ "or if this error consist, please contact\n"
-#~ "\t\t\t\t\t\tauke@wpmarketingrobot.com. Error Message: %s"
-#~ msgstr ""
-#~ "Er is een fout opgetreden. Het is mogelijk dat de wpmarketingrobot "
-#~ "website tijdelijk in niet beschikbaar is. \n"
-#~ "\t\t\t\tControleer of wpmarketingrobot.com nog actief is. Zo niet, of als "
-#~ "deze fout blijft bestaan, neem dan contact op met auke@wpmarketingrobot."
-#~ "com. Foutbericht: %s"
-
-#, php-format
-#~ msgid ""
-#~ "You have an invalid or expired license key for your %1$s plugin.\n"
-#~ "\t\t\t\tPlease <a href=\"%2$scheckout/?"
-#~ "edd_license_key=%3$s&utm_source=client-"
-#~ "admin&utm_medium=renewal_link&utm_campaign=license_expired\">\n"
-#~ "\t\t\t\tclick here to go to the Licenses renewal page</a> to keep the "
-#~ "plugin working and your product feeds valid."
-#~ msgstr ""
-#~ "U hebt een ongeldige of verlopen licentiecode voor uw %1$s plugin. \n"
-#~ "\t\t\t<a href=\"%2$scheckout/?edd_license_key=%3$s&utm_source=client-"
-#~ "admin&utm_medium=renewal_link&utm_campaign=license_expired\"> Klik hier "
-#~ "om uw licenties te beheren</a> en uw datafeeds actueel te houden."
-
-#, php-format
-#~ msgid ""
-#~ "The license key for your %1$s plugin is expiring soon. If you wish, you "
-#~ "can <a href=\"%2$scheckout/?edd_license_key=%3$s&utm_source=client-"
-#~ "admin&utm_medium=renewal_link&utm_campaign=license_renewal\">\n"
-#~ "\t\t\t\t\tclick here</a> to renew your license key directly so that you "
-#~ "can be sure your product feeds keep working."
-#~ msgstr ""
-#~ "Uw licentie voor uw %1$s plugin verloopt binnenkort. Als u wilt kunt u <a "
-#~ "href=\"%2$scheckout/?edd_license_key=%3$s&utm_source=client-"
-#~ "admin&utm_medium=renewal_link&utm_campaign=license_renewal\">\n"
-#~ "\t\t\t\t\thier</a> uw licentie verlengen zodat u er zeker van kunt zijn "
-#~ "dat uw product feeds blijven werken."
-
-#, php-format
-#~ msgid ""
-#~ "2122 - License verification failed. This may be due to a temporary issue "
-#~ "with our server. Please wait a few minutes and try again. If the problem "
-#~ "continues, feel free to open a support ticket at %s for further "
-#~ "assistance."
-#~ msgstr ""
-#~ "2122 - Licentiecontrole mislukt. Dit kan te wijten zijn aan een tijdelijk "
-#~ "probleem met onze server. Wacht een paar minuten en probeer het opnieuw. "
-#~ "Als het probleem aanhoudt, kunt u gerust een supportticket openen bij %s "
-#~ "voor verdere ondersteuning."
 
 #~ msgid "Your Free Google Shopping Checklist is send to you by email."
 #~ msgstr "Uw gratis Google Shopping-checklist is per e-mail naar u verzonden."

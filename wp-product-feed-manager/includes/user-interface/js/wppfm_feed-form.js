@@ -926,7 +926,7 @@ function wppfm_feedProcessStatusCheck( feedId, repeatTime ) {
 
 					//noinspection JSUnresolvedVariable
 					wppfm_showSuccessMessage(
-						wppfm_feed_settings_form_vars.feed_status_ready.replace( '%feedname%', status[ 'title' ] ).replace( '%prodnr%', status[ 'products' ] ).replace( '%feedtype%', itemName ) );
+						wppfm_feed_settings_form_vars.feed_status_ready.replace( '%1$s', status[ 'title' ] ).replace( '%2$s', status[ 'products' ] ).replace( '%3$s', itemName ) );
 					window.clearInterval( wppfmStatusCheck );
 					break;
 

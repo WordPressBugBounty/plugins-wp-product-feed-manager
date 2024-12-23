@@ -95,7 +95,7 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 		 * Generate the required nonce's.
 		 */
 		public function wppfm_register_required_nonce() {
-			// Make a unique nonce for all Ajax requests.
+			// Make unique nonce for all Ajax requests.
 			wp_localize_script(
 				'wppfm_data-handling-script',
 				'myAjaxNonces',
@@ -158,7 +158,7 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 		 * Generate the nonce's for the Settings page.
 		 */
 		public function wppfm_register_required_settings_page_nonce() {
-			// Make a unique nonce for all Ajax requests.
+			// Make unique nonce for all Ajax requests.
 			wp_localize_script(
 				'wppfm_data-handling-script',
 				'myAjaxNonces',
@@ -172,6 +172,7 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 					'setShowPINonce'               => wp_create_nonce( 'myajax-show-pi-nonce' ),
 					'setManualChannelUpdateNonce'  => wp_create_nonce( 'myajax-manual-channel-update-nonce' ),
 					'setUseFullResolutionNonce'    => wp_create_nonce( 'myajax-use-full-url-resolution-nonce' ),
+					'setOmitPriceFiltersNonce'     => wp_create_nonce( 'myajax-omit-price-filters-nonce' ),
 					'setThirdPartyKeywordsNonce'   => wp_create_nonce( 'myajax-set-third-party-keywords-nonce' ),
 					'setNoticeMailaddressNonce'    => wp_create_nonce( 'myajax-set-notice-mailaddress-nonce' ),
 					'setBatchProcessingLimitNonce' => wp_create_nonce( 'myajax-set-batch-processing-limit-nonce' ),
@@ -198,7 +199,7 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 		 * Generate the nonce's for the Settings page.
 		 */
 		public function wppfm_register_required_support_page_nonce() {
-			// Make a unique nonce for all Ajax requests.
+			// Make unique nonce for all Ajax requests.
 			wp_localize_script(
 				'wppfm_data-handling-script',
 				'myAjaxNonces',

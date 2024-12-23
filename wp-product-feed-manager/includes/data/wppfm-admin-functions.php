@@ -179,9 +179,8 @@ function wppfm_list_sql_files( $path ) {
 /**
  * Forces the database to load and update and adds the auto update cron event if it does not exist
  *
- * @return boolean
  * @since 1.9.0
- *
+ * @return boolean
  */
 function wppfm_reinitiate_plugin() {
 	wppfm_check_feed_update_schedule();
@@ -208,6 +207,46 @@ function wppfm_reinitiate_plugin() {
 	do_action( 'wppfm_plugin_reinitialized' );
 
 	return true;
+}
+
+/**
+ * Returns the global WP_Filesystem object.
+ *
+ * @since 3.12.0
+ * @return object WP_Filesystem
+ */
+function wppfm_get_wp_filesystem() {
+	global $wp_filesystem;
+
+	if ( ! $wp_filesystem ) {
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+	}
+
+	if ( WP_Filesystem() ) {
+		return $wp_filesystem;
+	} else {
+		die( esc_html__( 'Unable to initialize WP_Filesystem', 'wp-product-feed-manager' ) );
+	}
+}
+
+/**
+ * Adds a new line to the end of a file.
+ *
+ * @param string $file_path The path to the file.
+ * @param string $new_line  The new line to be added.
+ * @param bool $add_crt     Add a carriage return at the end of the line. Default is false.
+ *
+ * @since 3.12.0
+ * @return bool|int The number of bytes written, or false on failure.
+ */
+function wppfm_append_line_to_file( $file_path, $new_line, $add_crt = false ) {
+	$wp_filesystem = wppfm_get_wp_filesystem();
+
+	$contents  = $wp_filesystem->exists( $file_path ) ? $wp_filesystem->get_contents( $file_path ) : '';
+	$contents .= $new_line;
+	$contents .= $add_crt ? PHP_EOL : '';
+
+	return $wp_filesystem->put_contents( $file_path, $contents, FS_CHMOD_FILE );
 }
 
 /**

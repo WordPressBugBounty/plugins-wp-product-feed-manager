@@ -53,6 +53,16 @@ function wppfm_wpml_use_full_resolution_urls_changed() {
 	);
 }
 
+function wppfm_omit_price_filters_changed() {
+	wppfm_omit_price_filters(
+		jQuery( '#wppfm-omit-price-filters' ).is( ':checked' ),
+		function( response ) {
+			console.log( 'Omit price filters setting changed to ' + response );
+		}
+	);
+}
+
+
 function wppfm_third_party_attributes_changed() {
 	var thirdPartyAttributes = wppfm_sanitizeInputString( jQuery( '#wppfm-third-party-attr-keys' ).val() );
 	wppfm_change_third_party_attribute_keywords(
@@ -190,4 +200,25 @@ function wppfm_duplicateBackupFile( fileName ) {
 			wppfm_hideWorkingSpinner();
 		}
 	);
+}
+
+/**
+ * Exports the backup file to the user's download folder.
+ *
+ * @param {string} fileName the file name.
+ */
+function wppfm_exportBackupFile( fileName ) {
+	const dataStorageElement = jQuery( '#wppfm-settings-page-data-storage' );
+	const uploadDir = dataStorageElement.data( 'wppfmWpUploadsUrl' );
+	const link = document.createElement('a');
+
+	link.href = uploadDir + '/wppfm-backups/' + fileName;
+	link.download = fileName; // Suggested file name for download.
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+
+	alert( wppfm_setting_form_vars.how_to_import_backup_file );
+
+	console.log( 'Exported the backup file' + fileName );
 }

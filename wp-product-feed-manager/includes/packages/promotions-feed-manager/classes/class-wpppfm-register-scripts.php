@@ -38,18 +38,18 @@ if ( ! class_exists( 'WPPPFM_Register_Scripts' ) ) :
 			}
 
 			// register the chosen script and style for the feed constructor Promotion Destination selector
-			wp_enqueue_script( 'select2', WPPFM_PLUGIN_URL . '/includes/libraries/select2/js/select2.min.js', array( 'jquery' ), false, true );
-			wp_register_style( 'select2-style', WPPFM_PLUGIN_URL . '/includes/libraries/select2/css/select2.min.css', array(), false, 'screen' );
+			wp_enqueue_script( 'select2', WPPFM_PLUGIN_URL . '/includes/libraries/select2/js/select2.min.js', array( 'jquery' ), $this->_version_stamp, true );
+			wp_register_style( 'select2-style', WPPFM_PLUGIN_URL . '/includes/libraries/select2/css/select2.min.css', array(), $this->_version_stamp, 'screen' );
 			wp_enqueue_style( 'select2-style' );
 
 			// register the merchant promotions specific scripts
-			wp_register_style( 'wppfm-merchant-promotions-support', WPPPFM_PACKAGE_URL . '/css/promotions-feed-form' . $this->_js_min . '.css', '', false, 'screen' );
+			wp_register_style( 'wppfm-merchant-promotions-support', WPPPFM_PACKAGE_URL . '/css/promotions-feed-form' . $this->_js_min . '.css', '', $this->_version_stamp, 'screen' );
 			wp_enqueue_style( 'wppfm-merchant-promotions-support' );
 
 			// register the simple datetimepicker script and style
-			wp_enqueue_script( 'simple-datetimepicker', WPPFM_PLUGIN_URL . '/includes/libraries/jQuery-Simple-Datetimepicker/jquery.simple-dtpicker.js', array( 'jquery' ), false, true );
+			wp_enqueue_script( 'simple-datetimepicker', WPPFM_PLUGIN_URL . '/includes/libraries/jQuery-Simple-Datetimepicker/jquery.simple-dtpicker.js', array( 'jquery' ), $this->_version_stamp, true );
 			wp_localize_script( 'simple-datetimepicker', 'my_script_vars', array( 'language' => get_user_locale() ) );
-			wp_register_style( 'simple-datetimepicker-style', WPPFM_PLUGIN_URL . '/includes/libraries/jQuery-Simple-Datetimepicker/jquery.simple-dtpicker.css', array(), false, 'screen' );
+			wp_register_style( 'simple-datetimepicker-style', WPPFM_PLUGIN_URL . '/includes/libraries/jQuery-Simple-Datetimepicker/jquery.simple-dtpicker.css', array(), $this->_version_stamp, 'screen' );
 			wp_enqueue_style( 'simple-datetimepicker-style' );
 
 			// register the merchant promotions scripts

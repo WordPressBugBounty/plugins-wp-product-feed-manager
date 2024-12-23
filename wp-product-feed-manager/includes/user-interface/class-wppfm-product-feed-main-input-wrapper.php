@@ -33,9 +33,7 @@ if ( ! class_exists( 'WPPFM_Product_Feed_Main_Input_Wrapper' ) ) :
 			WPPFM_Main_Input_Selector_Element::google_dynamic_remarketing_business_type_selector_element();
 
 			// For actions, capture their output and add it to `$html`
-			ob_start();
 			do_action( 'wppfm_add_feed_language_selector' );
-			ob_get_clean();
 
 			// Country selector
 			WPPFM_Main_Input_Selector_Element::country_selector_element();

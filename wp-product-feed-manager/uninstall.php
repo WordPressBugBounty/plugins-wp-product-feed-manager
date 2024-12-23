@@ -14,6 +14,8 @@ global $wpdb;
 
 $upload_dir = wp_get_upload_dir();
 
+require_once __DIR__ . '/includes/data/wppfm-admin-functions.php';
+
 if ( ! class_exists( 'WPPFM_Folders' ) ) {
 	require_once __DIR__ . '/includes/setup/class-wppfm-folders.php';
 }

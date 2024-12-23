@@ -987,7 +987,7 @@ trait WPPFM_Processing_Support {
 
 		foreach ( $product_placeholder as $row_item ) {
 			$a_row_item     = ! is_array( $row_item ) ? preg_replace( "/[\r\n]/", "", $row_item ) : implode( ', ', $row_item );
-			$clean_row_item = strip_tags( $a_row_item );
+			$clean_row_item = wp_strip_all_tags( $a_row_item );
 			$row_string    .= $clean_row_item;
 
 			'TAB' === $separator ? $row_string .= "\t" : $row_string .= $separator;
@@ -1282,14 +1282,14 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
-	 * Replaces certain characters to get a valid xml value.
+	 * Replaces certain characters to get a valid XML value.
 	 *
 	 * @param string $value_string the original value.
 	 *
 	 * @return string converted string.
 	 */
 	public function convert_to_xml_value( $value_string ) {
-		$string_without_tags = strip_tags( $value_string );
+		$string_without_tags = wp_strip_all_tags( $value_string );
 		$prep_string         = str_replace(
 			array(
 				'&amp;',
@@ -1466,8 +1466,8 @@ trait WPPFM_Processing_Support {
 	 * @param string $value the value.
 	 */
 	protected function write_single_general_xml_string_to_current_file( $key, $value ) {
-		$general_xml_string = sprintf( '<%s>%s</%s>', $key, $value, $key ) . "\r\n";
-		file_put_contents( $this->_feed_file_path, $general_xml_string, FILE_APPEND );
+		$general_xml_string = sprintf( '<%s>%s</%s>', $key, $value, $key );
+		wppfm_append_line_to_file( $this->_feed_file_path, $general_xml_string, true );
 	}
 
 	/**
@@ -1495,6 +1495,8 @@ trait WPPFM_Processing_Support {
 		$woocommerce_parent_id      = $woocommerce_product->get_parent_id();
 		$woocommerce_product_parent = $woocommerce_product->is_type( 'variable' ) || $woocommerce_product->is_type( 'variation' ) ? wc_get_product( $woocommerce_parent_id ) : null;
 
+		$price_context = get_option( 'wppfm_omit_price_filters', false ) ? 'view' : 'feed'; // $since 3.12.0.
+
 		if ( false === $woocommerce_product_parent || null === $woocommerce_product_parent ) {
 			// This product has no parent id, so it is possible this is the main of a variable product,
 			// so to make sure the general variation data like min_variation_price are available, copy the product
@@ -1507,7 +1509,7 @@ trait WPPFM_Processing_Support {
 			if ( $woocommerce_product->is_type( 'variable' ) ) {
 				$product->_regular_price = wppfm_prep_money_values( $woocommerce_product->get_variation_regular_price( 'max', true ), $selected_language, $selected_currency );
 			} else {
-				$product->_regular_price = wppfm_prep_money_values( $woocommerce_product->get_regular_price(), $selected_language, $selected_currency );
+				$product->_regular_price = wppfm_prep_money_values( $woocommerce_product->get_regular_price( $price_context ), $selected_language, $selected_currency );
 			}
 		}
 
@@ -1517,7 +1519,7 @@ trait WPPFM_Processing_Support {
 			if ( $woocommerce_product->is_type( 'variable' ) ) {
 				$product->_sale_price = wppfm_prep_money_values( $this->get_variation_sale_price( $woocommerce_product, 'max' ), $selected_language, $selected_currency );
 			} else {
-				$product->_sale_price = wppfm_prep_money_values( $woocommerce_product->get_sale_price(), $selected_language, $selected_currency );
+				$product->_sale_price = wppfm_prep_money_values( $woocommerce_product->get_sale_price( $price_context ), $selected_language, $selected_currency );
 			}
 		}
 
@@ -1601,7 +1603,7 @@ trait WPPFM_Processing_Support {
 		}
 
 		if ( in_array( 'last_update', $active_field_names, true ) ) {
-			$product->last_update = date( 'Y-m-d H:i:s', current_time( 'timestamp' ) );
+			$product->last_update = gmdate( 'Y-m-d H:i:s', current_time( 'timestamp' ) );
 		}
 
 		if ( in_array( '_wp_attachement_metadata', $active_field_names, true ) ) {
@@ -1654,27 +1656,27 @@ trait WPPFM_Processing_Support {
 		} else {
 			// @since 2.37.0. - Added code to handle min and max variation prices for non-variation products.
 			if ( in_array( '_min_variation_price', $active_field_names, true ) ) {
-				$product->_min_variation_price = wppfm_prep_money_values( $woocommerce_product->get_regular_price(), $selected_language, $selected_currency );
+				$product->_min_variation_price = wppfm_prep_money_values( $woocommerce_product->get_regular_price( $price_context ), $selected_language, $selected_currency );
 			}
 
 			if ( in_array( '_max_variation_price', $active_field_names, true ) ) {
-				$product->_max_variation_price = wppfm_prep_money_values( $woocommerce_product->get_regular_price(), $selected_language, $selected_currency );
+				$product->_max_variation_price = wppfm_prep_money_values( $woocommerce_product->get_regular_price( $price_context ), $selected_language, $selected_currency );
 			}
 
 			if ( in_array( '_min_variation_regular_price', $active_field_names, true ) ) {
-				$product->_min_variation_regular_price = wppfm_prep_money_values( $woocommerce_product->get_regular_price(), $selected_language, $selected_currency );
+				$product->_min_variation_regular_price = wppfm_prep_money_values( $woocommerce_product->get_regular_price( $price_context ), $selected_language, $selected_currency );
 			}
 
 			if ( in_array( '_max_variation_regular_price', $active_field_names, true ) ) {
-				$product->_max_variation_regular_price = wppfm_prep_money_values( $woocommerce_product->get_regular_price(), $selected_language, $selected_currency );
+				$product->_max_variation_regular_price = wppfm_prep_money_values( $woocommerce_product->get_regular_price( $price_context ), $selected_language, $selected_currency );
 			}
 
 			if ( in_array( '_min_variation_sale_price', $active_field_names, true ) ) {
-				$product->_min_variation_sale_price = wppfm_prep_money_values( $woocommerce_product->get_sale_price(), $selected_language, $selected_currency );
+				$product->_min_variation_sale_price = wppfm_prep_money_values( $woocommerce_product->get_sale_price( $price_context ), $selected_language, $selected_currency );
 			}
 
 			if ( in_array( '_max_variation_sale_price', $active_field_names, true ) ) {
-				$product->_max_variation_sale_price = wppfm_prep_money_values( $woocommerce_product->get_sale_price(), $selected_language, $selected_currency );
+				$product->_max_variation_sale_price = wppfm_prep_money_values( $woocommerce_product->get_sale_price( $price_context ), $selected_language, $selected_currency );
 			}
 
 			if ( ! $woocommerce_product_parent->is_type( 'simple' ) && ! $woocommerce_product_parent->is_type( 'grouped' )
@@ -1741,7 +1743,7 @@ trait WPPFM_Processing_Support {
 			if ( $woocommerce_product->is_type( 'variable' ) ) {
 				$regular_price = $woocommerce_product->get_variation_regular_price( 'max' );
 			} else {
-				$regular_price = $woocommerce_product->get_regular_price();
+				$regular_price = $woocommerce_product->get_regular_price( $price_context );
 			}
 			$price                            = wc_get_price_including_tax( $woocommerce_product, array( 'price' => $regular_price ) );
 			$product->_regular_price_with_tax = wppfm_prep_money_values( $price, $selected_language, $selected_currency );
@@ -1753,7 +1755,7 @@ trait WPPFM_Processing_Support {
 			if ( $woocommerce_product->is_type( 'variable' ) ) {
 				$regular_price = $woocommerce_product->get_variation_regular_price( 'max' );
 			} else {
-				$regular_price = $woocommerce_product->get_regular_price();
+				$regular_price = $woocommerce_product->get_regular_price( $price_context );
 			}
 			$price                               = wc_get_price_excluding_tax( $woocommerce_product, array( 'price' => $regular_price ) );
 			$product->_regular_price_without_tax = wppfm_prep_money_values( $price, $selected_language, $selected_currency );
@@ -1767,7 +1769,7 @@ trait WPPFM_Processing_Support {
 			if ( $woocommerce_product->is_type( 'variable' ) ) {
 				$sale_price = $this->get_variation_sale_price( $woocommerce_product, 'max' );
 			} else {
-				$sale_price = $woocommerce_product->get_sale_price();
+				$sale_price = $woocommerce_product->get_sale_price( $price_context );
 			}
 
 			if ( $sale_price ) {
@@ -1784,7 +1786,7 @@ trait WPPFM_Processing_Support {
 			if ( $woocommerce_product->is_type( 'variable' ) ) {
 				$sale_price = $this->get_variation_sale_price( $woocommerce_product, 'max' );
 			} else {
-				$sale_price = $woocommerce_product->get_sale_price();
+				$sale_price = $woocommerce_product->get_sale_price( $price_context );
 			}
 
 			if ( $sale_price ) {
@@ -1814,12 +1816,14 @@ trait WPPFM_Processing_Support {
 	 * @param string $woocommerce_parent_id the parent product id.
 	 *
 	 * @since 3.11.0.
+	 * @since 3.11.1 - To fix tickets #4302, #4311 and #4312, added a check if the parent product is a variation product.
 	 * @return string the item group id.
 	 */
 	private function get_item_group_id( $woocommerce_parent_id ) {
 		$parent = wc_get_product( $woocommerce_parent_id );
 
-		if ( ! $parent instanceof WC_Product_Variation ) {
+		// Ensure the product is either a variable product or variation.
+		if ( ! $parent || ! ( $parent->is_type( 'variable' ) || $parent->is_type( 'variation' ) ) ) {
 			return '';
 		}
 

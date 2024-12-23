@@ -107,7 +107,7 @@ function wppfm_write_log_file( $error_message, $filename = 'debug' ) {
 		$message_line = 'ERROR! Could not write messages of type ' . gettype( $error_message );
 	}
 
-	if ( false === file_put_contents( $file, gmdate( 'Y-m-d H:i:s', time() ) . ' - ' . ucfirst( $filename ) . ' Message: ' . $message_line . PHP_EOL, FILE_APPEND ) ) {
+	if ( false === wppfm_append_line_to_file( $file, gmdate( 'Y-m-d H:i:s', time() ) . ' - ' . ucfirst( $filename ) . ' Message: ' . $message_line, true ) ) {
 		/* translators: %s: Error message */
 		wppfm_show_wp_error( sprintf( __( 'There was an error but I was unable to store the error message in the log file. The message was %s', 'wp-product-feed-manager' ), $error_message ) );
 	}
@@ -173,7 +173,7 @@ function wppfm_you_have_no_woocommerce_installed_message() {
 function wppfm_log_http_requests( $response, $args, $url ) {
 	if ( false !== is_wp_error( $response ) && wppfm_on_any_own_plugin_page() ) {
 		$logfile = WPPFM_PLUGIN_DIR . 'http_request_error.log';
-		file_put_contents( $logfile, sprintf( "### %s, URL: %s\nREQUEST: %sRESPONSE: %s\n", gmdate( 'c' ), $url, print_r( $args, true ), print_r( $response, true ) ), FILE_APPEND );
+		wppfm_append_line_to_file( $logfile, sprintf( "### %s, URL: %s\nREQUEST: %sRESPONSE: %s\n", gmdate( 'c' ), $url, wp_json_encode( $args, true ), wp_json_encode( $response, true ) ) );
 	}
 
 	return $response;

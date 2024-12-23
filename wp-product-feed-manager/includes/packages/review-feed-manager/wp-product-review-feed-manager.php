@@ -16,7 +16,7 @@ if ( wpprfm_prerequisites() ) {
 	wpprfm_includes();
 } else {
 	if ( function_exists( 'wppfm_show_wp_error' ) ) {
-		wppfm_show_wp_error( __( 'You need to update your Feed Manager plugin to the latest version in order to use the Google Review Feed add-on.', 'wp-product-review-feed-manager' ) );
+		wppfm_show_wp_error( __( 'You need to update your Feed Manager plugin to the latest version in order to use the Google Review Feed add-on.', 'wp-product-feed-manager' ) );
 	}
 }
 

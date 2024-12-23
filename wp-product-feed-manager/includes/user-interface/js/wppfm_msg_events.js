@@ -1,5 +1,4 @@
 ( function() {
-	//shorthand for ready event.
 	jQuery( function() {
 		jQuery( 'div[data-dismissible] button.notice-dismiss' ).click(
 			function( event ) {
@@ -10,7 +9,7 @@
 
 				attr_value = $this.parent().attr( 'data-dismissible' ).split( '-' );
 
-				// remove the dismissible length from the attribute value and rejoin the array.
+				// Remove the dismissible length from the attribute value and rejoin the array.
 				dismissible_length = attr_value.pop();
 
 				option_name = attr_value.join( '-' );
@@ -21,7 +20,7 @@
 					'dismissible_length': dismissible_length,
 				};
 
-				// We can also pass the url value separately from ajax url for front end AJAX implementations
+				// We can also pass the url value separately from ajax url for front end AJAX implementations.
 				jQuery.post( ajaxurl, data );
 			}
 		);

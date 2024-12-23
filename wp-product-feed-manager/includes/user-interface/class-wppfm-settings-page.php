@@ -68,6 +68,8 @@ if ( ! class_exists( 'WPPFM_Settings_Page' ) ) :
 			$manual_channel_update           = true === $manual_channel_update_option || 'true' === $manual_channel_update_option ? ' checked ' : '';
 			$use_full_resolution_option      = get_option( 'wppfm_use_full_url_resolution', 'false' );
 			$wpml_use_full_resolution_urls   = true === $use_full_resolution_option || 'true' === $use_full_resolution_option ? ' checked ' : '';
+			$omit_price_filters_option       = get_option( 'wppfm_omit_price_filters', 'false' );
+			$omit_price_filters              = true === $omit_price_filters_option || 'true' === $omit_price_filters_option ? ' checked ' : '';
 
 			$third_party_attribute_keywords = get_option( 'wppfm_third_party_attribute_keywords', '%wpmr%,%cpf%,%unit%,%bto%,%yoast%' );
 			$notice_mailaddress             = get_option( 'wppfm_notice_mailaddress' ) ? get_option( 'wppfm_notice_mailaddress' ) : get_bloginfo( 'admin_email' );
@@ -126,6 +128,17 @@ if ( ! class_exists( 'WPPFM_Settings_Page' ) ) :
 					<p><i>' . esc_html__('Use this option if you\'re using WPML and are getting incorrect URLs in your feed. This option will slightly increase the load on the database when processing a feed.', 'wp-product-feed-manager') . '</i></p></fieldset>
 					</td></tr>';
 			}
+
+			// @since 3.12.0.
+			echo '<tr vertical-align="top" class="wppfm-setting-selector">
+				<th scope="row" class="titledesc">' . esc_html__( 'Omit price filters', 'wp-product-feed-manager' ) . '</th>
+				<td class="forminp forminp-checkbox">
+				<fieldset>
+				<input name="wppfm-omit-price-filters" id="wppfm-omit-price-filters" type="checkbox" class="" value="0"' . esc_attr( $omit_price_filters ) . '> 
+				<label for="wppfm-omit-price-filters">'
+				 . esc_html__( 'Omits filters that are used on the prices in your feeds (default off).', 'wp-product-feed-manager' ) . '</label>
+				<p><i>' . esc_html__( 'Enable this option to prevent third-party plugins or custom filters from altering the prices in your product feeds. Use this if you notice incorrect prices in your feed.', 'wp-product-feed-manager' ) . '</i></p></fieldset>
+				</td></tr>';
 
 			// @since 3.7.0.
 			if ( 'full' === WPPFM_PLUGIN_VERSION_ID ) {
@@ -191,7 +204,7 @@ if ( ! class_exists( 'WPPFM_Settings_Page' ) ) :
 				<thead>
 				<tr><th class="wppfm-manage-column wppfm-column-name">' . esc_html__( 'File Name', 'wp-product-feed-manager' ) . '</th>
 				<th class="wppfm-manage-column wppfm-column-name">' . esc_html__( 'Backup Date', 'wp-product-feed-manager' ) . '</th>
-				<th class="wppfm-manage-column wppfm-column-name">' . esc_html__( 'Actions', 'wp-product-feed-manager' ) . '</th></tr>
+				<th class="wppfm-manage-column wppfm-column-name" id="wppfm-backup-action-column">' . esc_html__( 'Actions', 'wp-product-feed-manager' ) . '</th></tr>
 				</thead>
 				<tbody id="wppfm-backups-list"></tbody>
 				</table>';

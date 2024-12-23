@@ -30,41 +30,6 @@ class WPPFM_Logging_Folders {
 	}
 
 	/**
-	 * Deletes a directory and all its content
-	 *
-	 * @since 2.7.0
-	 * @param  string  $folder_name
-	 * @return boolean true when the directory has been deleted
-	 */
-	public static function delete_folder( $folder_name ) {
-		if ( is_dir( $folder_name ) ) {
-
-			$dir_handle = opendir( $folder_name );
-
-			if ( ! $dir_handle ) {
-				return false;
-			}
-
-			while ( $file = readdir( $dir_handle ) ) {
-				if ( '.' != $file && '.. ' != $file ) {
-					if ( ! is_dir( $folder_name . '/' . $file ) ) {
-						unlink( $folder_name . '/' . $file );
-					} else {
-						wp_mkdir_p( $folder_name . '/' . $file );
-					}
-				}
-			}
-
-			closedir( $dir_handle );
-			rmdir( $folder_name );
-
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	/**
 	 * Checks if a folder is empty
 	 *
 	 * @since 2.7.0

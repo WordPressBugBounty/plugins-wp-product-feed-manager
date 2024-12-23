@@ -25,7 +25,7 @@ if ( wpppfm_prerequisites() ) {
 	wpppfm_includes();
 } else {
 	if ( function_exists( 'wppfm_show_wp_error' ) ) {
-		wppfm_show_wp_error( __( 'You need at least version 2.39.0 of the WooCommerce Product Feed Manager plugin to use the WooCommerce Google Review Feed Manager add-on', 'wp-product-review-feed-manager' ) );
+		wppfm_show_wp_error( __( 'You need at least version 2.39.0 of the WooCommerce Product Feed Manager plugin to use the WooCommerce Google Review Feed Manager add-on', 'wp-product-feed-manager' ) );
 	}
 }
 
