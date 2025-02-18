@@ -173,7 +173,7 @@ function wppfm_you_have_no_woocommerce_installed_message() {
 function wppfm_log_http_requests( $response, $args, $url ) {
 	if ( false !== is_wp_error( $response ) && wppfm_on_any_own_plugin_page() ) {
 		$logfile = WPPFM_PLUGIN_DIR . 'http_request_error.log';
-		wppfm_append_line_to_file( $logfile, sprintf( "### %s, URL: %s\nREQUEST: %sRESPONSE: %s\n", gmdate( 'c' ), $url, wp_json_encode( $args, true ), wp_json_encode( $response, true ) ) );
+		wppfm_append_line_to_file( $logfile, sprintf( "### %s, URL: %s\r\nREQUEST: %sRESPONSE: %s\r\n", gmdate( 'c' ), $url, wp_json_encode( $args, true ), wp_json_encode( $response, true ) ) );
 	}
 
 	return $response;

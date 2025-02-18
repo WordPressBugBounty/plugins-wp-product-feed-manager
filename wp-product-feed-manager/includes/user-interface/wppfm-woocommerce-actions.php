@@ -64,7 +64,7 @@ add_action( 'woocommerce_product_data_panels', 'wppfm_render_product_feed_tab' )
  * @since 3.12.0. - Added a nonce verification check.
  */
 function wppfm_save_custom_product_feed_exclusion_checkbox( $post_id ) {
-	if ( wp_verify_nonce( $_POST['wppfm_exclude_from_feed_nonce'], 'wppfm_exclude_from_feed_nonce_action' ) ) {
+	if ( wp_verify_nonce( filter_input( INPUT_POST, 'wppfm_exclude_from_feed_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm_exclude_from_feed_nonce_action' ) ) {
 		$exclude_product = isset( $_POST['wppfm_exclude_from_feed'] ) ? 'yes' : 'no';
 		update_post_meta( $post_id, 'wppfm_exclude_from_feed', $exclude_product );
 	}
@@ -102,8 +102,8 @@ add_action( 'woocommerce_variation_options', 'wppfm_add_custom_select_to_variati
  * @since 3.12.0. - Added a nonce check.
  */
 function wppfm_save_custom_variation_feed_exclusion_checkbox( $variation_id, $loop ) {
-	if ( wp_verify_nonce( $_POST['wppfm_exclude_from_feed_nonce'], 'wppfm_exclude_from_feed_nonce_action' ) ) {
-		$exclude_variation = isset( $_POST['wppfm_exclude_from_feed'][ $loop ] ) ? 'yes' : 'no';
+	if ( wp_verify_nonce( filter_input( INPUT_POST, 'wppfm_exclude_from_feed_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm_exclude_from_feed_nonce_action' ) ) {
+		$exclude_variation = isset( $_POST['wppfm_exclude_from_feed'][0] ) ? 'yes' : 'no';
 		update_post_meta( $variation_id, 'wppfm_exclude_from_feed', $exclude_variation );
 	}
 }

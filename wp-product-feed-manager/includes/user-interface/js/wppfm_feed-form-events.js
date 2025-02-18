@@ -64,6 +64,7 @@ merchantsElement.on(
 		if ( '0' !== merchantsElement.val() && '' !== fileNameElement.val() ) {
 			wppfm_showChannelInputs( merchantsElement.val(), true );
 			wppfm_mainInputChanged( false );
+//			wppfm_finishOrUpdateFeedPage( false );
 		} else {
 			wppfm_hideFeedFormMainInputs();
 		}
@@ -147,8 +148,9 @@ jQuery( '#variations' ).on(
 jQuery( '#aggregator' ).on(
 	'change',
 	function() {
+		console.log( 'aggregator changed' );
 		wppfm_aggregatorChanged();
-		wppfm_drawAttributeMappingSection(); // reset the attribute mapping
+		//wppfm_drawAttributeMappingSection(); // reset the attribute mapping
 	}
 );
 

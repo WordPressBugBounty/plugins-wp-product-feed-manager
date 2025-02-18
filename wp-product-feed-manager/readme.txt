@@ -5,7 +5,7 @@ Donate link: https://www.wpmarketingrobot.com/
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 2.12.0
+Stable tag: 2.13.0
 License: GPLv3 or later License
 URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -196,6 +196,12 @@ Are you still experiencing issues with our plugin? Follow these steps before con
 3. Save and generate your feed
 
 == Changelog ==
+= 2.13.0 2025-02-18 =
+* Fix - Fixed an issue that prevented the plugins product identifiers for product variations to be saved to the database.
+* Tweak - Further improved the feed process logger.
+* Tested - Tested up to WooCommerce 9.6.1.
+* Added - Added the new WooCommerce GTIN, UPC, EAN or ISBN product identifier as a source to the source selector.
+
 = 2.12.0 2024-12-23 =
 * Tweak - Moved the product identifiers from the Products Inventory tab to the Product Feed tab.
 * Fixed - Fixed an issue where the WPML Language Selector, the Currency selectors of the FOX Currency Switcher, the Polylang Language Selector the Transpress Language Selector would not show up anymore.
@@ -339,5 +345,5 @@ Fixed an issue with a folder name with a capital letter that would cause error m
 
 === Upgrade Notice ===
 
-= 2.12.0 2024-12-23 =
+= 2.13.0 2025-02-18 =
 * Important: This update introduces additional tweaks and some bug fixes. We strongly recommend backing up your existing feeds before upgrading.

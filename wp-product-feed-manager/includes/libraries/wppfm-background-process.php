@@ -17,14 +17,12 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	 * Action
 	 *
 	 * (default value: 'background_process')
-	 * (default value: 'background_process')
-	 *
 	 * @var string
 	 */
 	protected $action = 'background_process';
 
 	/**
-	 * Start time of current process.
+	 * Start time of the current process.
 	 *
 	 * (default value: 0)
 	 *
@@ -91,7 +89,7 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	}
 
 	/**
-	 * Dispatch the feed generation process.
+	 * Dispatch the feed generation process. Runs the parent dispatch method in the wppfm-async-request class.
 	 *
 	 * @param string $feed_id   The id of the feed.
 	 */
@@ -117,7 +115,7 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	}
 
 	public function nr_of_products_in_queue() {
-		return count( $this->data ) - 2; // subtract the xml header and footer items as they are not products
+		return count( $this->data ) - 2; // subtract the XML header and footer items as they are not products
 	}
 
 	/**
@@ -247,29 +245,22 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	 *
 	 * @param string $key   Key.
 	 * @param array  $data  Data.
-	 *
-	 * @return $this
 	 */
 	public function update( $key, $data ) {
 		if ( ! empty( $data ) ) {
 			update_site_option( 'wppfm_background_process_key', $key );
 			update_site_option( $key, $data );
 		}
-
-		return $this;
 	}
 
 	/**
 	 * Delete queue and properties stored in the options table
 	 *
 	 * @param string $key Key.
-	 *
-	 * @return $this
 	 */
 	public function delete( $key ) {
+		delete_site_option( 'wppfm_background_process_key' );
 		delete_site_option( $key );
-
-		return $this;
 	}
 
 	/**
@@ -291,10 +282,9 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	}
 
 	/**
-	 * Maybe process queue
+	 * Maybe process queue. This method is activated by the dispatch method in the parent class.
 	 *
-	 * Checks whether data exists within the queue and that
-	 * the process is not yet running.
+	 * Check whether data exists within the queue and that the process is not yet running.
 	 */
 	public function maybe_handle() {
 		// Don't lock up other requests while processing.
@@ -308,8 +298,9 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 		}
 
 		if ( $this->is_queue_empty() ) {
+			$feed_id = filter_input( INPUT_GET, 'feed_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 			$message = 'Tried to start a new batch but the queue is empty!';
-			do_action( 'wppfm_feed_generation_message', 'async-request', $message, 'ERROR' );
+			do_action( 'wppfm_feed_generation_message', $feed_id, $message, 'ERROR' );
 			// No data to process.
 			wp_die();
 		}
@@ -427,7 +418,7 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 		$query = $wpdb->get_row(
 			$wpdb->prepare(
 				// phpcs:ignore
-				"	SELECT * FROM $table WHERE $column LIKE %s ORDER BY $key_column ASC LIMIT 1",
+				"	SELECT * FROM $table WHERE $column LIKE %s ORDER BY $key_column LIMIT 1",
 				$key
 			)
 		);
@@ -459,19 +450,26 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 			$batch = $this->get_batch();
 
 			if ( ! $batch ) { // @since 2.10.0
+				$feed_id = filter_input( INPUT_GET, 'feed_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 				$message = 'Could not get the next batch data!';
-				do_action( 'wppfm_feed_generation_message', 'async-request', $message, 'ERROR' );
+				do_action( 'wppfm_feed_generation_message', $feed_id, $message, 'ERROR' );
 				$this->end_batch( 'unknown', 'failed' );
 				return false;
 			}
 
-			$properties_key = get_site_option( 'wppfm_background_process_key' );
-			$total_handled_products = get_transient( 'wppfm_nr_of_processed_products', 0 );
+			$properties_key         = get_site_option( 'wppfm_background_process_key' );
+			$total_handled_products = get_transient( 'wppfm_nr_of_processed_products' );
+
+			if ( false === $total_handled_products ) {
+				$total_handled_products = 0;
+				set_transient( 'wppfm_nr_of_processed_products', $total_handled_products );
+			}
 
 			// @since 2.10.0
 			if ( ! $properties_key ) {
+				$feed_id = filter_input( INPUT_GET, 'feed_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 				$message = 'Tried to get the next batch but the wppfm_background_process_key is empty.';
-				do_action( 'wppfm_feed_generation_message', 'async-request', $message, 'ERROR' );
+				do_action( 'wppfm_feed_generation_message', $feed_id, $message, 'ERROR' );
 				$this->end_batch( 'unknown', 'failed' );
 				return false;
 			} else {
@@ -634,7 +632,7 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	 * Time exceeded.
 	 *
 	 * Ensures the batch never exceeds a sensible time limit.
-	 * A timeout limit of 30s is common on shared hosting.
+	 * A timeout limit of 30 seconds is common on shared hosting.
 	 *
 	 * @param string $feed_id   The feed id.
 	 * @param bool   $report    Set to true if you want to report the time exceeded in the feed processing logging file. Default false.

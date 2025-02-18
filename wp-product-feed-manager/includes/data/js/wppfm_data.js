@@ -113,6 +113,8 @@ function wppfm_woocommerceSourceOptions() {
 		{value: '_woocs_currency', label: 'WOOCS Currency', prop: 'meta'},
 		// @since 3.11.0
 		{value: 'wppfm_exclude_from_feed', label: 'Exclude From Feed option selected', prop: 'meta'},
+		// @since 3.13.0
+		{value: '_global_unique_id', label: 'GTIN, UPC, EAN or ISBN', prop: 'meta'},
 	];
 
 	// @since 3.11.0 - Made the inclusion of the plugin own product identifiers dependent on if the Show product identifiers option in the Settings page has been selected or not.

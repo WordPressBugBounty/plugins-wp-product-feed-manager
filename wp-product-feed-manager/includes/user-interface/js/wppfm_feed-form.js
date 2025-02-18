@@ -253,7 +253,6 @@ function wppfm_finishOrUpdateFeedPage( categoryChanged ) {
 		}
 
 		wppfm_customSourceFields( _feedHolder[ 'dataSource' ], function( customFields ) {
-
 			_feedHolder[ 'country' ]  = jQuery( '#wppfm-countries-selector' ).val();
 			_feedHolder[ 'language' ] = jQuery( '#wppfm-feed-language-selector' ).val();
 			_feedHolder[ 'currency' ] = jQuery( '#wppfm-feed-currency-selector' ).val();
@@ -303,7 +302,10 @@ function wppfm_finishOrUpdateFeedPage( categoryChanged ) {
 				jQuery( '#page-bottom-buttons' ).show();
 
 				wppfm_hideWorkingSpinner();
-				wppfm_enableFeedActionButtons();
+
+				if ( _feedHolder[ 'title' ] && '0' !==  _feedHolder[ 'country' ] && '0' !== _feedHolder[ 'mainCategory' ] ) {
+					wppfm_enableFeedActionButtons();
+				}
 			} );
 		} );
 	} );
@@ -2694,7 +2696,7 @@ function wppfm_drawAttributeMappingSection() {
 
 	// reset the fields
 	wppfm_resetFields();
-
+	console.log( 'Redrawing the attributes' );
 	for ( var i = 0; i < _feedHolder[ 'attributes' ].length; i ++ ) {
 
 		switch ( _feedHolder[ 'attributes' ][ i ][ 'fieldLevel' ] ) {

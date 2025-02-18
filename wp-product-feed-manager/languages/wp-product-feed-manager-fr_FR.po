@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WooCommerce Product Feed Manager\n"
-"POT-Creation-Date: 2024-12-22 11:11+0100\n"
-"PO-Revision-Date: 2024-12-22 11:11+0100\n"
+"POT-Creation-Date: 2025-02-18 09:07+0100\n"
+"PO-Revision-Date: 2025-02-18 09:08+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -134,7 +134,7 @@ msgstr ""
 "Veuillez mettre à jour les autorisations de ce dossier pour le rendre "
 "inscriptible, puis essayez à nouveau d’installer un canal."
 
-#: includes/data/class-wppfm-channel.php:198
+#: includes/data/class-wppfm-channel.php:242
 #, php-format
 msgid ""
 "2832 - Failed to connect with the wp marketingrobot server. Please wait a "
@@ -145,7 +145,7 @@ msgstr ""
 "patienter quelques minutes et réessayer. Si le problème persiste, ouvrez un "
 "ticket de support à %s."
 
-#: includes/data/class-wppfm-channel.php:253
+#: includes/data/class-wppfm-channel.php:297
 #, php-format
 msgid ""
 "2141 - Your WooCommerce Product Feed Manager plugin is unable to check for "
@@ -160,7 +160,7 @@ msgstr ""
 "problème."
 
 #. translators: %s: Name of a channel
-#: includes/data/class-wppfm-channel.php:340
+#: includes/data/class-wppfm-channel.php:400
 #, php-format
 msgid ""
 "Channel %s is not installed correctly. Please try to Deactivate and then "
@@ -169,7 +169,7 @@ msgstr ""
 "Le canal %s n'est pas installé correctement. Veuillez essayer de désactiver "
 "puis d'activer le plugin Feed Manager votre page Plugins."
 
-#: includes/data/class-wppfm-channel.php:440
+#: includes/data/class-wppfm-channel.php:518
 #, php-format
 msgid ""
 "Channel %s is not supported by your current plugin version. Please update "
@@ -192,11 +192,11 @@ msgstr ""
 "page Gérer les canaux.\n"
 "\t\t\t\t\t\t\t\t\tEssayez également de désactiver puis réactiver le plugin."
 
-#: includes/data/class-wppfm-db-management.php:68
+#: includes/data/class-wppfm-db-management.php:65
 msgid "Feed needs to be generated first"
 msgstr "L’alimentation doit d’abord être générée"
 
-#: includes/data/class-wppfm-db-management.php:232
+#: includes/data/class-wppfm-db-management.php:229
 msgid ""
 "The backup file is of an older version of the database and can not be "
 "restored as it is not compatible with the current database."
@@ -205,12 +205,12 @@ msgstr ""
 "données et ne peut pas être restauré car il n'est pas compatible avec la "
 "base de données actuelle."
 
-#: includes/data/class-wppfm-db-management.php:303
+#: includes/data/class-wppfm-db-management.php:300
 msgid "A backup file with the selected name does not exists."
 msgstr "Il n'existe pas de fichier de sauvegarde portant le nom sélectionné."
 
 #. translators: %s: selected backup file name
-#: includes/data/class-wppfm-db-management.php:338
+#: includes/data/class-wppfm-db-management.php:335
 #, php-format
 msgid "Failed to make a copy of %s"
 msgstr "Échec de la copie de %s"
@@ -250,14 +250,14 @@ msgstr "Vous n'avez pas la permission d'installer les mises à jour des plugins"
 msgid "Error"
 msgstr "Erreur"
 
-#: includes/libraries/wppfm-background-process.php:728
+#: includes/libraries/wppfm-background-process.php:726
 #, php-format
 msgid "Every %d minute"
 msgid_plural "Every %d minutes"
 msgstr[0] "Toutes les %d minutes"
 msgstr[1] "Toutes les %d minutes"
 
-#: includes/libraries/wppfm-background-process.php:769
+#: includes/libraries/wppfm-background-process.php:767
 msgid ""
 "Could not schedule the cron event required to start the feed process. Please "
 "check if your wp cron is configured correctly and is running."
@@ -352,7 +352,7 @@ msgstr "Éditeur de Flux de Produits"
 
 #: includes/packages/promotions-feed-manager/classes/elements/class-wpppfm-main-input-selector-element.php:24
 #: includes/packages/review-feed-manager/classes/elements/class-wpprfm-main-input-selector-element.php:23
-#: includes/user-interface/class-wppfm-settings-page.php:205
+#: includes/user-interface/class-wppfm-settings-page.php:209
 #: includes/user-interface/elements/class-wppfm-main-input-selector-element.php:24
 msgid "File Name"
 msgstr "Nom de fichier"
@@ -734,34 +734,38 @@ msgstr "Liste de Flux de Produits"
 msgid "Add New Feed"
 msgstr "Ajouter un nouveau flux"
 
-#: includes/user-interface/class-wppfm-feed-list-page.php:85
+#: includes/user-interface/class-wppfm-feed-list-page.php:87
 msgid "Name"
 msgstr "Nom"
 
-#: includes/user-interface/class-wppfm-feed-list-page.php:86
+#: includes/user-interface/class-wppfm-feed-list-page.php:88
 msgid "Url"
 msgstr "Url"
 
-#: includes/user-interface/class-wppfm-feed-list-page.php:87
+#: includes/user-interface/class-wppfm-feed-list-page.php:89
 msgid "Updated"
 msgstr "Mise à jour"
 
-#: includes/user-interface/class-wppfm-feed-list-page.php:88
+#: includes/user-interface/class-wppfm-feed-list-page.php:90
 msgid "Items"
 msgstr "Articles"
 
-#: includes/user-interface/class-wppfm-feed-list-page.php:91
+#: includes/user-interface/class-wppfm-feed-list-page.php:93
 msgid "Type"
 msgstr "Sorte"
 
-#: includes/user-interface/class-wppfm-feed-list-page.php:93
+#: includes/user-interface/class-wppfm-feed-list-page.php:95
 msgid "Status"
 msgstr "Statut"
 
-#: includes/user-interface/class-wppfm-feed-list-page.php:94
-#: includes/user-interface/class-wppfm-settings-page.php:207
+#: includes/user-interface/class-wppfm-feed-list-page.php:96
+#: includes/user-interface/class-wppfm-settings-page.php:211
 msgid "Actions"
 msgstr "Actions"
+
+#: includes/user-interface/class-wppfm-feed-list-page.php:128
+msgid "Be Sure to Read our Latest Weblog"
+msgstr ""
 
 #: includes/user-interface/class-wppfm-i18n-scripts.php:27
 msgid "You are using characters in your file name that are not allowed!"
@@ -1413,28 +1417,28 @@ msgstr "J'accepte vos Termes et Conditions"
 msgid "Activate License"
 msgstr "Activer la licence"
 
-#: includes/user-interface/class-wppfm-main-header.php:73
+#: includes/user-interface/class-wppfm-main-header.php:72
 msgid "Feed List"
 msgstr "Liste des flux"
 
-#: includes/user-interface/class-wppfm-main-header.php:76
+#: includes/user-interface/class-wppfm-main-header.php:75
 #: includes/user-interface/wppfm-admin-actions.php:31
 #: includes/user-interface/wppfm-admin-actions.php:32
 msgid "Feed Editor"
 msgstr "Éditeur de Flux"
 
-#: includes/user-interface/class-wppfm-main-header.php:83
+#: includes/user-interface/class-wppfm-main-header.php:82
 #: includes/user-interface/wppfm-admin-actions.php:66
 msgid "Channel Manager"
 msgstr "Gestionnaire de Canaux"
 
-#: includes/user-interface/class-wppfm-main-header.php:88
+#: includes/user-interface/class-wppfm-main-header.php:87
 #: includes/user-interface/wppfm-admin-actions.php:77
 #: includes/user-interface/wppfm-admin-actions.php:78
 msgid "Settings"
 msgstr "Réglages"
 
-#: includes/user-interface/class-wppfm-main-header.php:91
+#: includes/user-interface/class-wppfm-main-header.php:90
 #: includes/user-interface/wppfm-admin-actions.php:87
 #: includes/user-interface/wppfm-admin-actions.php:88
 msgid "Support"
@@ -1537,11 +1541,11 @@ msgid "Switch this option only on request of the help desk. "
 msgstr ""
 "Basculez cette option uniquement à la demande du service d'assistance. "
 
-#: includes/user-interface/class-wppfm-settings-page.php:109
+#: includes/user-interface/class-wppfm-settings-page.php:111
 msgid "Show product identifiers"
 msgstr "Afficher les identifiants de produits"
 
-#: includes/user-interface/class-wppfm-settings-page.php:114
+#: includes/user-interface/class-wppfm-settings-page.php:116
 msgid ""
 "When switched on, adds Brand, GTIN and MPN product identifiers to the "
 "products (default off)."
@@ -1549,7 +1553,7 @@ msgstr ""
 "Lorsqu’il est activé, ajoute brand, GTIN et MPN identifiants produits pour "
 "les produits (par défaut)."
 
-#: includes/user-interface/class-wppfm-settings-page.php:115
+#: includes/user-interface/class-wppfm-settings-page.php:117
 msgid ""
 "This option will add product identifier input fields to the Inventory card "
 "of your products. The MPN identifier is also added to the product variations."
@@ -1558,16 +1562,16 @@ msgstr ""
 "carte d’inventaire de vos produits. L’identifiant MPN est également ajouté "
 "aux variations du produit."
 
-#: includes/user-interface/class-wppfm-settings-page.php:122
+#: includes/user-interface/class-wppfm-settings-page.php:126
 msgid "WPML: Use full resolution URLs"
 msgstr "WPML: utiliser des URL en pleine résolution"
 
-#: includes/user-interface/class-wppfm-settings-page.php:127
+#: includes/user-interface/class-wppfm-settings-page.php:131
 msgid "Enables full conversion of hard-coded URLs (default off)."
 msgstr ""
 "Permet la conversion complète des URL codées en dur (désactivé par défaut)."
 
-#: includes/user-interface/class-wppfm-settings-page.php:128
+#: includes/user-interface/class-wppfm-settings-page.php:132
 msgid ""
 "Use this option if you're using WPML and are getting incorrect URLs in your "
 "feed. This option will slightly increase the load on the database when "
@@ -1577,16 +1581,16 @@ msgstr ""
 "incorrectes dans votre flux. Cette option augmentera légèrement la charge "
 "sur la base de données lors du traitement d'un flux."
 
-#: includes/user-interface/class-wppfm-settings-page.php:134
+#: includes/user-interface/class-wppfm-settings-page.php:138
 msgid "Omit price filters"
 msgstr "Omettre les filtres de prix"
 
-#: includes/user-interface/class-wppfm-settings-page.php:139
+#: includes/user-interface/class-wppfm-settings-page.php:143
 msgid "Omits filters that are used on the prices in your feeds (default off)."
 msgstr ""
 "Omets les filtres appliqués aux prix dans vos flux (désactivé par défaut)."
 
-#: includes/user-interface/class-wppfm-settings-page.php:140
+#: includes/user-interface/class-wppfm-settings-page.php:144
 msgid ""
 "Enable this option to prevent third-party plugins or custom filters from "
 "altering the prices in your product feeds. Use this if you notice incorrect "
@@ -1596,17 +1600,17 @@ msgstr ""
 "personnalisés de modifier les prix dans vos flux de produits. Utilisez cette "
 "option si vous constatez des prix incorrects dans votre flux."
 
-#: includes/user-interface/class-wppfm-settings-page.php:146
+#: includes/user-interface/class-wppfm-settings-page.php:150
 msgid "Manual channel update"
 msgstr "Actualisation manuelle des chaînes"
 
-#: includes/user-interface/class-wppfm-settings-page.php:151
+#: includes/user-interface/class-wppfm-settings-page.php:155
 msgid "When switched on, you need to manually update channels (default off)."
 msgstr ""
 "Lorsqu'activé, vous devez mettre à jour manuellement les chaînes (par défaut "
 "désactivé)."
 
-#: includes/user-interface/class-wppfm-settings-page.php:152
+#: includes/user-interface/class-wppfm-settings-page.php:156
 msgid ""
 "By default your channels are updated automatically as soon as an update is "
 "available. This option allows your to switch off the automatic channel "
@@ -1616,15 +1620,15 @@ msgstr ""
 "jour est disponible. Cette option vous permet de désactiver les mises à jour "
 "automatiques des chaînes et de maintenir vos chaînes à jour manuellement."
 
-#: includes/user-interface/class-wppfm-settings-page.php:157
+#: includes/user-interface/class-wppfm-settings-page.php:161
 msgid "Clear feed process"
 msgstr "Purger le processus d'alimentation"
 
-#: includes/user-interface/class-wppfm-settings-page.php:161
+#: includes/user-interface/class-wppfm-settings-page.php:165
 msgid "Clear Feed Process"
 msgstr "Processus de Nettoyage du Flux"
 
-#: includes/user-interface/class-wppfm-settings-page.php:164
+#: includes/user-interface/class-wppfm-settings-page.php:168
 msgid ""
 "Use this option when feeds get stuck processing - does not delete your "
 "current feeds or settings."
@@ -1632,18 +1636,18 @@ msgstr ""
 "Utilisez cette option lorsque le traitement des flux est bloqué - ne "
 "supprime pas vos flux ou paramètres actuels."
 
-#: includes/user-interface/class-wppfm-settings-page.php:168
+#: includes/user-interface/class-wppfm-settings-page.php:172
 msgid "Third party attributes"
 msgstr "Attributs de tiers"
 
-#: includes/user-interface/class-wppfm-settings-page.php:173
+#: includes/user-interface/class-wppfm-settings-page.php:177
 msgid ""
 "Enter comma separated keywords and wildcards to use third party attributes."
 msgstr ""
 "Entrez des mots-clés et des caractères génériques séparés par des virgules "
 "pour utiliser des attributs tiers."
 
-#: includes/user-interface/class-wppfm-settings-page.php:174
+#: includes/user-interface/class-wppfm-settings-page.php:178
 msgid ""
 "Use specific wildcards. Do not use to broad wildcards like %_% because that "
 "will include default WooCommerce attributes and can sometimes result in "
@@ -1653,15 +1657,15 @@ msgstr ""
 "génériques généraux comme %_% car cela inclura les attributs WooCommerce par "
 "défaut et peut parfois entraîner des sorties de flux incorrectes."
 
-#: includes/user-interface/class-wppfm-settings-page.php:178
+#: includes/user-interface/class-wppfm-settings-page.php:182
 msgid "Notice recipient"
 msgstr "Destinataire de l'avis"
 
-#: includes/user-interface/class-wppfm-settings-page.php:183
+#: includes/user-interface/class-wppfm-settings-page.php:187
 msgid "Email address of the feed manager."
 msgstr "Adresse e-mail du feed manager."
 
-#: includes/user-interface/class-wppfm-settings-page.php:184
+#: includes/user-interface/class-wppfm-settings-page.php:188
 msgid ""
 "Enter the email address of the person you want to be notified when a feed "
 "fails during an automatic feed update. This option requires an SMTP server "
@@ -1672,19 +1676,19 @@ msgstr ""
 "flux. Cette option nécessite l'installation d'un serveur SMTP pour WordPress "
 "sur votre serveur."
 
-#: includes/user-interface/class-wppfm-settings-page.php:188
+#: includes/user-interface/class-wppfm-settings-page.php:192
 msgid "Re-initialize"
 msgstr "Réinitialiser"
 
-#: includes/user-interface/class-wppfm-settings-page.php:192
+#: includes/user-interface/class-wppfm-settings-page.php:196
 msgid "Re-initiate Plugin"
 msgstr "Réinitialiser le plugin"
 
-#: includes/user-interface/class-wppfm-settings-page.php:195
+#: includes/user-interface/class-wppfm-settings-page.php:199
 msgid "Resets and updates the plugin."
 msgstr "Réinitialise et met à jour le plugin."
 
-#: includes/user-interface/class-wppfm-settings-page.php:196
+#: includes/user-interface/class-wppfm-settings-page.php:200
 msgid ""
 "Updates and cleans the tables if required, re-initiates the cron events and "
 "resets the stored license - does not delete your current feeds or settings. "
@@ -1695,23 +1699,23 @@ msgstr ""
 "flux ou paramètres actuels. Vous devrez réinsérer votre licence après cette "
 "action."
 
-#: includes/user-interface/class-wppfm-settings-page.php:200
+#: includes/user-interface/class-wppfm-settings-page.php:204
 msgid "Backups"
 msgstr "Sauvegardes"
 
-#: includes/user-interface/class-wppfm-settings-page.php:206
+#: includes/user-interface/class-wppfm-settings-page.php:210
 msgid "Backup Date"
 msgstr "Date de sauvegarde"
 
-#: includes/user-interface/class-wppfm-settings-page.php:213
+#: includes/user-interface/class-wppfm-settings-page.php:217
 msgid "Add New Backup"
 msgstr "Ajouter une Nouvelle Sauvegarde"
 
-#: includes/user-interface/class-wppfm-settings-page.php:218
+#: includes/user-interface/class-wppfm-settings-page.php:222
 msgid "Backup current feeds"
 msgstr "Flux actuels de sauvegarde"
 
-#: includes/user-interface/class-wppfm-settings-page.php:219
+#: includes/user-interface/class-wppfm-settings-page.php:223
 msgid "Cancel backup"
 msgstr "Annuler la sauvegarde"
 
@@ -2125,53 +2129,49 @@ msgstr ""
 "n'est pas le cas, ou si cette erreur se produit, veuillez contacter \n"
 "\t\t\t\tauke@wpmarketingrobot.com. Message d'erreur : %s"
 
-#: includes/user-interface/wppfm-admin-actions.php:306
+#. translators: 1: Name of the plugin, 2: url to the wpmarketingrobot store
+#: includes/user-interface/wppfm-admin-actions.php:305
 #, php-format
 msgid ""
-"You have an invalid or expired license key for your %1$s plugin.\n"
-"\t\t\t\tPlease <a href=\"%2$scheckout/?"
-"edd_license_key=%3$s&utm_source=client-"
-"admin&utm_medium=renewal_link&utm_campaign=license_expired\">\n"
-"\t\t\t\tclick here to go to the Licenses renewal page</a> to keep the plugin "
-"working and your product feeds valid."
+"You have an invalid or expired license key for your %1$s plugin. Please %2$s "
+"to keep the plugin working and your product feeds valid."
 msgstr ""
-"Vous avez une clé de licence invalide ou expirée pour votre plugin %1$s. \n"
-"\t\t\tVeuillez <a href=\"%2$scheckout/?"
-"edd_license_key=%3$s&utm_source=client-"
-"admin&utm_medium=renewal_link&utm_campaign=license_expired\"> \n"
-"\t\t\tcliquez ici pour aller à la page de renouvellement des licences </a> "
-"pour que le plugin continue à fonctionner et que les flux de votre produit "
-"soient valides."
+"Vous avez une clé de licence invalide ou expirée pour votre plugin %1$s. "
+"Veuillez %2$s pour maintenir le bon fonctionnement du plugin et la validité "
+"de vos flux produits."
 
-#: includes/user-interface/wppfm-admin-actions.php:323
+#: includes/user-interface/wppfm-admin-actions.php:307
+msgid "click here to go to the Licenses renewal page"
+msgstr "Cliquez ici pour accéder à la page de renouvellement des licences."
+
+#: includes/user-interface/wppfm-admin-actions.php:317
 #, php-format
 msgid ""
 "The license key for your %1$s plugin is expiring soon. If you wish, you can "
-"<a href=\"%2$scheckout/?edd_license_key=%3$s&utm_source=client-"
-"admin&utm_medium=renewal_link&utm_campaign=license_renewal\">\n"
-"\t\t\t\t\tclick here</a> to renew your license key directly so that you can "
-"be sure your product feeds keep working."
+"%2$s to renew your license key directly so that you can be sure your product "
+"feeds keep working."
 msgstr ""
-"La clé de licence pour votre plugin %1$s expire bientôt. Si vous le "
-"souhaitez, vous pouvez <a href=\"%2$scheckout/?"
-"edd_license_key=%3$s&utm_source=client-"
-"admin&utm_medium=renewal_link&utm_campaign=license_renewal\">\n"
-"\t\t\t\t\tcliquer ici</a> pour renouveler votre clé de licence directement "
-"afin de vous assurer que vos flux de produits continuent de fonctionner."
+"La clé de licence de votre plugin %1$s expirera bientôt. Si vous le "
+"souhaitez, vous pouvez %2$s pour la renouveler directement et vous assurer "
+"que vos flux produits continuent de fonctionner."
 
-#: includes/user-interface/wppfm-admin-filters.php:25
+#: includes/user-interface/wppfm-admin-actions.php:321
+msgid "click here"
+msgstr "Cliquez ici"
+
+#: includes/user-interface/wppfm-admin-filters.php:28
 msgid "Starter Guide"
 msgstr "Guide de démarrage"
 
-#: includes/user-interface/wppfm-admin-filters.php:28
+#: includes/user-interface/wppfm-admin-filters.php:31
 msgid "Go Premium"
 msgstr "Go Premium"
 
-#: includes/user-interface/wppfm-admin-filters.php:30
+#: includes/user-interface/wppfm-admin-filters.php:33
 msgid "Get Support"
 msgstr "Obtenir de l'aide"
 
-#: includes/user-interface/wppfm-admin-menu-functions.php:290
+#: includes/user-interface/wppfm-admin-menu-functions.php:295
 #, php-format
 msgid ""
 "2122 - License verification failed. This may be due to a temporary issue "
@@ -2279,15 +2279,15 @@ msgstr "Ajoutez le numéro de pièce du fabricant (MPN) de votre produit."
 msgid "Product MPN"
 msgstr "MPN du produit"
 
-#: includes/user-interface/wppfm-product-identifiers.php:143
+#: includes/user-interface/wppfm-product-identifiers.php:154
 msgid "Brand"
 msgstr "Marque"
 
-#: includes/user-interface/wppfm-product-identifiers.php:154
+#: includes/user-interface/wppfm-product-identifiers.php:165
 msgid "GTIN"
 msgstr "GTIN"
 
-#: includes/user-interface/wppfm-product-identifiers.php:165
+#: includes/user-interface/wppfm-product-identifiers.php:176
 msgid "MPN"
 msgstr "MPN"
 
@@ -2346,6 +2346,24 @@ msgstr ""
 #. Author of the plugin/theme
 msgid "WP Marketing Robot"
 msgstr "WP Marketing Robot"
+
+#, php-format
+#~ msgid ""
+#~ "You have an invalid or expired license key for your %1$s plugin.\n"
+#~ "\t\t\t\tPlease <a href=\"%2$scheckout/?"
+#~ "edd_license_key=%3$s&utm_source=client-"
+#~ "admin&utm_medium=renewal_link&utm_campaign=license_expired\">\n"
+#~ "\t\t\t\tclick here to go to the Licenses renewal page</a> to keep the "
+#~ "plugin working and your product feeds valid."
+#~ msgstr ""
+#~ "Vous avez une clé de licence invalide ou expirée pour votre plugin "
+#~ "%1$s. \n"
+#~ "\t\t\tVeuillez <a href=\"%2$scheckout/?"
+#~ "edd_license_key=%3$s&utm_source=client-"
+#~ "admin&utm_medium=renewal_link&utm_campaign=license_expired\"> \n"
+#~ "\t\t\tcliquez ici pour aller à la page de renouvellement des licences </"
+#~ "a> pour que le plugin continue à fonctionner et que les flux de votre "
+#~ "produit soient valides."
 
 #~ msgid "Your Free Google Shopping Checklist is send to you by email."
 #~ msgstr ""

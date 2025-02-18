@@ -12,7 +12,7 @@ function wppfmRemoveFromQueueString( idToRemove ) {
 	var dataStorageElement = jQuery( '#wppfm-feed-list-page-data-storage' );
 	var currentString = dataStorageElement.data( 'wppfmFeedsInQueue' );
 
-	if ( currentString.indexOf( ',' ) > -1 ) {
+	if ( 'string' === typeof( currentString ) && currentString.indexOf( ',' ) > -1 ) {
 		currentString = currentString.endsWith( idToRemove ) ? currentString.replace( idToRemove, '' ) : currentString.replace( idToRemove + ',', '' );
 		dataStorageElement.data( 'wppfmFeedsInQueue', currentString );
 	} else {

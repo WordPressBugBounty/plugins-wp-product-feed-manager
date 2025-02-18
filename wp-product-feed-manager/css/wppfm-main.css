@@ -152,6 +152,19 @@ i.wppfm-button-icon {
     padding: 0 23px 10px 0;
 }
 
+.wppfm-weblog-teaser {
+    float: right;
+    max-width: 845px;
+    position: relative;
+    top: -20px;
+}
+
+.wppfm-weblog-teaser a:active,
+.wppfm-weblog-teaser a:focus {
+    border: none;
+    box-shadow: none;
+}
+
 .wppfm-wide-text-input-field {
     width: 45%;
 }

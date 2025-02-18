@@ -508,7 +508,7 @@ function wppfm_reinitiate_plugin( callback ) {
 function wppfm_validateResponse( response ) {
 	response = response.trim(); // remove php ajax response white spaces
 
-	if ( response.indexOf( 'error' ) < 0 ) {
+	if ( response.indexOf( 'id="error"' ) < 0 ) {
 		return response;
 	} else { // Response contains an error message
 		wppfm_showErrorMessage( response );

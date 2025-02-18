@@ -115,12 +115,12 @@ abstract class WPPFM_Async_Request {
 	 */
 	public function dispatch( $feed_id ) {
 		if ( get_option( 'wppfm_disabled_background_mode', 'false' ) === 'false' ) { // start a background process
-			$url  = add_query_arg( $this->get_query_args(), $this->get_query_url() );
+			$url  = add_query_arg( $this->get_query_args( $feed_id ), $this->get_query_url() );
 			$args = $this->get_post_args();
 
 			do_action( 'wppfm_register_remote_post_args', $feed_id, $url, $args );
 
-			// activate the background process
+			// Activate the background process by calling an endpoint in the WPPFM_Background_Process class, that will trigger the maybe_handle() function in this class as a background process.
 			$response = wp_remote_post( esc_url_raw( $url ), $args );
 
 			do_action( 'wppfm_wp_remote_post_response', $feed_id, $response );
@@ -133,12 +133,15 @@ abstract class WPPFM_Async_Request {
 	/**
 	 * Get query args
 	 *
+	 * @param int $feed_id Feed ID. // @since 3.13.0
+	 *
 	 * @return array
 	 */
-	protected function get_query_args() {
+	protected function get_query_args( $feed_id ) {
 		return array(
-			'action' => $this->identifier,
-			'nonce'  => wp_create_nonce( $this->identifier ),
+			'action'  => $this->identifier,
+			'nonce'   => wp_create_nonce( $this->identifier ),
+			'feed_id' => $feed_id,
 		);
 	}
 
@@ -177,7 +180,7 @@ abstract class WPPFM_Async_Request {
 			'headers'   => array( // @since 3.9.0 added a header with empty Expect parameter
 				'Content-Type' => 'application/json',
 				'Expect' => '', ),
-			'body'      => wp_json_encode( $this->data ), // encoding @since 2.41.0 to minimize the post-input var size.
+			'body'      => '', // @since 3.13.0 made the body empty.
 			'cookies'   => stripslashes_deep( $_COOKIE ),
 		);
 	}

@@ -49,7 +49,7 @@ if ( ! class_exists( 'WPPFM_Main_Header' ) ) :
 			echo
 			'<div class="wppfm-page-layout__header__logo">
 			   <a href="admin.php?page=wp-product-feed-manager" class="wppfm-logo">
-			      <img src="' . esc_url( WPPFM_PLUGIN_URL ) . '/images/email-logo-wpmr-color.png" alt="WP Marketing Robot" class="wppfm-page-layout__header__nav-wrapper__logo">
+			      <img src="' . esc_url( WPPFM_PLUGIN_URL ) . '/images/wpmr-new-logo-color.png" alt="WP Marketing Robot" class="wppfm-page-layout__header__nav-wrapper__logo">
 			   </a>
 			</div>';
 		}
@@ -62,7 +62,6 @@ if ( ! class_exists( 'WPPFM_Main_Header' ) ) :
 		 * @since 3.2.0.
 		 * @return void
 		 * @noinspection HtmlUnknownTarget
-		 *
 		 */
 		private function navigation( $page ) {
 			echo '<div class="wppfm-page-layout__header__nav-wrapper">
@@ -77,7 +76,7 @@ if ( ! class_exists( 'WPPFM_Main_Header' ) ) :
 						</ul>
 					<ul class="wppfm-nav__support-selectors">';
 
-			if ( 'full' === WPPFM_PLUGIN_VERSION_ID ) { // only show the Channel Manager button in the full version
+			if ( 'full' === WPPFM_PLUGIN_VERSION_ID ) { // Only show the Channel Manager button in the full version.
 				echo '<li class="wppfm-nav__selector" id="wppfm-channel-manager-page-selector"><a href="admin.php?page=wppfm-channel-manager-page" class="wppfm-nav-link';
 				if ( 'channel-manager-page' === $page ) { echo ' wppfm-nav-link--selected'; }
 				echo '">' . esc_html__( 'Channel Manager', 'wp-product-feed-manager' ) . '</a></li>';

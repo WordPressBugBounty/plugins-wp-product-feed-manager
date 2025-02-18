@@ -7,10 +7,10 @@
  * Author URI: https://www.wpmarketingrobot.com
  * Developer: Michel Jongbloed
  * Developer URI: https://www.wpmarketingrobot.com
- * Version: 2.12.0
- * Modified: 22-12-2024
+ * Version: 2.13.0
+ * Modified: 18-02-2025
  * WC requires at least: 8.4
- * WC tested up to: 9.5.1
+ * WC tested up to: 9.6.2
  *
  * This plugin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		 *
 		 * @var string  Containing the version number of the plugin.
 		 */
-		public $version = '2.12.0';
+		public $version = '2.13.0';
 
 		/**
 		 * Author Name.
@@ -241,6 +241,11 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 			// Store the folder that contains the backup files.
 			if ( ! defined( 'WPPFM_BACKUP_DIR' ) ) {
 				define( 'WPPFM_BACKUP_DIR', WPPFM_UPLOADS_DIR . '/wppfm-backups' );
+			}
+
+			// Store the folder that contains the revision files.
+			if ( ! defined( 'WPPFM_REVISIONS_DIR' ) ) {
+				define( 'WPPFM_REVISIONS_DIR', WPPFM_UPLOADS_DIR . '/wppfm-revisions' );
 			}
 
 			// Store the folder that contains the feeds.

@@ -116,19 +116,30 @@ add_action( 'woocommerce_variation_options', 'wppfm_create_mpn_wc_variation_supp
 /**
  * Function for the woocommerce_save_product_variation action-hook. Saves the custom fields data of the product variations.
  *
- * @param int $post_id
+ * @param int $variation_id The ID of the product variation.
+ * @param int $id           The element of the product data array.
  *
  * @since 3.12.0 - Switched to using an input filter to sanitize the input.
  */
-function wppfm_save_variation_custom_fields( $post_id ) {
+function wppfm_save_variation_custom_fields( $variation_id, $id ) {
 
 	// Get the variations mpn and gtin.
-	$woocommerce_mpn_field  = filter_input( INPUT_POST, 'wppfm_product_mpn', FILTER_SANITIZE_SPECIAL_CHARS ) ?? '';
-	$woocommerce_gtin_field = filter_input( INPUT_POST, 'wppfm_product_gtin', FILTER_SANITIZE_SPECIAL_CHARS ) ?? '';
+	$woocommerce_mpn_input = filter_input_array( INPUT_POST, ['wppfm_product_mpn' => [
+		'filter' => FILTER_SANITIZE_SPECIAL_CHARS,
+		'flags'  => FILTER_REQUIRE_ARRAY,
+	] ] );
+
+	$woocommerce_gtin_input = filter_input_array( INPUT_POST, ['wppfm_product_gtin' => [
+		'filter' => FILTER_SANITIZE_SPECIAL_CHARS,
+		'flags'  => FILTER_REQUIRE_ARRAY,
+	] ] );
+
+	$woocommerce_mpn_field  = $woocommerce_mpn_input['wppfm_product_mpn'][$variation_id] ?? '';
+	$woocommerce_gtin_field = $woocommerce_gtin_input['wppfm_product_gtin'][$variation_id] ?? '';
 
 	// Update.
-	update_post_meta( $post_id, 'wppfm_product_mpn', $woocommerce_mpn_field );
-	update_post_meta( $post_id, 'wppfm_product_gtin', $woocommerce_gtin_field );
+	update_post_meta( $variation_id, 'wppfm_product_mpn', $woocommerce_mpn_field );
+	update_post_meta( $variation_id, 'wppfm_product_gtin', $woocommerce_gtin_field );
 }
 
 add_action( 'woocommerce_save_product_variation', 'wppfm_save_variation_custom_fields', 10, 2 );

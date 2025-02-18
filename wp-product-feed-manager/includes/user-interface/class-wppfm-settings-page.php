@@ -105,15 +105,19 @@ if ( ! class_exists( 'WPPFM_Settings_Page' ) ) :
 				</td></tr>';
 
 			// @since 2.10.0.
-			echo '<tr vertical-align="top" class="wppfm-setting-selector">
+			// @since 3.14.0 - Only allows the product identifiers option for the WP Marketing Robot plugin.
+			if ( 'wpmarketingrobot' === WPPFM_PLUGIN_DISTRIBUTOR ) {
+				echo '<tr vertical-align="top" class="wppfm-setting-selector">
 				<th scope="row" class="titledesc">' . esc_html__( 'Show product identifiers', 'wp-product-feed-manager' ) . '</th>
 				<td class="forminp forminp-checkbox">
 				<fieldset>
 				<input name="wppfm-product-identifiers-on" id="wppfm-product-identifiers" type="checkbox" class="" value="1"' . esc_attr( $show_product_identifiers ) . '> 
 				<label for="wppfm-product-identifiers">'
-				. esc_html__( 'When switched on, adds Brand, GTIN and MPN product identifiers to the products (default off).', 'wp-product-feed-manager' ) . '</label>
-				<p><i>' . esc_html__( 'This option will add product identifier input fields to the Inventory card of your products. The MPN identifier is also added to the product variations.', 'wp-product-feed-manager' ) . '</i></p></fieldset>
+					 . esc_html__( 'When switched on, adds Brand, GTIN and MPN product identifiers to the products (default off).', 'wp-product-feed-manager' ) . '</label>
+				<p><i>' . esc_html__( 'This option will add product identifier input fields to the Inventory card of your products. The MPN identifier is also added to the product variations.',
+						'wp-product-feed-manager' ) . '</i></p></fieldset>
 				</td></tr>';
+			}
 
 			// @since 2.15.0.
 			if ( has_filter( 'wppfm_get_wpml_permalink' ) )

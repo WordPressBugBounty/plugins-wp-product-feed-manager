@@ -55,20 +55,44 @@ function wppfm_showChannelInputs( channel, isNew ) {
 		'999': 'switchToMarketingrobotFeedFormMainInputs',
 	};
 
+	wppfm_clearMainChannelSelectors();
+
 	// call the correct function
 	if ( fName.hasOwnProperty( channel ) ) {
 		window[ fName[ channel ] ]( isNew, channel );
 	}
 
-	// standard for all channels
-	jQuery( '#update-schedule-row' ).show();
-	jQuery( '#add-product-variations-row' ).show();
+	wppfm_refreshAttributes( channel );
 
 	if ( ( null === jQuery( '#lvl_0' ).val() && '' === jQuery( '#selected-categories' ).html() ) || 0 === jQuery( '#wppfm-countries-selector' ).val() ) {
 		wppfm_show_or_hide_category_map( channel );
 	} else {
 		jQuery( '#wppfm-category-map' ).show();
 	}
+}
+
+/**
+ * Clears the main selectors on the Product Feed Editor page.
+ *
+ * @since 3.13.0
+ */
+function wppfm_clearMainChannelSelectors() {
+	jQuery( '#wppfm-feed-types-list-row' ).hide()
+	jQuery( '#wppfm-country-list-row' ).hide()
+	jQuery( '#category-list-row' ).hide();
+	jQuery( '#google-feed-title-row' ).hide();
+	jQuery( '#google-feed-description-row' ).hide();
+	jQuery( '#aggregator-selector-row' ).hide();
+	jQuery( '#wppfm-add-google-analytics-row' ).hide();
+
+	// standard for all channels
+	jQuery( '#update-schedule-row' ).show();
+	jQuery( '#add-product-variations-row' ).show();
+}
+
+function wppfm_refreshAttributes( channel ) {
+	console.log( 'refreshing attributes for channel ' + channel );
+	return '';
 }
 
 /**
@@ -263,7 +287,7 @@ function wppfm_channelUsesOwnCategories( channel ) {
 
 /**
  * If required for that channel, this function activates the correct function that will prepare the global category
- * variables in the channel-specific javascript file. This is only required if the channel required attributes are different for specific categories.
+ * variables in the channel-specific JavaScript file. This is only required if the channel required attributes are different for specific categories.
  * Does nothing when not required for the channel.
  *
  * @param {string} channel

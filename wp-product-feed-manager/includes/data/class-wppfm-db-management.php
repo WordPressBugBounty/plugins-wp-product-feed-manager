@@ -28,16 +28,13 @@ if ( ! class_exists( 'WPPFM_Db_Management' ) ) :
 		public static function table_exists( $table_name ) {
 			global $wpdb;
 
-			// Use the wpdb::get_results() method to check table existence
-			$query = $wpdb->prepare(
-				'SELECT 1 FROM information_schema.tables WHERE table_schema = %s AND table_name = %s',
-				DB_NAME,
-				$wpdb->prefix . $table_name
-			);
+			// Check if the table can be queried
+			$table = $wpdb->prefix . $table_name;
+			if ( $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table ) ) === $table ) {
+				return true;
+			}
 
-			$result = $wpdb->get_results( $query );
-
-			return ! empty( $result );
+			return false;
 		}
 
 		/**

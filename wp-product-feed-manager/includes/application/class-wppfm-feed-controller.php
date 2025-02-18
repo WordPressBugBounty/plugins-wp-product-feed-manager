@@ -87,13 +87,14 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 		 * Returns the number of product ids that are still in the product queue.
 		 *
 		 * @since 2.3.0
+		 * @since 3.13.0 - Added a check if the $ids_in_product_queue is set.
 		 * @return int number of product ids still in the product queue.
 		 */
 		public static function nr_ids_remaining_in_product_queue() {
 			$key = get_site_option( 'wppfm_background_process_key' );
 			$ids_in_product_queue = get_site_option( $key );
 
-			return count( $ids_in_product_queue ) - 1; // The last line in the product queue is the feed closure line, so it needs to be subtracted from the count.
+			return $ids_in_product_queue ? count( $ids_in_product_queue ) - 1 : 0; // The last line in the product queue is the feed closure line, so it needs to be subtracted from the count.
 		}
 
 		/**

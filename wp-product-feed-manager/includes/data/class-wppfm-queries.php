@@ -361,7 +361,7 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 							$data[] = $this->make_meta_object( $column, $alt_val[ $col_name ]['value'], $rec_id );
 						} elseif ( $alt_val && is_array( $alt_val ) ) {
 							foreach ( $alt_val as $v ) {
-								if ( $v['name'] === $column ) {
+								if ( isset( $v['name'] ) && $v['name'] === $column ) {
 									$data[] = $this->make_meta_object( $column, $v['value'], $rec_id );
 								}
 							}
@@ -490,6 +490,7 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 		}
 
 		public function clear_feed_batch_options() {
+			delete_site_option( 'wppfm_background_process_key' );
 			$this->_wpdb->query( "DELETE FROM {$this->_wpdb->options} WHERE option_name LIKE '%_batch_%'" );
 		}
 

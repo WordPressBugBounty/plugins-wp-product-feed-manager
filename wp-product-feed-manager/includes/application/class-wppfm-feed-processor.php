@@ -110,8 +110,6 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 		 * Handles the actions after completing a feed update task.
 		 */
 		public function complete() {
-			//parent::complete();
-
 			do_action( 'wppfm_feed_generation_message', $this->_feed_data->feedId, 'Started the complete function to clean up the feed process and queue.' );
 
 			// Remove the properties from the option table.
@@ -236,7 +234,7 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 
 			if ( ! $row_category ) {
 				$message = sprintf( 'Could not identify the correct category map for product %s', $product_id );
-				do_action( 'wppfm_feed_generation_message', $this->_feed_data->feedId, $message );
+				do_action( 'wppfm_feed_generation_message', $this->_feed_data->feedId, $message. 'ERROR' );
 
 				return false;
 			}

@@ -165,6 +165,29 @@ if ( ! class_exists( 'WPPFM_File' ) ) :
 		}
 
 		/**
+		 * Checks the uploads/wppfm-revisions folder for .zip files and returns the names of these files.
+		 *
+		 * @since 3.13.0
+		 * @return array containing the names of the revision files.
+		 */
+		public function get_list_of_available_revisions() {
+			$revisions = array();
+			$path      = WPPFM_REVISIONS_DIR;
+
+			// List all .zip files in the directory.
+			$files = glob( $path . '/*.zip' );
+
+			if ( is_array( $files ) ) {
+				foreach ( $files as $file ) {
+					$file_name = str_replace( WPPFM_REVISIONS_DIR . '/', '', $file );
+					$revisions[] = $file_name;
+				}
+			}
+
+			return $revisions;
+		}
+
+		/**
 		 * Write the backup string to a .sql file in the backup folder.
 		 *
 		 * @since 3.12.0 - Switched from using file_put_contents to WP_Filesystem.

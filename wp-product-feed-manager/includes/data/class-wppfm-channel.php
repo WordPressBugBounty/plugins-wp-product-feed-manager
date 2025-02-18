@@ -126,12 +126,24 @@ if ( ! class_exists( 'WPPFM_Channel' ) ) :
 			return false;
 		}
 
+		/**
+		 * Returns the installed channel names.
+		 *
+		 * @return array The installed channel names.
+		 */
 		public function get_installed_channel_names() {
 			$file_class = new WPPFM_File();
 
 			return $file_class->get_installed_channels_from_file();
 		}
 
+		/**
+		 * Returns the channel info link.
+		 *
+		 * @param string $channel_short_name The channel short name.
+		 *
+		 * @return bool The channel info link.
+		 */
 		public function get_channel_info_link( $channel_short_name ) {
 			foreach ( $this->_channels as $channel ) {
 				if ( $channel->channel_short === $channel_short_name ) {
@@ -142,6 +154,13 @@ if ( ! class_exists( 'WPPFM_Channel' ) ) :
 			return false;
 		}
 
+		/**
+		 * Returns the channel specifications link.
+		 *
+		 * @param string $channel_short_name The channel short name.
+		 *
+		 * @return bool The channel specifications link.
+		 */
 		public function get_channel_specifications_link( $channel_short_name ) {
 			foreach ( $this->_channels as $channel ) {
 				if ( $channel->channel_short === $channel_short_name ) {
@@ -152,12 +171,25 @@ if ( ! class_exists( 'WPPFM_Channel' ) ) :
 			return false;
 		}
 
+		/**
+		 * Removes a channel from the server.
+		 *
+		 * @param string $channel The channel to remove.
+		 * @param string $nonce   The nonce.
+		 */
 		public function remove_channel( $channel, $nonce ) {
 			if ( wp_verify_nonce( $nonce, 'delete-channel-nonce' ) ) {
 				$this->remove_channel_source( $channel );
 			}
 		}
 
+		/**
+		 * Updates a channel from the server.
+		 *
+		 * @param string $channel_short_name The channel short name.
+		 * @param string $code               The channel code.
+		 * @param string $nonce              The nonce.
+		 */
 		public function update_channel( $channel_short_name, $code, $nonce ) {
 			if ( wp_verify_nonce( $nonce, 'update-channel-nonce' ) ) {
 				$this->update_channel_source( $channel_short_name, $code );
@@ -166,6 +198,13 @@ if ( ! class_exists( 'WPPFM_Channel' ) ) :
 			}
 		}
 
+		/**
+		 * Installs a channel from the server.
+		 *
+		 * @param string $channel The channel to install.
+		 * @param string $code    The channel code.
+		 * @param string $nonce   The nonce.
+		 */
 		public function install_channel( $channel, $code, $nonce ) {
 			if ( wp_verify_nonce( $nonce, 'install-channel-nonce' ) ) {
 				$this->install_channel_source( $channel, $code );
@@ -174,6 +213,11 @@ if ( ! class_exists( 'WPPFM_Channel' ) ) :
 			}
 		}
 
+		/**
+		 * Returns the channels from the server
+		 *
+		 * @return array|WP_Error The channels from the server
+		 */
 		public function get_channels_from_server() {
 			$url = trailingslashit( WPPFM_EDD_SL_STORE_URL ) . 'wpmr/channels/channels.php';
 
@@ -264,6 +308,13 @@ if ( ! class_exists( 'WPPFM_Channel' ) ) :
 			return 0;
 		}
 
+		/**
+		 * Adds status data to the available channels
+		 *
+		 * @param array $available_channels The available channels
+		 * @param array $installed_channels The installed channels
+		 * @param bool  $updated            The updated flag
+		 */
 		public function add_status_data_to_available_channels( $available_channels, $installed_channels, $updated ) {
 			for ( $i = 0; $i < count( $available_channels ); $i ++ ) {
 				if ( in_array( $available_channels[ $i ]->short_name, $installed_channels, true ) ) {
@@ -315,6 +366,15 @@ if ( ! class_exists( 'WPPFM_Channel' ) ) :
 			return $this->get_channel_short_name( $feed_data->channel_id );
 		}
 
+		/**
+		 * Returns the version of the channel file.
+		 *
+		 * @param string $channel_name  The channel name.
+		 * @param int    $rerun_counter The rerun counter.
+		 * @param bool   $silent        The silent flag.
+		 *
+		 * @return string The version of the channel file
+		 */
 		public function get_channel_file_version( $channel_name, $rerun_counter, $silent = false ) {
 			if ( $rerun_counter < 3 ) {
 				if ( class_exists( 'WPPFM_' . ucfirst( $channel_name ) . '_Feed_Class' ) ) {
@@ -357,6 +417,12 @@ if ( ! class_exists( 'WPPFM_Channel' ) ) :
 			return $counter;
 		}
 
+		/**
+		 * Updates a channel on the server.
+		 *
+		 * @param string $channel_short_name The channel short name.
+		 * @param string $code               The channel code.
+		 */
 		private function update_channel_source( $channel_short_name, $code ) {
 			$file_class = new WPPFM_File();
 			$ftp_class  = new WPPFM_Channel_FTP();
@@ -376,6 +442,11 @@ if ( ! class_exists( 'WPPFM_Channel' ) ) :
 			}
 		}
 
+		/**
+		 * Removes a channel from the server.
+		 *
+		 * @param string $channel_short The channel short name.
+		 */
 		private function remove_channel_source( $channel_short ) {
 			$data_class = new WPPFM_Data();
 			$file_class = new WPPFM_File();
@@ -401,21 +472,28 @@ if ( ! class_exists( 'WPPFM_Channel' ) ) :
 			$file_class->delete_channel_source_files( $channel_short );
 		}
 
+		/**
+		 * Installs a channel from the server.
+		 *
+		 * @param string $channel_name The channel name.
+		 * @param string $code         The channel code.
+		 */
 		private function install_channel_source( $channel_name, $code ) {
 			$ftp_class  = new WPPFM_Channel_FTP();
 			$file_class = new WPPFM_File();
 			$data_class = new WPPFM_Data();
 
 			if ( wppfm_plugin_version_supports_channel( $channel_name ) ) {
+				// Get the update files from wp marketingrobot.com.
 				$get_result = $ftp_class->get_channel_source_files( $channel_name, $code );
 
-				// get the update files from wp marketingrobot.com
 				if ( false !== $get_result ) {
+					$ftp_class->register_channel_download( $channel_name ); // @since 3.13.0.
 
-					// unzip the file
+					// Unzip the file.
 					$file_class->unzip_channel_file( $channel_name );
 
-					// register the new channel
+					// Register the new channel.
 					$channel_details = $this->get_active_channel_details( $channel_name );
 
 					if ( false !== $channel_details ) {
@@ -442,7 +520,6 @@ if ( ! class_exists( 'WPPFM_Channel' ) ) :
 						),
 						$channel_name
 					),
-					'wp-product-feed-manager'
 				);
 			}
 		}

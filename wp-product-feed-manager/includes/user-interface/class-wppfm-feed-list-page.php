@@ -50,6 +50,8 @@ if ( ! class_exists( 'WPPFM_Feed_List_Page' ) ) :
 			<a href="admin.php?page=wppfm-feed-editor-page" class="wppfm-button wppfm-blue-button" id="wppfm-add-new-feed-button"><i class="wppfm-button-icon wppfm-icon-plus"></i>' . esc_html__( 'Add New Feed', 'wp-product-feed-manager' ) . '</a>
 			</div>';
 
+			//$this->weblog_teaser();
+
 			// Feed List Table.
 			echo '<div class="wppfm-page-layout__main" id="wppfm-product-feed-list-table">';
 			$this->list_content();
@@ -116,6 +118,14 @@ if ( ! class_exists( 'WPPFM_Feed_List_Page' ) ) :
 				'items'   => '4',
 				'type'    => '5',
 			);
+		}
+
+		/**
+		 * Returns a clickable teaser for the weblog.
+		 */
+		private function weblog_teaser() {
+			echo '<a href="https://www.wpmarketingrobot.com/boosting-ecommerce-sales-data-feeds/" target="_blank"><figure class="wppfm-weblog-teaser"><img decoding="async" width="422" height="149" fetchpriority="high" class="wp-image-65726 avia-img-lazy-loading-not-65726" src="https://www.wpmarketingrobot.com/system/wp-content/uploads/2025/02/boosting-sales-with-feed-management.png" title="boosting-sales-with-feed-management" alt="boosting sales with feed optimization" srcset="https://www.wpmarketingrobot.com/system/wp-content/uploads/2025/02/boosting-sales-with-feed-management.png 845w, https://www.wpmarketingrobot.com/system/wp-content/uploads/2025/02/boosting-sales-with-feed-management-300x106.png 300w, https://www.wpmarketingrobot.com/system/wp-content/uploads/2025/02/boosting-sales-with-feed-management-768x271.png 768w, https://www.wpmarketingrobot.com/system/wp-content/uploads/2025/02/boosting-sales-with-feed-management-705x249.png 705w"></a>
+			<figcaption>' . esc_html__( 'Be Sure to Read our Latest Weblog', 'wp-product-feed-manager' ) . '</figcaption></figure>';
 		}
 	}
 

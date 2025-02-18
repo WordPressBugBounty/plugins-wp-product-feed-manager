@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function wppfm_update_feeds() {
 	// Include the required WordPress files.
-	require_once ABSPATH . 'wp-load.php';
+	defined( 'WP_CLI' ) || require_once ABSPATH . 'wp-load.php'; // @since 3.13.0 - Added defined( 'WP_CLI' ) || to prevent a reloading wp-config.php.
 	require_once ABSPATH . 'wp-admin/includes/admin.php';
 	require_once ABSPATH . 'wp-admin/includes/file.php'; // Required for using the file system.
 	require_once ABSPATH . 'wp-admin/includes/plugin.php'; // Required to prevent a fatal error about not finding the is_plugin_active function.

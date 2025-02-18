@@ -142,7 +142,11 @@ function wppfm_logger_remote_post_arguments( $feed_id, $url, $args ) {
 
 		$message  = 'Feed Update dispatched.';
 		$message .= "\r\n";
-		$message .= sprintf( 'Dispatched url = %s.', esc_url_raw( $url ) );
+		$message .= sprintf( 'Dispatched url = %s', esc_url_raw( $url ) );
+		$message .= "\r\n";
+		$message .= sprintf( 'Dispatched blocking = %s', $args['blocking'] );
+		$message .= "\r\n";
+		$message .= sprintf( 'Dispatched sslverify = %s', $args['sslverify'] );
 		$message .= "\r\n";
 		$message .= sprintf( 'Dispatched args body = %s', $args_body_string );
 		$message .= "\r\n";
@@ -165,7 +169,7 @@ add_action( 'wppfm_register_remote_post_args', 'wppfm_logger_remote_post_argumen
  * @param   int     $products_handled_by_batch  Number of products handled by this batch. // @since 2.12.0
  */
 function wppfm_logger_batch_memory_limit_exceeded( $feed_id, $current_memory, $memory_limit, $products_handled_by_batch ) {
-	$batch_counter = get_option( 'wppfm_batch_counter', 0 ); // @since 2.12.0.
+	$batch_counter = get_option( 'wppfm_batch_counter', 1 ); // @since 2.12.0.
 	$nr_of_products_in_queue = WPPFM_Feed_Controller::nr_ids_remaining_in_product_queue(); // $since 3.9.0.
 
 	$message = sprintf( 'Batch nr %d memory limit reached. Currently %s bytes used with a limit of %s bytes. This batch added %d products to the feed, leaving %d products in the product queue', $batch_counter, $current_memory, $memory_limit, $products_handled_by_batch, $nr_of_products_in_queue );
@@ -185,7 +189,7 @@ add_action( 'wppfm_batch_memory_limit_exceeded', 'wppfm_logger_batch_memory_limi
  * @param   int     $products_handled_by_batch  Number of products handled by this batch. // @since 2.12.0
  */
 function wppfm_logger_batch_time_limit_exceeded( $feed_id, $time_limit, $products_handled_by_batch ) {
-	$batch_counter = get_option( 'wppfm_batch_counter', 0 ); // @since 2.12.0.
+	$batch_counter = get_option( 'wppfm_batch_counter', 1 ); // @since 2.12.0.
 	$nr_of_products_in_queue = WPPFM_Feed_Controller::nr_ids_remaining_in_product_queue(); // $since 3.9.0.
 
 	$message = sprintf( 'Batch nr %d time limit reached. Current limit is %s seconds. This batch added %d products to the feed, leaving %d products in the feed queue', $batch_counter, $time_limit, $products_handled_by_batch, $nr_of_products_in_queue );
