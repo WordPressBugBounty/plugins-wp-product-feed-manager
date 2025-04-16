@@ -34,7 +34,7 @@ function wppfm_plugins_action_links( $actions, $plugin_file, $plugin_data, $cont
 	}
 
 //	if ( current_user_can( 'activate_plugin' ) ) {
-//		$actions['reverse'] = '<a href="#" class="wppfm-reverse-feed">' . __( 'Reverse', 'wp-product-feed-manager' ) . '</a>';
+//		wppfm_add_revers_action_element( $actions );
 //	}
 
 	return $actions;
@@ -49,7 +49,7 @@ function wppfm_change_query_filter() {
 add_filter( 'wppfm_product_query_limit', 'wppfm_change_query_filter' );
 
 /**
- * Removes the Visit plugin site item at the plugin description on the Plugins page.
+ * Removes the Visit plugin site item at the plugin description on the Plugins page if this is a WooCommerce plugin version.
  *
  * @param   array  $plugin_meta Associative array of action names to anchor tags.
  * @param   string $plugin_file Plugin file name.
@@ -65,3 +65,35 @@ function remove_visit_plugin_site_link_for_woo_product_feed_manager( $plugin_met
 }
 
 add_filter( 'plugin_row_meta', 'remove_visit_plugin_site_link_for_woo_product_feed_manager', 10, 4 );
+
+/**
+ * Adds a reverse action element to the plugin description on the Plugins page.
+ *
+ * @param   array  $actions Associative array of action names to anchor tags.
+ *
+ * @return  void
+ * @since 3.14.0
+ */
+function wppfm_add_revers_action_element( &$actions ) {
+	$file_class = new WPPFM_File();
+	$previous_version_titles = $file_class->get_previous_plugin_version_file_titles();
+
+	if ( empty( $previous_version_titles ) ) {
+		return;
+	}
+
+	$plugin_reverse_element = '<span class="wppfm-reverse-plugin-wrapper"><a href="#" class="wppfm-reverse-plugin">' . esc_html__( 'Reverse', 'wp-product-feed-manager' ) . '</a>
+		<span class="wppfm-plugin-reverse-versions">';
+
+	foreach ( $previous_version_titles as $version_title ) {
+		$version_title_elements = explode( '-', $version_title );
+
+		if ( $version_title_elements[0] === WPPFM_PLUGIN_VERSION_ID ) {
+			$plugin_reverse_element .= '<a href="#" class="wppfm-reverse-plugin-action" data-version-title="' . esc_attr( $version_title ) . '">' . esc_html__( 'to version ' . $version_title_elements[1], 'wp-product-feed-manager' ) . '</a>';
+		}
+	}
+
+	$plugin_reverse_element .= '</span></span>';
+
+	$actions['reverse'] = $plugin_reverse_element;
+}

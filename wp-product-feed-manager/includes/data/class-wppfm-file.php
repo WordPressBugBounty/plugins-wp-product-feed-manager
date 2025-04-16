@@ -151,7 +151,7 @@ if ( ! class_exists( 'WPPFM_File' ) ) :
 					}
 
 					$lines = explode( "\n", $file_contents );
-					$first_line = $lines[0] ?? '';
+					$first_line = isset( $lines[0] ) ? $lines[0] : '';
 
 					$file_name   = str_replace( WPPFM_BACKUP_DIR . '/', '', $file );
 					$date_string = strtok( $first_line, '#' );
@@ -310,6 +310,23 @@ if ( ! class_exists( 'WPPFM_File' ) ) :
 					wp_delete_file( $file_path );
 				}
 			}
+		}
+
+		public function get_previous_plugin_version_file_titles() {
+			$previous_versions = array();
+			$path              = WPPFM_REVISIONS_DIR;
+
+			// List all .zip files in the directory.
+			$files = glob( $path . '/*.zip' );
+
+			if ( is_array( $files ) ) {
+				foreach ( $files as $file ) {
+					$file_name = str_replace( WPPFM_REVISIONS_DIR . '/', '', $file );
+					$previous_versions[] = $file_name;
+				}
+			}
+
+			return $previous_versions;
 		}
 	}
 

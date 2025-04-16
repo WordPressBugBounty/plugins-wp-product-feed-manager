@@ -3,7 +3,7 @@
  * WP Product Feed Manager Google Feed Class.
  *
  * @package WP Product Feed Manager/Channels
- * @version 30.0
+ * @version 31.0
  */
 
 // Prevent direct access
@@ -18,7 +18,7 @@ if ( ! class_exists( 'WPPFM_Google_Feed_Class' ) ) :
 	 */
 	class WPPFM_Google_Feed_Class extends WPPFM_Feed_Master_Class {
 
-		private $_version = '30.0';
+		private $_version = '31.0';
 
 		public function __construct() {
 			parent::__construct();
@@ -153,6 +153,7 @@ if ( ! class_exists( 'WPPFM_Google_Feed_Class' ) ) :
 				'consumer_notice',
 				'return_rule_label',
 				'certification',
+				'video_link',
 			);
 		}
 

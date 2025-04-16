@@ -303,7 +303,7 @@ function wppfm_finishOrUpdateFeedPage( categoryChanged ) {
 
 				wppfm_hideWorkingSpinner();
 
-				if ( _feedHolder[ 'title' ] && '0' !==  _feedHolder[ 'country' ] && '0' !== _feedHolder[ 'mainCategory' ] ) {
+				if ( _feedHolder[ 'title' ] && ( '0' !==  _feedHolder[ 'country' ] && '0' !== _feedHolder[ 'mainCategory' ] || '1' !== _feedHolder[ 'feedType' ] ) ) {
 					wppfm_enableFeedActionButtons();
 				}
 			} );
@@ -2696,7 +2696,6 @@ function wppfm_drawAttributeMappingSection() {
 
 	// reset the fields
 	wppfm_resetFields();
-	console.log( 'Redrawing the attributes' );
 	for ( var i = 0; i < _feedHolder[ 'attributes' ].length; i ++ ) {
 
 		switch ( _feedHolder[ 'attributes' ][ i ][ 'fieldLevel' ] ) {
@@ -2828,7 +2827,7 @@ function wppfm_queryConditionChanged( id, sourceLevel, conditionLevel ) {
 	// get the selected query option
 	var value = jQuery( '#query-condition-' + id + '-' + sourceLevel + '-' + conditionLevel ).val();
 
-	// if the "is empty" or "is not empty" condition is selected
+	// if the "is empty" or "is not empty," condition is selected
 	if ( value === '4' || value === '5' ) {
 
 		jQuery( '#condition-value-' + id + '-' + sourceLevel + '-' + conditionLevel ).hide();
@@ -2992,7 +2991,7 @@ function updateFeedFormAfterInputChanged( feedId, categoryChanged ) {
 }
 
 /**
- * For a new feed, some HTML elements need to be updated to include the new created feed id.
+ * For a new feed, some HTML elements need to be updated to include the newly created feed id.
  *
  * @param feedId
  */

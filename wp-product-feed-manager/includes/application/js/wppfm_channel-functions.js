@@ -91,7 +91,6 @@ function wppfm_clearMainChannelSelectors() {
 }
 
 function wppfm_refreshAttributes( channel ) {
-	console.log( 'refreshing attributes for channel ' + channel );
 	return '';
 }
 

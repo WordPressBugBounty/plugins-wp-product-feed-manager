@@ -50,7 +50,7 @@ if ( ! class_exists( 'WPPFM_Feed_List_Page' ) ) :
 			<a href="admin.php?page=wppfm-feed-editor-page" class="wppfm-button wppfm-blue-button" id="wppfm-add-new-feed-button"><i class="wppfm-button-icon wppfm-icon-plus"></i>' . esc_html__( 'Add New Feed', 'wp-product-feed-manager' ) . '</a>
 			</div>';
 
-			//$this->weblog_teaser();
+			$this->weblog_teaser();
 
 			// Feed List Table.
 			echo '<div class="wppfm-page-layout__main" id="wppfm-product-feed-list-table">';
@@ -121,11 +121,30 @@ if ( ! class_exists( 'WPPFM_Feed_List_Page' ) ) :
 		}
 
 		/**
-		 * Returns a clickable teaser for the weblog.
+		 * Returns a clickable teaser for the latest weblog.
+		 *
+		 * @since 3.14.0.
 		 */
 		private function weblog_teaser() {
-			echo '<a href="https://www.wpmarketingrobot.com/boosting-ecommerce-sales-data-feeds/" target="_blank"><figure class="wppfm-weblog-teaser"><img decoding="async" width="422" height="149" fetchpriority="high" class="wp-image-65726 avia-img-lazy-loading-not-65726" src="https://www.wpmarketingrobot.com/system/wp-content/uploads/2025/02/boosting-sales-with-feed-management.png" title="boosting-sales-with-feed-management" alt="boosting sales with feed optimization" srcset="https://www.wpmarketingrobot.com/system/wp-content/uploads/2025/02/boosting-sales-with-feed-management.png 845w, https://www.wpmarketingrobot.com/system/wp-content/uploads/2025/02/boosting-sales-with-feed-management-300x106.png 300w, https://www.wpmarketingrobot.com/system/wp-content/uploads/2025/02/boosting-sales-with-feed-management-768x271.png 768w, https://www.wpmarketingrobot.com/system/wp-content/uploads/2025/02/boosting-sales-with-feed-management-705x249.png 705w"></a>
-			<figcaption>' . esc_html__( 'Be Sure to Read our Latest Weblog', 'wp-product-feed-manager' ) . '</figcaption></figure>';
+			$latest_blog  = get_option( 'wppfm_latest_weblogs', array() )[0];
+
+			if( empty( $latest_blog ) ) {
+				return;
+			}
+
+			$article_date = date( 'dmy', strtotime( $latest_blog['date'] ) );
+			$article_id   = $latest_blog['id'];
+			$utm_params   = '?utm_source=pl_article_ad&utm_medium=textlink&utm_campaign=plugin_article&utm_id=ARCO.' . $article_date . '&utm_content=' . $article_id;
+			$href_url     = $latest_blog['url'] . $utm_params;
+
+			if (! empty( $latest_blog['title'] ) && ! empty( $latest_blog['url'] ) && ! empty( $latest_blog['image_url'] )) {
+				echo '<a href="' . esc_url( $href_url ) . '" target="_blank">
+				<figure class="wppfm-weblog-teaser">
+					<img decoding="async" width="422" height="149" fetchpriority="high" class="wppfm-weblog-teaser-figure" src="' . esc_url( $latest_blog['image_url'] ) . '" title="' . esc_attr( $latest_blog['title'] ) . '" alt="new blog post">
+					<figcaption class="wppfm-weblog-teaser-caption">' . esc_html__('New blog post! Discover pro tips to get more out of your web shop!', 'wp-product-feed-manager') . '</figcaption>
+					</figure>
+				</a>';
+			}
 		}
 	}
 

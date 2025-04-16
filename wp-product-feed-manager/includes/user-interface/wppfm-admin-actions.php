@@ -73,7 +73,7 @@ function wppfm_check_backups() {
 	}
 }
 
-add_action( 'admin_notices', 'wppfm_check_backups' );
+add_action( 'wppfm_daily_event', 'wppfm_check_backups' );
 
 /**
  * Sets the global background process. Gets triggered by the wp_loaded action.
@@ -151,6 +151,7 @@ function wppfm_verify_feed_update_schedule_registration() {
 }
 
 add_action( 'admin_menu', 'wppfm_verify_feed_update_schedule_registration' );
+
 
 /**
  * Generates a Sales Promotion notice for the free version of the plugin. Gets triggered by the admin_notices action.
@@ -234,3 +235,55 @@ function wppfm_add_wc_quick_edit_custom_fields_data( $column, $post_id ){
 }
 
 add_action( 'manage_product_posts_custom_column', 'wppfm_add_wc_quick_edit_custom_fields_data', 10, 2 );
+
+/**
+ * Checks the wpmarketingrobot server for new blogs and adds them to the blog list that is stored in the wppfm_latest_weblogs option. Gets triggered by the wppfm_daily_event action.
+ *
+ * @return void
+ * @since 3.14.0.
+ */
+function wppfm_check_for_new_blogs() {
+	$response = wp_remote_get(WPPFM_EDD_SL_STORE_URL . 'wp-json/wp/v2/posts?per_page=1&type=post&status=publish' );
+
+	if ( is_wp_error( $response ) ) {
+		return;
+	}
+
+	$body = wp_remote_retrieve_body( $response );
+	$data = json_decode( $body, true );
+
+	if ( empty( $data ) || ! is_array( $data ) || ! $data[0]['id'] || ! $data[0]['featured_media'] || ! $data[0]['link'] ) {
+		return;
+	}
+
+	$latest_post       = $data[0];
+	$id                = $latest_post['id'];
+	$date              = $latest_post['modified'];
+	$title             = $latest_post['title']['rendered'];
+	$featured_image_id = $latest_post['featured_media'];
+	$post_url          = $latest_post['link'];
+
+	$image_response = wp_remote_get( WPPFM_EDD_SL_STORE_URL . 'wp-json/wp/v2/media/' . $featured_image_id );
+
+	if ( is_wp_error( $image_response ) ) {
+		return;
+	}
+
+	$featured_image_url = json_decode( wp_remote_retrieve_body( $image_response ), true )['source_url'];
+
+	if ( ! $featured_image_url ) {
+		return;
+	}
+
+	$latest_blog_data = array(
+		'id'        => $id,
+		'date'      => $date,
+		'title'     => $title,
+		'url'       => $post_url,
+		'image_url' => $featured_image_url,
+	);
+
+	wppfm_store_latest_blog( $latest_blog_data );
+}
+
+add_action( 'wppfm_daily_event', 'wppfm_check_for_new_blogs' );

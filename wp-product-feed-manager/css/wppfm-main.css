@@ -154,15 +154,22 @@ i.wppfm-button-icon {
 
 .wppfm-weblog-teaser {
     float: right;
+    margin-right: 26px;
     max-width: 845px;
     position: relative;
-    top: -20px;
+    top: -40px;
 }
 
 .wppfm-weblog-teaser a:active,
 .wppfm-weblog-teaser a:focus {
     border: none;
     box-shadow: none;
+}
+
+.wppfm-weblog-teaser-caption {
+    font-size: 15px;
+    font-style: italic;
+    letter-spacing: -0.01em;
 }
 
 .wppfm-wide-text-input-field {

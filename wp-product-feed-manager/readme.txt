@@ -3,9 +3,9 @@ Contributors: WPMarketingRobot, Michel Jongbloed, AukeJomm
 Tags: product feed manager, Google product feed manager WooCommerce, WooCommerce product feed, WooCommerce Google product feed, WordPress feed manager
 Donate link: https://www.wpmarketingrobot.com/
 Requires at least: 6.5
-Tested up to: 6.8
+Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 2.13.0
+Stable tag: 2.14.0
 License: GPLv3 or later License
 URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -196,6 +196,15 @@ Are you still experiencing issues with our plugin? Follow these steps before con
 3. Save and generate your feed
 
 == Changelog ==
+= 2.14.0 2025-04-13 =
+* Tested - Tested up to WooCommerce 9.8.1.
+* Added - Added a direct link to the latest weblog about improving your ECommerce skills.
+* Added - Added the option to revert back to a previous version of the plugin in case of issues after installing en update.
+* Added - Added a Join our Facebook page card to the Support page.
+* Tweak - Optimized function comments on several functions.
+* Tweak - Improved the handling of a failure to initialize the wp_filesystem.
+* Tweak - Significantly updated the feed process initiation process.
+
 = 2.13.0 2025-02-18 =
 * Fix - Fixed an issue that prevented the plugins product identifiers for product variations to be saved to the database.
 * Tweak - Further improved the feed process logger.
@@ -345,5 +354,5 @@ Fixed an issue with a folder name with a capital letter that would cause error m
 
 === Upgrade Notice ===
 
-= 2.13.0 2025-02-18 =
+= 2.14.0 2025-04-13 =
 * Important: This update introduces additional tweaks and some bug fixes. We strongly recommend backing up your existing feeds before upgrading.

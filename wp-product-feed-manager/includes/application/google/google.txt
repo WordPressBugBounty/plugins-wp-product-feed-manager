@@ -138,3 +138,4 @@
 138	4	loyalty_program
 139	4	free_shipping_threshold-country
 140	4	free_shipping_threshold-price_threshold
+141	4	video_link

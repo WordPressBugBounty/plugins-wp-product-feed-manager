@@ -64,6 +64,7 @@ if ( ! class_exists( 'WPPFM_Support_Page' ) ) :
 			$this->show_your_love_card();
 			$this->documentation_card();
 			// $this->join_our_community_card(); // Switched off until the community funnel is ready
+			$this->join_our_facebook_group_card();
 			$this->request_a_feature_card();
 		}
 
@@ -292,6 +293,22 @@ if ( ! class_exists( 'WPPFM_Support_Page' ) ) :
 //			$this->card_action( __( 'Join Community', 'wp-product-feed-manager' ), 'https://www.wpproductfeedmanager.com/documentation/' );
 //			echo '</div>';
 //		}
+
+		/**
+		 * Renders the Join Our Facebook Group card for the Support page.
+		 *
+		 * @since 3.14.0.
+		 */
+		private function join_our_facebook_group_card() {
+			$content_html = '<p>' . esc_html__( 'Join our Facebook page for free expert marketing tips and strategies to boost your web shop sales!', 'wp-product-feed-manager' ) . '</p>';
+
+			echo '<div class="wppfm-support-card" id="wppfm-join-our-facebook-page-card">';
+			$this->card_icon( 'facebook.png' );
+			$this->card_header( __( 'Join Our Facebook Page', 'wp-product-feed-manager' ) );
+			$this->card_content( $content_html );
+			$this->card_action( __( 'Join Facebook Page', 'wp-product-feed-manager' ), 'https://www.facebook.com/profile.php?id=100069788955827' );
+			echo '</div>';
+		}
 
 		/**
 		 * Renders the Request a feature card for the Settings page.

@@ -14,17 +14,12 @@ abstract class WPPFM_Async_Request {
 	/**
 	 * Prefix
 	 *
-	 * (default value: 'wppfm')
-	 *
 	 * @var string
-	 * @access protected
 	 */
 	protected $prefix = 'wppfm';
 
 	/**
 	 * Action
-	 *
-	 * (default value: 'async_request')
 	 *
 	 * @var string
 	 */
@@ -40,8 +35,6 @@ abstract class WPPFM_Async_Request {
 	/**
 	 * Data
 	 *
-	 * (default value: array())
-	 *
 	 * @var array
 	 */
 	protected $data = array();
@@ -49,16 +42,12 @@ abstract class WPPFM_Async_Request {
 	/**
 	 * File Path
 	 *
-	 * (default value: empty string)
-	 *
 	 * @var string
 	 */
 	protected $file_path = '';
 
 	/**
 	 * Contains the general data of the feed
-	 *
-	 * (default value: empty string)
 	 *
 	 * @var string
 	 */
@@ -91,7 +80,7 @@ abstract class WPPFM_Async_Request {
 	public function __construct() {
 		$this->identifier = $this->prefix . '_' . $this->action;
 
-		add_action( 'wp_ajax_' . $this->identifier, array( $this, 'maybe_handle' ) ); // This is the wppfm_feed_generation_process action used to start the background process using a wp_remote_post call.
+		add_action( 'wp_ajax_' . $this->identifier, array( $this, 'maybe_handle' ) );
 		add_action( 'wp_ajax_nopriv_' . $this->identifier, array( $this, 'maybe_handle' ) );
 	}
 
@@ -104,7 +93,6 @@ abstract class WPPFM_Async_Request {
 	 */
 	public function data( $data ) {
 		$this->data = $data;
-
 		return $this;
 	}
 
@@ -114,18 +102,26 @@ abstract class WPPFM_Async_Request {
 	 * @param string $feed_id
 	 */
 	public function dispatch( $feed_id ) {
-		if ( get_option( 'wppfm_disabled_background_mode', 'false' ) === 'false' ) { // start a background process
+		if ( get_option( 'wppfm_disabled_background_mode', 'false' ) === 'false' ) {
+			// Clean up any existing feed data before starting
+			delete_site_option('wppfm_feed_data');
+
+			// Set the feed_id in the data array
+			$this->data['feed_id'] = $feed_id;
+
 			$url  = add_query_arg( $this->get_query_args( $feed_id ), $this->get_query_url() );
 			$args = $this->get_post_args();
 
 			do_action( 'wppfm_register_remote_post_args', $feed_id, $url, $args );
 
-			// Activate the background process by calling an endpoint in the WPPFM_Background_Process class, that will trigger the maybe_handle() function in this class as a background process.
 			$response = wp_remote_post( esc_url_raw( $url ), $args );
 
-			do_action( 'wppfm_wp_remote_post_response', $feed_id, $response );
+			if (is_wp_error($response)) {
+				do_action('wppfm_feed_generation_message', $feed_id, 'wp_remote_post failed: ' . $response->get_error_message(), 'ERROR');
+			}
 
-		} else { // start a foreground process
+			do_action( 'wppfm_wp_remote_post_response', $feed_id, $response );
+		} else {
 			$this->maybe_handle();
 		}
 	}
@@ -133,14 +129,27 @@ abstract class WPPFM_Async_Request {
 	/**
 	 * Get query args
 	 *
-	 * @param int $feed_id Feed ID. // @since 3.13.0
+	 * @param int $feed_id Feed ID.
 	 *
 	 * @return array
 	 */
 	protected function get_query_args( $feed_id ) {
+		$nonce_key = 'wppfm_feed_generation_process';
+		$nonce = wp_create_nonce($nonce_key);
+
+		$nonce_data = array(
+			'created' => time(),
+			'feed_id' => $feed_id,
+			'identifier' => $this->identifier,
+			'request_id' => uniqid('req_', true),
+			'nonce_key' => $nonce_key
+		);
+
+		set_transient('wppfm_async_nonce_' . $nonce, $nonce_data, HOUR_IN_SECONDS);
+
 		return array(
 			'action'  => $this->identifier,
-			'nonce'   => wp_create_nonce( $this->identifier ),
+			'nonce'   => $nonce,
 			'feed_id' => $feed_id,
 		);
 	}
@@ -155,38 +164,58 @@ abstract class WPPFM_Async_Request {
 	}
 
 	/**
-	 * Get post args
+	 * Get post args.
 	 *
 	 * @return array
 	 */
 	protected function get_post_args() {
-		$blocking = false;
-		$ssl_verify = true;
+		// Build headers for maximum robustness
+		$headers = array(
+			// Crucial for robustness: Disable 'Expect: 100-continue' which causes issues with some servers/proxies.
+			'Expect'       => '',
 
-		// @since 2.41.0. Switch blocking = true if the logger functionality is enabled. This will enable a response from a wp_remote_post request.
-		if ( wppfm_process_logger_is_active() ) {
-			$blocking = true;
+			// Identify the request as internal to WordPress. Might be useful for debugging or specific rules.
+			'X-WordPress-Internal-Request' => 'true',
+
+			// Standard header for AJAX requests. Some security rules might look for this on admin-ajax.php.
+			'X-Requested-With' => 'XMLHttpRequest',
+
+			// Explicitly set the Host header. Check if $_SERVER['HTTP_HOST'] is set (e.g., might not be in CLI).
+			'Host'         => isset( $_SERVER['HTTP_HOST'] ) ? $_SERVER['HTTP_HOST'] : '',
+
+			// Prevent intermediate caches from interfering.
+			'Cache-Control' => 'no-cache, no-store, must-revalidate',
+			'Pragma'        => 'no-cache', // HTTP/1.0 backwards compatibility for caching
+			'Expires'       => '0', // Proxies
+
+			// Add accept header to indicate preference for response types (optional but good practice)
+			'Accept' => 'application/json, text/javascript, */*; q=0.01'
+		);
+
+		// Add standard headers: Forward the original IP if available. Useful for logging/debugging on the server side.
+		if (isset($_SERVER['REMOTE_ADDR'])) {
+			$headers['X-Forwarded-For'] = $_SERVER['REMOTE_ADDR'];
 		}
 
-		// @since 3.5.0. - Disable SSL verification on local environments because they sometimes use unverifiable SSL certificates
-		if ( $this->on_local_environment() ) {
-			$ssl_verify = false;
+		// Get WordPress authentication cookies, potentially needed by admin-ajax.php. Check if $_COOKIE is available.
+		$cookies = array();
+		if ( ! empty( $_COOKIE ) ) {
+			foreach ($_COOKIE as $name => $value) {
+				// Capture standard WordPress login and test cookies.
+				if (strpos($name, 'wordpress_') === 0 || strpos($name, 'wp-') === 0) {
+					$cookies[$name] = $value;
+				}
+			}
 		}
 
 		return array(
-			'timeout'   => 5,
-			'blocking'  => $blocking,
-			'sslverify' => $ssl_verify,
-			'headers'   => array( // @since 3.9.0 added a header with empty Expect parameter
-				'Content-Type' => 'application/json',
-				'Expect' => '', ),
-			'body'      => '', // @since 3.13.0 made the body empty.
-			'cookies'   => stripslashes_deep( $_COOKIE ),
+			'timeout'   => 30,    // Reasonable timeout for an async trigger.
+			'blocking'  => false, // Set to false for a true non-blocking async trigger.
+			'headers'   => $headers,
+			'cookies'   => $cookies,
+			'sslverify' => false, // Often needed for loopback requests.
+			'body'      => null   // Explicitly set body to null if no data is being sent.
 		);
-	}
-
-	protected function on_local_environment() {
-		return isset( $_SERVER['REMOTE_ADDR'] ) && '127.0.0.1' == $_SERVER['REMOTE_ADDR'];
 	}
 
 	/**
@@ -195,14 +224,50 @@ abstract class WPPFM_Async_Request {
 	 * Check for correct nonce and pass to handler.
 	 */
 	public function maybe_handle() {
-		// Don't lock up other requests while processing
 		session_write_close();
 
-		check_ajax_referer( $this->identifier, 'nonce' );
+		$feed_id = isset($_POST['feed_id']) ? intval($_POST['feed_id']) : 0;
+		$nonce = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '';
 
+		// Clean up old transients
+		$this->cleanup_old_transients();
+
+		// Get and verify nonce data
+		$nonce_data = get_transient('wppfm_async_nonce_' . $nonce);
+		if (!$nonce_data || !wp_verify_nonce($nonce, $nonce_data['nonce_key'])) {
+			wp_send_json_error('Invalid or expired nonce');
+			return;
+		}
+
+		// Check nonce age and feed ID
+		if (time() - $nonce_data['created'] > HOUR_IN_SECONDS ||
+			$nonce_data['feed_id'] !== $feed_id ||
+			$nonce_data['identifier'] !== $this->identifier) {
+			wp_send_json_error('Invalid request');
+			return;
+		}
+
+		// Delete the nonce after verification
+		delete_transient('wppfm_async_nonce_' . $nonce);
+
+		// Process the request
 		$this->handle();
 
 		wp_die();
+	}
+
+	/**
+	 * Clean up old transients to prevent accumulation
+	 */
+	private function cleanup_old_transients() {
+		global $wpdb;
+		$wpdb->query(
+			$wpdb->prepare(
+				"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s AND option_value < %d",
+				'_transient_wppfm_async_nonce_%',
+				time() - HOUR_IN_SECONDS
+			)
+		);
 	}
 
 	/**

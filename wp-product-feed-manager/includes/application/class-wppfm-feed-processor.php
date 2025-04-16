@@ -179,7 +179,7 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 		private function add_product_to_feed( $product_id ) {
 			if ( ! $product_id ) {
 				$message = 'Add product to feed process started without product id';
-				do_action( 'wppfm_feed_generation_message', $this->_feed_data->feedId, $message );
+				do_action( 'wppfm_feed_generation_message', $this->_feed_data->feedId, $message, 'ERROR' );
 				return false;
 			}
 
@@ -187,11 +187,13 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 
 			if ( false === $wc_product ) {
 				$message = sprintf( 'Failed to get the WooCommerce product data from product with id %s.', $product_id );
-				do_action( 'wppfm_feed_generation_message', $this->_feed_data->feedId, $message );
+				do_action( 'wppfm_feed_generation_message', $this->_feed_data->feedId, $message, 'ERROR' );
 				return false;
 			}
 
 			if ( $wc_product instanceof WC_Product_Grouped ) {
+				$message = sprintf( 'The product with id %s is a grouped product and has been skipped.', $product_id );
+				do_action( 'wppfm_feed_generation_message', $this->_feed_data->feedId, $message, 'ERROR' );
 				return false; // Skip grouped products.
 			}
 
@@ -234,7 +236,7 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 
 			if ( ! $row_category ) {
 				$message = sprintf( 'Could not identify the correct category map for product %s', $product_id );
-				do_action( 'wppfm_feed_generation_message', $this->_feed_data->feedId, $message. 'ERROR' );
+				do_action( 'wppfm_feed_generation_message', $this->_feed_data->feedId, $message, 'ERROR' );
 
 				return false;
 			}
@@ -304,6 +306,8 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 				$product_placeholder = apply_filters( 'wppfm_feed_item_value', $product_placeholder, $this->_feed_data->feedId, $product_id );
 				return $this->write_product_object( $product_placeholder, $this->_feed_data->feedId, $product_id );
 			} else {
+				$message = sprintf( 'Product %s has no data to write to the feed', $product_id );
+				do_action( 'wppfm_feed_generation_message', $this->_feed_data->feedId, $message, 'ERROR' );
 				return false;
 			}
 		}
@@ -318,16 +322,19 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 		 * @return string product added or boolean false.
 		 */
 		private function write_product_object( $product_placeholder, $feed_id, $product_id ) {
-			//@since 2.3.0
-			do_action( 'wppfm_add_product_to_feed', $feed_id, $product_id );
 
 			$product_text = $this->generate_feed_text( $product_placeholder );
 
 			if ( false === wppfm_append_line_to_file( $this->_feed_file_path, $product_text ) ) {
 				wppfm_write_log_file( sprintf( 'Could not write product %s to the feed', $product_id ) );
+				$message = sprintf( 'Could not write product %s to the feed', $product_id );
+				do_action( 'wppfm_feed_generation_message', $this->_feed_data->feedId, $message, 'ERROR' );
 
 				return false;
 			} else {
+				//@since 2.3.0
+				do_action( 'wppfm_add_product_to_feed', $feed_id, $product_id );
+
 				return 'product added';
 			}
 		}

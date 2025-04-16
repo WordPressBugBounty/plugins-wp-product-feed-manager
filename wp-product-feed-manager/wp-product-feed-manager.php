@@ -7,10 +7,10 @@
  * Author URI: https://www.wpmarketingrobot.com
  * Developer: Michel Jongbloed
  * Developer URI: https://www.wpmarketingrobot.com
- * Version: 2.13.0
- * Modified: 18-02-2025
+ * Version: 2.14.0
+ * Modified: 15-04-2025
  * WC requires at least: 8.4
- * WC tested up to: 9.6.2
+ * WC tested up to: 9.8.1
  *
  * This plugin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		 *
 		 * @var string  Containing the version number of the plugin.
 		 */
-		public $version = '2.13.0';
+		public $version = '2.14.0';
 
 		/**
 		 * Author Name.
@@ -271,7 +271,8 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 
 		/**
 		 * Includes the required files.
-		 */
+		 *
+		 * @noinspection PhpIncludeInspection*/
 		private function includes() {
 			// Include the WordPress pluggable.php file on forehand to prevent a "Call to undefined function wp_get_current_user()" error.
 			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
@@ -285,6 +286,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 			// Include the admin menu and the includes file.
 			require_once __DIR__ . '/includes/application/wppfm-feed-processing-support.php';
 			require_once __DIR__ . '/includes/application/wppfm-feed-processor-functions.php';
+//			require_once __DIR__ . '/includes/application/wppfm-plugin-reversion-functions.php';
 			require_once __DIR__ . '/includes/user-interface/wppfm-admin-menu-functions.php';
 			require_once __DIR__ . '/includes/user-interface/wppfm-admin-actions.php';
 			require_once __DIR__ . '/includes/user-interface/wppfm-edit-feed-form-functions.php';
@@ -337,6 +339,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		 * Registers a dismiss notice action, declaring compatibility with the WooCommerce custom order tables feature.
 		 *
 		 * @since 2.36.0
+		 * @noinspection PhpFullyQualifiedNameUsageInspection
 		 */
 		public function declare_compatibility_for_custom_order_tables() {
 			if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {

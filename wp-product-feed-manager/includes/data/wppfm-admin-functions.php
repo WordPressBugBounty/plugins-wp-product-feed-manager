@@ -213,20 +213,79 @@ function wppfm_reinitiate_plugin() {
  * Returns the global WP_Filesystem object.
  *
  * @since 3.12.0
+ * @since 3.14.0 Added the wppfm_initialize_wp_filesystem function to initialize the WP_Filesystem object even if the.
  * @return object WP_Filesystem
  */
 function wppfm_get_wp_filesystem() {
 	global $wp_filesystem;
 
-	if ( ! $wp_filesystem ) {
-		require_once ABSPATH . 'wp-admin/includes/file.php';
+	if ( ! $wp_filesystem instanceof WP_Filesystem_Base ) {
+		$initialized = wppfm_initialize_wp_filesystem();
+
+		if ( false === $initialized ) {
+			die( esc_html__( 'WP_Filesystem could not be initialized', 'wp-product-feed-manager' ) );
+		}
 	}
 
 	if ( WP_Filesystem() ) {
 		return $wp_filesystem;
 	} else {
-		die( esc_html__( 'Unable to initialize WP_Filesystem', 'wp-product-feed-manager' ) );
+		$credentials = request_filesystem_credentials( '', 'ftp' );
+
+		if ( $credentials && WP_Filesystem( $credentials ) ) {
+			return $wp_filesystem;
+		} else {
+			die( esc_html__( 'Unable to initialize WP_Filesystem!', 'wp-product-feed-manager' ) );
+		}
 	}
+}
+
+/**
+ * Initializes the WP_Filesystem object.
+ *
+ * @since 3.14.0
+ * @return bool True if the WP_Filesystem object was successfully initialized, false if not.
+ */
+function wppfm_initialize_wp_filesystem() {
+	global $wp_filesystem;
+
+	if ( $wp_filesystem instanceof WP_Filesystem_Base ) {
+		return true;
+	}
+
+	require_once ABSPATH . 'wp-admin/includes/file.php';
+
+	$method      = wppfm_get_wp_filesystem_method_or_direct();
+	$initialized = false;
+
+	if ( 'direct' === $method ) {
+		$initialized = WP_Filesystem();
+	} elseif ( false !== $method ) {
+		ob_start();
+		$credentials = request_filesystem_credentials( '' );
+		ob_end_clean();
+
+		$initialized = $credentials && WP_Filesystem( $credentials );
+	}
+
+	return is_null( $initialized ) ? false : $initialized;
+
+}
+
+/**
+ * Returns the method that the WP_Filesystem object should be initialized with.
+ *
+ * @since 3.14.0
+ * @return string The method that the WP_Filesystem object should be initialized with.
+ */
+function wppfm_get_wp_filesystem_method_or_direct() {
+	$method = 'direct';
+
+	if ( defined( 'FS_METHOD' ) && 'direct' !== FS_METHOD ) {
+		$method = FS_METHOD;
+	}
+
+	return $method;
 }
 
 /**
@@ -451,4 +510,25 @@ function wppfm_wc_min_version_required() {
 	$wc_version = get_plugin_data( WPPFM_PLUGIN_DIR . '../woocommerce/woocommerce.php' )['Version'];
 
 	return version_compare( $wc_version, WPPFM_MIN_REQUIRED_WC_VERSION, '>=' );
+}
+
+/**
+ * Stores the latest blog data in the WordPress options, maintaining a maximum of four entries.
+ *
+ * @param array $blog_data An associative array containing the weblog data to store.
+ *
+ * @return void
+ * @since 3.14.0.
+ */
+function wppfm_store_latest_blog( $blog_data ) {
+	$current_weblogs = get_option( 'wppfm_latest_weblogs', array() );
+
+	// Add the new weblog data to the beginning of the array.
+	array_unshift( $current_weblogs, $blog_data);
+
+	// Keep only the four latest weblogs.
+	$current_weblogs = array_slice( $current_weblogs, 0, 4 );
+
+	// Update the option with the new array.
+	update_option( 'wppfm_latest_weblogs', $current_weblogs );
 }

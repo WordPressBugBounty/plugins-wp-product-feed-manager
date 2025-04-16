@@ -328,9 +328,9 @@ function googleInputChanged( feedId, categoryChanged ) {
 		fileName             = jQuery( '#file-name' ).val();
 	}
 
-	var selectedCountry      = jQuery( '#wppfm-countries-selector' ).val();
-	var selectedMainCategory = '';
+	var selectedMainCategory;
 
+	var selectedCountry         = jQuery( '#wppfm-countries-selector' ).val();
 	var categorySelectors       = jQuery( '#lvl_0' );
 	var categorySelectedDisplay = jQuery( '#selected-categories' );
 	var categoryFreeInput       = jQuery( '#free-category-text-input' );
@@ -344,12 +344,14 @@ function googleInputChanged( feedId, categoryChanged ) {
 		selectedMainCategory = categorySelectedDisplay.text();
 	}
 
-	// enable or disable the correct buttons for the Google channel
-	if ( fileName && selectedCountry !== '0' && ( selectedMainCategory !== '' && selectedMainCategory !== '0' ) ) {
-		updateFeedFormAfterInputChanged( feedId, categoryChanged );
-	} else {
-		// keep the Generate and Save buttons disabled
+	// Enable or disable the correct buttons for the Google channel.
+	if ( ! fileName || selectedCountry === '0' || ! selectedMainCategory || selectedMainCategory === '0') {
+	// Keep the Generate and Save buttons disabled as not all required fields are set.
 		wppfm_disableFeedActionButtons();
+	}
+
+	if ( ! categoryChanged ) { // Do not update the feed form if only the category was changed.
+		updateFeedFormAfterInputChanged(feedId, categoryChanged);
 	}
 
 	jQuery( '#wppfm-feed-types-list-row' ).show();
