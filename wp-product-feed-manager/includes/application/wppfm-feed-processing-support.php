@@ -1807,6 +1807,14 @@ trait WPPFM_Processing_Support {
 				? apply_filters( 'wppfm_get_woocs_currency', $selected_currency ) : get_woocommerce_currency();
 		}
 
+		// @since 3.15.0.
+		if ( in_array( '_low_stock_amount', $active_field_names, true ) ) {
+			$low_stock_amount = wc_get_low_stock_amount( $woocommerce_product );
+			if ( $low_stock_amount ) {
+				$product->_low_stock_amount = $low_stock_amount;
+			}
+		}
+
 		$woocommerce_product = null;
 	}
 

@@ -5,7 +5,7 @@ Donate link: https://www.wpmarketingrobot.com/
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 2.14.0
+Stable tag: 2.15.0
 License: GPLv3 or later License
 URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -196,6 +196,12 @@ Are you still experiencing issues with our plugin? Follow these steps before con
 3. Save and generate your feed
 
 == Changelog ==
+= 2.15.0 2025-22-08 =
+* Tested - Tested up to WooCommerce 10.1.1.
+* Added - Added a Low Stock Amount source to the source list.
+* Fix - Fixed an issue with some Google Product Categories not showing the second level categories.
+* Tweak - Improved the process that blocks a feed generation in progress to prevent two processes to run simultaneously.
+
 = 2.14.0 2025-04-13 =
 * Tested - Tested up to WooCommerce 9.8.1.
 * Added - Added a direct link to the latest weblog about improving your ECommerce skills.
@@ -354,5 +360,5 @@ Fixed an issue with a folder name with a capital letter that would cause error m
 
 === Upgrade Notice ===
 
-= 2.14.0 2025-04-13 =
+= 2.15.0 2025-22-08 =
 * Important: This update introduces additional tweaks and some bug fixes. We strongly recommend backing up your existing feeds before upgrading.

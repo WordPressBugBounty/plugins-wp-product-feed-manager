@@ -159,7 +159,7 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 			$current_feed_status['feed_type_name'] = wppfm_list_feed_type_text()[ $current_feed_status['feed_type_id'] ];
 			$current_feed_status['feed_type']      = $current_feed_status['feed_type_name'];
 
-			if ( '3' === $current_feed_status['status_id'] ) { // Status still processing.
+			if ( array_key_exists( 'status_id', $current_feed_status ) && '3' === $current_feed_status['status_id'] ) { // Status still processing.
 				// Get file name, including a path.
 				$file_extension = function_exists( 'wppfm_get_file_type' ) ? wppfm_get_file_type( $current_feed_status['channel_id'] ) : 'xml';
 				$feed_file      = wppfm_get_file_path( $current_feed_status['title'] . '.' . $file_extension );
@@ -719,6 +719,7 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 				'_sale_price_without_tax',
 				'_product_parent_description',
 				'_woocs_currency',
+				'_low_stock_amount',
 			);
 		}
 

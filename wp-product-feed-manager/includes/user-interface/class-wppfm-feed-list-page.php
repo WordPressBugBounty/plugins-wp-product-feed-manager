@@ -126,12 +126,13 @@ if ( ! class_exists( 'WPPFM_Feed_List_Page' ) ) :
 		 * @since 3.14.0.
 		 */
 		private function weblog_teaser() {
-			$latest_blog  = get_option( 'wppfm_latest_weblogs', array() )[0];
+			$latest_blog_option  = get_option( 'wppfm_latest_weblogs', array() );
 
-			if( empty( $latest_blog ) ) {
+			if( empty( $latest_blog_option ) ) {
 				return;
 			}
 
+			$latest_blog  = $latest_blog_option[0];
 			$article_date = date( 'dmy', strtotime( $latest_blog['date'] ) );
 			$article_id   = $latest_blog['id'];
 			$utm_params   = '?utm_source=pl_article_ad&utm_medium=textlink&utm_campaign=plugin_article&utm_id=ARCO.' . $article_date . '&utm_content=' . $article_id;

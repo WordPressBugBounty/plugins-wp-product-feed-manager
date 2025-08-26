@@ -36,7 +36,7 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	 *
 	 * @var int
 	 */
-	protected $queue_lock_time = 60;
+	protected $queue_lock_time = 120; // Increased from 60 to 120 seconds to ensure it covers batch processing time
 
 	/**
 	 * Cron_hook_identifier
@@ -355,9 +355,55 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	 * in a background process.
 	 */
 	public function is_process_running() {
-		if ( get_site_transient( $this->identifier . '_process_lock' ) ) {
-			// Process already running.
-			return true;
+		$lock = get_site_transient( $this->identifier . '_process_lock' );
+		
+		if ( ! $lock ) {
+			return false;
+		}
+
+		// Parse the lock value to get process info
+		$lock_parts = explode( '_', $lock );
+		if ( count( $lock_parts ) >= 3 ) {
+			$lock_pid = intval( $lock_parts[1] );
+			$current_pid = getmypid();
+			
+			// If the lock PID doesn't match current PID, check if that process is still alive
+			if ( $lock_pid !== $current_pid ) {
+				// On Linux/Unix systems, check if the process is still running
+				if ( function_exists( 'posix_kill' ) ) {
+					if ( ! posix_kill( $lock_pid, 0 ) ) {
+						// Process is dead, clear the stale lock
+						delete_site_transient( $this->identifier . '_process_lock' );
+						return false;
+					}
+				}
+				
+				// If we can't verify process status, assume it's running
+				return true;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Check if the current process still owns the lock
+	 *
+	 * @return bool
+	 */
+	protected function is_current_process_locked() {
+		$lock = get_site_transient( $this->identifier . '_process_lock' );
+		
+		if ( ! $lock ) {
+			return false;
+		}
+
+		$lock_parts = explode( '_', $lock );
+		if ( count( $lock_parts ) >= 3 ) {
+			$lock_pid = intval( $lock_parts[1] );
+			$current_pid = getmypid();
+			
+			return $lock_pid === $current_pid;
 		}
 
 		return false;
@@ -373,10 +419,48 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	protected function lock_process() {
 		$this->start_time = time(); // Set start time of a current process.
 
-		$lock_duration = ( property_exists( $this, 'queue_lock_time' ) ) ? $this->queue_lock_time : 60; // 1 minute
+		$lock_duration = ( property_exists( $this, 'queue_lock_time' ) ) ? $this->queue_lock_time : 120; // 2 minutes
 		$lock_duration = apply_filters( $this->identifier . '_queue_lock_time', $lock_duration );
 
-		set_site_transient( $this->identifier . '_process_lock', microtime(), $lock_duration );
+		// Use a more robust locking mechanism with retry logic
+		$max_attempts = 3;
+		$attempt = 0;
+		$lock_acquired = false;
+
+		while ( $attempt < $max_attempts && ! $lock_acquired ) {
+			// Check if another process is already running
+			if ( $this->is_process_running() ) {
+				$attempt++;
+				if ( $attempt < $max_attempts ) {
+					// Wait a bit before retrying (with jitter to avoid thundering herd)
+					usleep( ( 100000 + ( wp_rand( 0, 100000 ) ) ) ); // 100-200ms
+					continue;
+				}
+				// If we can't acquire the lock after max attempts, exit
+				wp_die( 'Could not acquire process lock after ' . $max_attempts . ' attempts' );
+			}
+
+			// Try to acquire the lock
+			$lock_value = microtime() . '_' . getmypid() . '_' . wp_rand( 1000, 9999 );
+			$lock_acquired = set_site_transient( $this->identifier . '_process_lock', $lock_value, $lock_duration );
+
+			if ( $lock_acquired ) {
+				// Verify we still have the lock (double-check)
+				$current_lock = get_site_transient( $this->identifier . '_process_lock' );
+				if ( $current_lock !== $lock_value ) {
+					// Someone else got the lock, try again
+					$lock_acquired = false;
+					$attempt++;
+					continue;
+				}
+			} else {
+				$attempt++;
+			}
+		}
+
+		if ( ! $lock_acquired ) {
+			wp_die( 'Failed to acquire process lock' );
+		}
 	}
 
 	/**
@@ -390,6 +474,28 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 		delete_site_transient( $this->identifier . '_process_lock' );
 
 		return $this;
+	}
+
+	/**
+	 * Refresh the process lock to prevent expiration during long processing
+	 *
+	 * @return bool
+	 */
+	protected function refresh_process_lock() {
+		if ( ! $this->is_current_process_locked() ) {
+			return false;
+		}
+
+		$lock_duration = ( property_exists( $this, 'queue_lock_time' ) ) ? $this->queue_lock_time : 120;
+		$lock_duration = apply_filters( $this->identifier . '_queue_lock_time', $lock_duration );
+
+		$current_lock = get_site_transient( $this->identifier . '_process_lock' );
+		if ( $current_lock ) {
+			// Extend the lock duration
+			return set_site_transient( $this->identifier . '_process_lock', $current_lock, $lock_duration );
+		}
+
+		return false;
 	}
 
 	/**
@@ -447,6 +553,16 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 		$this->lock_process();
 
 		do {
+			// Validate that we still own the lock before processing each batch
+			if ( ! $this->is_current_process_locked() ) {
+				do_action( 'wppfm_feed_generation_message', 'unknown', 'Process lock was lost during processing', 'ERROR' );
+				$this->unlock_process();
+				return false;
+			}
+
+			// Refresh lock at the start of each batch
+			$this->refresh_process_lock();
+
 			$batch = $this->get_batch();
 
 			if ( ! $batch ) { // @since 2.10.0
@@ -519,6 +635,18 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 			do_action( 'wppfm_feed_processing_batch_activated', $feed_id, $initial_memory, count( $batch->data ) );
 
 			foreach ( $batch->data as $key => $value ) {
+				// Validate lock ownership before processing each item
+				if ( ! $this->is_current_process_locked() ) {
+					do_action( 'wppfm_feed_generation_message', $feed_id, 'Process lock was lost during item processing', 'ERROR' );
+					$this->unlock_process();
+					return false;
+				}
+
+				// Refresh lock every 10 items to prevent expiration
+				if ( $this->products_handled_in_batch > 0 && $this->products_handled_in_batch % 10 === 0 ) {
+					$this->refresh_process_lock();
+				}
+
 				// If it's not an array, then it's a product id.
 				if ( ! is_array( $value ) ) {
 					$value = array( 'product_id' => $value );
@@ -742,14 +870,24 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	 * and data exists in the queue.
 	 */
 	public function handle_cron_health_check() {
+		// Be more conservative about spawning new processes
 		if ( $this->is_process_running() ) {
 			// Background process already running.
 			exit;
 		}
 
+		// Double-check the queue isn't empty before starting
 		if ( $this->is_queue_empty() ) {
 			// No data to process.
 			$this->clear_scheduled_event();
+			exit;
+		}
+
+		// Add a small delay to avoid race conditions with other health checks
+		usleep( wp_rand( 100000, 500000 ) ); // 100-500ms
+
+		// Final check before starting
+		if ( $this->is_process_running() || $this->is_queue_empty() ) {
 			exit;
 		}
 

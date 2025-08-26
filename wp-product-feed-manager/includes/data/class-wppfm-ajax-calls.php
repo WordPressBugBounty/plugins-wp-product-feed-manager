@@ -58,7 +58,7 @@ if ( ! class_exists( 'WPPFM_Ajax_Calls' ) ) :
 		 * @return string the sanitized string.
 		 */
 		protected function sanitize_string_with_ampersand( $string ) {
-			return preg_replace( '/[^a-zA-Z0-9\s&]/', '', $string );
+			return preg_replace( '/[^a-zA-Z0-9\s&,]/', '', $string );
 		}
 
 		/**

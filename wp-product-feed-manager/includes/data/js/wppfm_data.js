@@ -115,9 +115,11 @@ function wppfm_woocommerceSourceOptions() {
 		{value: 'wppfm_exclude_from_feed', label: 'Exclude From Feed option selected', prop: 'meta'},
 		// @since 3.13.0
 		{value: '_global_unique_id', label: 'GTIN, UPC, EAN or ISBN', prop: 'meta'},
+		// @since 3.15.0
+		{value: '_low_stock_amount', label: 'Low Stock Amount', prop: 'meta'},
 	];
 
-	// @since 3.11.0 - Made the inclusion of the plugin own product identifiers dependent on if the Show product identifiers option in the Settings page has been selected or not.
+	// @since 3.11.0 - Made the inclusion of the plugin's own product identifiers dependent on if the Show product identifiers option in the Settings page has been selected or not.
 	if ( true === dataStorageElement.data('wppfmShowProductIdentifiers') ) {
 		var productIdentifierOptions = [
 			{value: 'wppfm_product_brand', label: 'Product brand', prop: 'meta'},
