@@ -5,7 +5,7 @@ Donate link: https://www.wpmarketingrobot.com/
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 2.15.0
+Stable tag: 2.15.1
 License: GPLv3 or later License
 URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -27,8 +27,8 @@ Our mission is to make Google Shopping accessible to everyone. Whether you're a 
 
 === <a href="https://www.wpmarketingrobot.com/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=pro_version" target="_blank">Get Google Feed Manager for WooCommerce - Premium</a> ===
 
-== WooCommerce Google Shopping Feed - Video Tutorial ==
-[youtube https://www.youtube.com/watch?v=68v63Q9jhIw]
+== WooCommerce Google Shopping Feed - Video Demo ==
+[youtube https://youtu.be/z7cioNVXvD4]
 
 <a target="_blank" href="https://www.wpmarketingrobot.com/help-center/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=documentation">Documentation</a> | <a target="_blank" href="https://www.youtube.com/@wpmarketingrobot/videos">Video Tutorials</a> | <a target="_blank" href="https://www.wpmarketingrobot.com/help-item/faq/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=faq">FAQ</a> | <a target="_blank" href="https://www.wpmarketingrobot.com/support/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=support">Support</a>
 
@@ -159,7 +159,7 @@ Take a look at the video. They lead you through the process of creating your fir
 [youtube https://www.youtube.com/watch?v=bgEFUWAdNOc]
 
 = How to set up a basic feed =
-[youtube https://www.youtube.com/watch?v=VDcyo9ifdmk]
+[youtube https://youtu.be/z7cioNVXvD4]
 
 == Frequently Asked Questions ==
 = Why should I go with your plugin? =
@@ -196,6 +196,10 @@ Are you still experiencing issues with our plugin? Follow these steps before con
 3. Save and generate your feed
 
 == Changelog ==
+= 2.15.1 2025-04-09 =
+Tested - Tested up to WooCommerce 10.1.2.
+Fix - Replaced getmypid() and posix_kill() usage with session-based process identification to ensure compatibility with Kinsta hosting restrictions.
+
 = 2.15.0 2025-22-08 =
 * Tested - Tested up to WooCommerce 10.1.1.
 * Added - Added a Low Stock Amount source to the source list.
@@ -360,5 +364,5 @@ Fixed an issue with a folder name with a capital letter that would cause error m
 
 === Upgrade Notice ===
 
-= 2.15.0 2025-22-08 =
+= 2.15.1 2025-04-09 =
 * Important: This update introduces additional tweaks and some bug fixes. We strongly recommend backing up your existing feeds before upgrading.

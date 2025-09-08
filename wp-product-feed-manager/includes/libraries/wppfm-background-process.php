@@ -292,6 +292,7 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 
 		$background_mode_disabled = get_option( 'wppfm_disabled_background_mode', 'false' );
 
+
 		if ( 'false' === $background_mode_disabled && $this->is_process_running() ) {
 			// Background process already running.
 			wp_die();
@@ -352,7 +353,7 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	 * Is process running
 	 *
 	 * Check whether the current process is already running
-	 * in a background process.
+	 * in a background process. Kinsta-compatible version.
 	 */
 	public function is_process_running() {
 		$lock = get_site_transient( $this->identifier . '_process_lock' );
@@ -361,33 +362,60 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 			return false;
 		}
 
-		// Parse the lock value to get process info
-		$lock_parts = explode( '_', $lock );
+		// Parse the lock value: timestamp_random_ownerid
+		// Split into exactly 3 parts so owner id (which may contain underscores) stays intact
+		$lock_parts = explode( '_', $lock, 3 );
 		if ( count( $lock_parts ) >= 3 ) {
-			$lock_pid = intval( $lock_parts[1] );
-			$current_pid = getmypid();
+			$lock_timestamp = floatval( $lock_parts[0] );
+			$lock_owner = $lock_parts[2];
+			$current_owner = $this->get_owner_id();
 			
-			// If the lock PID doesn't match current PID, check if that process is still alive
-			if ( $lock_pid !== $current_pid ) {
-				// On Linux/Unix systems, check if the process is still running
-				if ( function_exists( 'posix_kill' ) ) {
-					if ( ! posix_kill( $lock_pid, 0 ) ) {
-						// Process is dead, clear the stale lock
-						delete_site_transient( $this->identifier . '_process_lock' );
-						return false;
-					}
-				}
-				
-				// If we can't verify process status, assume it's running
+			// If it's our owner id, we own the lock
+			if ( $lock_owner === $current_owner ) {
 				return true;
 			}
+			
+			// Check if lock is stale (older than 5 minutes)
+			$lock_age = microtime( true ) - $lock_timestamp;
+			if ( $lock_age > 300 ) { // 5 minutes
+				// Lock is stale, clear it
+				delete_site_transient( $this->identifier . '_process_lock' );
+				return false;
+			}
+			
+			// Lock belongs to another owner and is not stale
+			return true;
 		}
 
 		return true;
 	}
 
 	/**
+	 * Returns a stable process owner id across requests.
+	 * Prefer the batch properties key stored in site options; fallback to a persistent owner id option.
+	 *
+	 * @return string
+	 */
+	protected function get_owner_id() {
+		$properties_key = get_site_option( 'wppfm_background_process_key' );
+		if ( $properties_key ) {
+			return $properties_key;
+		}
+
+		$owner_option_key = $this->identifier . '_owner_id';
+		$owner_id         = get_site_option( $owner_option_key );
+
+		if ( ! $owner_id ) {
+			$owner_id = uniqid( 'wppfm_', true );
+			update_site_option( $owner_option_key, $owner_id );
+		}
+
+		return $owner_id;
+	}
+
+	/**
 	 * Check if the current process still owns the lock
+	 * Kinsta-compatible version using stable owner id
 	 *
 	 * @return bool
 	 */
@@ -398,12 +426,13 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 			return false;
 		}
 
-		$lock_parts = explode( '_', $lock );
+		// Split into exactly 3 parts so owner id (which may contain underscores) stays intact
+		$lock_parts = explode( '_', $lock, 3 );
 		if ( count( $lock_parts ) >= 3 ) {
-			$lock_pid = intval( $lock_parts[1] );
-			$current_pid = getmypid();
+			$lock_owner = $lock_parts[2];
+			$current_owner = $this->get_owner_id();
 			
-			return $lock_pid === $current_pid;
+			return $lock_owner === $current_owner;
 		}
 
 		return false;
@@ -413,8 +442,7 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	 * Lock process
 	 *
 	 * Lock the process so that multiple instances can't run simultaneously.
-	 * Override if applicable, but the duration should be greater than that
-	 * defined in the time_exceeded() method.
+	 * Kinsta-compatible version using session-based identification.
 	 */
 	protected function lock_process() {
 		$this->start_time = time(); // Set start time of a current process.
@@ -440,9 +468,11 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 				wp_die( 'Could not acquire process lock after ' . $max_attempts . ' attempts' );
 			}
 
-			// Try to acquire the lock
-			$lock_value = microtime() . '_' . getmypid() . '_' . wp_rand( 1000, 9999 );
+			// Create lock with timestamp, random number, and stable owner id
+			$owner_id = $this->get_owner_id();
+			$lock_value = microtime( true ) . '_' . wp_rand( 10000, 99999 ) . '_' . $owner_id;
 			$lock_acquired = set_site_transient( $this->identifier . '_process_lock', $lock_value, $lock_duration );
+			
 
 			if ( $lock_acquired ) {
 				// Verify we still have the lock (double-check)

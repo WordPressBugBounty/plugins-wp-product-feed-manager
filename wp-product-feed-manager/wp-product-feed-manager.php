@@ -7,10 +7,10 @@
  * Author URI: https://www.wpmarketingrobot.com
  * Developer: Michel Jongbloed
  * Developer URI: https://www.wpmarketingrobot.com
- * Version: 2.15.0
- * Modified: 26-08-2025
+ * Version: 2.15.1
+ * Modified: 04-09-2025
  * WC requires at least: 8.4
- * WC tested up to: 10.1.1
+ * WC tested up to: 10.1.2
  *
  * This plugin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		 *
 		 * @var string  Containing the version number of the plugin.
 		 */
-		public $version = '2.15.0';
+		public $version = '2.15.1';
 
 		/**
 		 * Author Name.
