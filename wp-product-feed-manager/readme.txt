@@ -5,7 +5,7 @@ Donate link: https://www.wpmarketingrobot.com/
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 2.15.1
+Stable tag: 2.15.2
 License: GPLv3 or later License
 URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -196,6 +196,9 @@ Are you still experiencing issues with our plugin? Follow these steps before con
 3. Save and generate your feed
 
 == Changelog ==
+= 2.15.2 2025-16-09 =
+Fix - Reminified the wppfm_feed-form.js and wppfm_setting-form.js files to fix possible compatibility issues.
+
 = 2.15.1 2025-04-09 =
 Tested - Tested up to WooCommerce 10.1.2.
 Fix - Replaced getmypid() and posix_kill() usage with session-based process identification to ensure compatibility with Kinsta hosting restrictions.
@@ -364,5 +367,5 @@ Fixed an issue with a folder name with a capital letter that would cause error m
 
 === Upgrade Notice ===
 
-= 2.15.1 2025-04-09 =
+= 2.15.2 2025-16-09 =
 * Important: This update introduces additional tweaks and some bug fixes. We strongly recommend backing up your existing feeds before upgrading.
