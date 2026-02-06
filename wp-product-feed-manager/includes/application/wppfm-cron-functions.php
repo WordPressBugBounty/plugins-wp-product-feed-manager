@@ -82,5 +82,202 @@ function wppfm_include_files_for_review_feed_package() {
 	require_once __DIR__ . '/../packages/review-feed-manager/traits/wpprfm-xml-element-functions.php';
 
 	// Include the required classes.
-	wpprfm_include_classes();
+	wppfm_rf_include_classes();
 }
+
+/**
+ * Register the feed watchdog cron schedule.
+ *
+ * @param array $schedules Current cron schedules.
+ *
+ * @return array
+ * @since 3.18.0 Introduced the watchdog interval that monitors stuck background processes.
+ */
+function wppfm_register_feed_watchdog_schedule( $schedules ) {
+	$enabled = apply_filters( 'wppfm_enable_feed_watchdog', true );
+
+	if ( $enabled && ! isset( $schedules['wppfm_feed_watchdog_interval'] ) ) {
+		$interval_minutes = apply_filters( 'wppfm_feed_watchdog_interval_minutes', 5 );
+		$interval_minutes = max( 1, intval( $interval_minutes ) );
+
+		$schedules['wppfm_feed_watchdog_interval'] = array(
+			'interval' => $interval_minutes * MINUTE_IN_SECONDS,
+			'display'  => sprintf(
+				/* translators: %d: Number of minutes */
+				_n(
+					'Every %d minute (WPPFM Feed Watchdog)',
+					'Every %d minutes (WPPFM Feed Watchdog)',
+					$interval_minutes,
+					'wp-product-feed-manager'
+				),
+				$interval_minutes
+			),
+		);
+	}
+
+	return $schedules;
+}
+
+/**
+ * Ensure the feed watchdog cron event exists.
+ *
+ * @since 3.18.0 Schedules the watchdog event that reboots the queue when required.
+ */
+function wppfm_schedule_feed_watchdog_event() {
+	if ( ! apply_filters( 'wppfm_enable_feed_watchdog', true ) ) {
+		return;
+	}
+
+	if ( ! wp_next_scheduled( 'wppfm_feed_watchdog_cron' ) ) {
+		wp_schedule_event(
+			time() + MINUTE_IN_SECONDS,
+			'wppfm_feed_watchdog_interval',
+			'wppfm_feed_watchdog_cron'
+		);
+	}
+}
+
+/**
+ * Handle the feed watchdog cron execution.
+ *
+ * @since 3.18.0 Evaluates queue state, clears stale flags, and restarts feeds when needed.
+ */
+function wppfm_handle_feed_watchdog_cron() {
+	if ( ! apply_filters( 'wppfm_enable_feed_watchdog', true ) ) {
+		return;
+	}
+
+	if ( ! function_exists( 'include_classes' ) ) {
+		require_once __DIR__ . '/../wppfm-wpincludes.php';
+	}
+
+	include_classes();
+
+	$lock_value   = get_site_transient( 'wppfm_feed_generation_process_process_lock' );
+	$lock_exists  = ! empty( $lock_value );
+	$is_processing = WPPFM_Feed_Controller::feed_is_processing();
+	$queue_empty   = WPPFM_Feed_Controller::feed_queue_is_empty();
+	$queue         = get_site_option( 'wppfm_feed_queue', array() );
+	$queue_count   = is_array( $queue ) ? count( $queue ) : 0;
+	$active_key    = get_site_option( 'wppfm_background_process_key' );
+	$heartbeat_fresh = method_exists( 'WPPFM_Feed_Controller', 'background_process_heartbeat_is_fresh' )
+		? WPPFM_Feed_Controller::background_process_heartbeat_is_fresh()
+		: false;
+
+	$lock_missing_since_key = 'wppfm_watchdog_lock_missing_since';
+	$lock_timeout           = apply_filters( 'wppfm_feed_watchdog_lock_timeout', 5 * MINUTE_IN_SECONDS );
+	$lock_timeout           = max( 60, intval( $lock_timeout ) ); // Minimum 1 minute.
+
+	if ( ! $queue_empty && ! $is_processing && ! $lock_exists ) {
+		do_action(
+			'wppfm_feed_generation_message',
+			'unknown',
+			sprintf(
+				'Feed watchdog detected queued feeds without an active process lock. Starting next feed. (lock_exists=%s, is_processing=%s, queue_empty=%s, heartbeat_fresh=%s, queue_count=%d, active_key=%s)',
+				$lock_exists ? 'true' : 'false',
+				$is_processing ? 'true' : 'false',
+				$queue_empty ? 'true' : 'false',
+				$heartbeat_fresh ? 'true' : 'false',
+				intval( $queue_count ),
+				$active_key ? $active_key : 'none'
+			),
+			'WARNING'
+		);
+
+		delete_site_transient( $lock_missing_since_key );
+		wppfm_watchdog_start_next_feed( 'queue_idle' );
+
+		return;
+	}
+
+	if ( $is_processing && ! $lock_exists ) {
+		// When the durable heartbeat is fresh, treat the system as healthy and avoid aggressive restarts.
+		// This prevents watchdog-induced overlap when transient storage is unreliable on a host.
+		if ( $heartbeat_fresh ) {
+			delete_site_transient( $lock_missing_since_key );
+
+			do_action(
+				'wppfm_feed_generation_message',
+				'unknown',
+				sprintf(
+					'Feed watchdog detected missing lock transient but heartbeat is fresh; skipping recovery to avoid overlap. (queue_count=%d, active_key=%s)',
+					intval( $queue_count ),
+					$active_key ? $active_key : 'none'
+				),
+				'WARNING'
+			);
+
+			return;
+		}
+
+		$missing_since = get_site_transient( $lock_missing_since_key );
+
+		if ( false === $missing_since ) {
+			$ttl = apply_filters( 'wppfm_feed_watchdog_lock_missing_ttl', HOUR_IN_SECONDS );
+			set_site_transient( $lock_missing_since_key, time(), max( MINUTE_IN_SECONDS, intval( $ttl ) ) );
+
+			return;
+		}
+
+		if ( time() - intval( $missing_since ) >= $lock_timeout ) {
+			do_action(
+				'wppfm_feed_generation_message',
+				'unknown',
+				sprintf(
+					'Feed watchdog cleared stale processing flag after lock timeout. (lock_timeout=%ds, missing_since=%s)',
+					intval( $lock_timeout ),
+					intval( $missing_since )
+				),
+				'WARNING'
+			);
+
+			WPPFM_Feed_Controller::set_feed_processing_flag();
+			delete_transient( 'wppfm_feed_file_size' );
+			delete_site_transient( $lock_missing_since_key );
+
+			wppfm_watchdog_start_next_feed( 'stale_processing_flag' );
+		}
+
+		return;
+	}
+
+	// Reset the tracker when everything looks healthy.
+	if ( $lock_exists ) {
+		delete_site_transient( $lock_missing_since_key );
+	}
+
+	// Hook point for follow-up maintenance steps (e.g. orphaned batch cleanup) after the watchdog health check.
+	do_action( 'wppfm_feed_watchdog_after_health_check', $lock_exists, $is_processing, ! $queue_empty );
+}
+
+/**
+ * Start the next feed in the queue for the watchdog.
+ *
+ * @param string $context Optional context for logging purposes.
+ *
+ * @since 3.18.0 Centralised helper used by the watchdog to resume processing.
+ */
+function wppfm_watchdog_start_next_feed( $context = 'unknown' ) {
+	$next_feed_id = WPPFM_Feed_Controller::get_next_id_from_feed_queue();
+
+	if ( ! $next_feed_id ) {
+		return;
+	}
+
+	do_action( 'wppfm_feed_watchdog_starting_feed', $next_feed_id, $context );
+
+	$message = sprintf(
+		'Feed watchdog (%s) activating feed %s.',
+		$context,
+		$next_feed_id
+	);
+
+	do_action( 'wppfm_feed_generation_message', $next_feed_id, $message, 'WARNING' );
+
+	$feed_master_class = new WPPFM_Feed_Master_Class( $next_feed_id );
+	$feed_master_class->initiate_update_next_feed_in_queue();
+}
+
+add_filter( 'cron_schedules', 'wppfm_register_feed_watchdog_schedule' );
+add_action( 'init', 'wppfm_schedule_feed_watchdog_event' );
+add_action( 'wppfm_feed_watchdog_cron', 'wppfm_handle_feed_watchdog_cron' );

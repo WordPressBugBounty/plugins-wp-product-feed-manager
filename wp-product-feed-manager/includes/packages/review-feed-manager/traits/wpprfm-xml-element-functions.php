@@ -19,7 +19,7 @@ trait WPPRFM_XML_Element_Functions {
 	 * @return  string  String with the correct feed element to be placed in the feed.
 	 * @throws Exception
 	 */
-	protected function wpprfm_handle_simple_element( $element_name, $review_data ) {
+	protected function wppfm_rf_handle_simple_element( $element_name, $review_data ) {
 		if ( 'content' === $element_name && array_key_exists( $element_name, $review_data ) ) {
 			$review_data[ $element_name ] = htmlspecialchars( $review_data[ $element_name ], ENT_QUOTES|ENT_SUBSTITUTE|ENT_HTML401 );
 		}
@@ -46,7 +46,7 @@ trait WPPRFM_XML_Element_Functions {
 	 *
 	 * @return string   String with the XML elements for the reviewer.
 	 */
-	protected function wpprfm_handle_reviewer( $review_data ) {
+	protected function wppfm_rf_handle_reviewer( $review_data ) {
 		if ( array_key_exists( 'reviewer_name', $review_data ) && '' !== $review_data['reviewer_name'] ) {
 			if ( 'Anonymous' === $review_data['reviewer_name'] || 'anonymous' === $review_data['reviewer_name'] ) {
 				$name_element = '<name is_anonymous="true">Anonymous</name>';
@@ -76,7 +76,7 @@ trait WPPRFM_XML_Element_Functions {
 		}
 	}
 
-	protected function wpprfm_handle_pros( $review_data ) {
+	protected function wppfm_rf_handle_pros( $review_data ) {
 		$key = 'pro';
 
 		if ( array_key_exists( $key, $review_data ) && is_array( $review_data[ $key ] ) && ! empty( $review_data[ $key ] ) ) {
@@ -86,7 +86,7 @@ trait WPPRFM_XML_Element_Functions {
 		}
 	}
 
-	protected function wpprfm_handle_cons( $review_data ) {
+	protected function wppfm_rf_handle_cons( $review_data ) {
 		$key = 'con';
 
 		if ( array_key_exists( $key, $review_data ) && is_array( $review_data[ $key ] ) && ! empty( $review_data[ $key ] ) ) {
@@ -96,7 +96,7 @@ trait WPPRFM_XML_Element_Functions {
 		}
 	}
 
-	protected function wpprfm_handle_review_url( $review_data ) {
+	protected function wppfm_rf_handle_review_url( $review_data ) {
 		if ( array_key_exists( 'review_url', $review_data ) && '' !== $review_data['review_url'] ) {
 			return sprintf( '<review_url type="%s">%s</review_url>', $review_data['review_url_type'], $review_data['review_url'] );
 		} else {
@@ -104,7 +104,7 @@ trait WPPRFM_XML_Element_Functions {
 		}
 	}
 
-	protected function wpprfm_handle_reviewer_images( $review_data ) {
+	protected function wppfm_rf_handle_reviewer_images( $review_data ) {
 		$xml_string = '';
 
 		if ( array_key_exists( 'reviewer_image_url', $review_data ) && is_array( $review_data['reviewer_image_url'] ) && ! empty( $review_data['reviewer_image_url'] ) ) {
@@ -120,7 +120,7 @@ trait WPPRFM_XML_Element_Functions {
 		return $xml_string;
 	}
 
-	protected function wpprfm_handle_ratings( $review_data ) {
+	protected function wppfm_rf_handle_ratings( $review_data ) {
 		if ( array_key_exists( 'ratings_overall', $review_data ) && '' !== $review_data['ratings_overall'] ) {
 			$min_val = array_key_exists( 'ratings_overall_min', $review_data ) && ! '' !== $review_data['ratings_overall_min'] ? sprintf( ' min="%s"', $review_data['ratings_overall_min'] ) : '';
 			$max_val = array_key_exists( 'ratings_overall_max', $review_data ) && ! empty( $review_data['ratings_overall_max'] ) ? sprintf( ' max="%s"', $review_data['ratings_overall_max'] ) : '';
@@ -131,7 +131,7 @@ trait WPPRFM_XML_Element_Functions {
 		}
 	}
 
-	protected function wpprfm_handle_products( $review_data ) {
+	protected function wppfm_rf_handle_products( $review_data ) {
 		$xml_string = '';
 
 		if ( array_key_exists( 'product_url', $review_data ) && ! empty( $review_data['product_url'] ) ) {

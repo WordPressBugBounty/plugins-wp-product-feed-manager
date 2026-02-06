@@ -199,6 +199,15 @@ if ( ! class_exists( 'WPPFM_Feed_Support' ) ) :
 
 			$query_split = explode( '#', $edit_string );
 
+			// Heuristic: if the action is remove and the rule ends with '##' but the removal token
+			// became empty due to splitting, assume the user intended to remove a literal '#'.
+			// @since 3.17.0.
+			if ( count( $query_split ) >= 3 && 'remove' === $query_split[1] && '' === $query_split[2] ) {
+				if ( substr( $edit_string, -2 ) === '##' ) {
+					$query_split[2] = '#';
+				}
+			}
+
 			switch ( $query_split[1] ) {
 				case 'change nothing':
 					$result = $current_value;
@@ -239,6 +248,11 @@ if ( ! class_exists( 'WPPFM_Feed_Support' ) ) :
 				// @since 2.34.0.
 				case 'html entity decode':
 					$result = $value_editors->html_entity_decode_value( $current_value );
+					break;
+
+				// @since 3.16.0.
+				case 'html entity encode':
+					$result = $value_editors->html_entity_encode_value( $current_value );
 					break;
 
 				case 'limit characters':

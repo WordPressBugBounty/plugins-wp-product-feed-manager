@@ -13,6 +13,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 trait WPPFM_Processing_Support {
 
 	protected $_selected_number;
+	/** @var string|null */
+	private $_temp_tax_country = null;
+	/** @var string|null */
+	private $_temp_currency = null;
+
+    
 
 	/**
 	 * Returns the correct category for this specific product, based on the selection in the Category Mapping table.
@@ -1334,6 +1340,40 @@ trait WPPFM_Processing_Support {
 	}
 
 	/**
+	 * Returns the translated attachment URL (full size) for a given attachment ID and language.
+	 * Falls back to the original ID if no translation exists. Also normalizes protocol to https when needed.
+	 *
+	 * @param int    $attachment_id     Original attachment ID.
+	 * @param string $selected_language Target language code.
+	 *
+	 * @since 3.16.0
+	 * @return string Attachment URL or empty string.
+	 */
+	private function get_attachment_url_translated( $attachment_id, $selected_language ) {
+		if ( ! $attachment_id ) {
+			return '';
+		}
+
+		if ( has_filter( 'wpml_object_id' ) && is_plugin_active( 'wpml-media-translation/plugin.php' ) ) {
+			$translated_id = apply_filters( 'wpml_object_id', $attachment_id, 'attachment', true, $selected_language );
+			$attachment_id = $translated_id ? $translated_id : $attachment_id;
+		}
+
+		$url = wp_get_attachment_image_url( $attachment_id, 'full' );
+
+		if ( ! $url ) {
+			return '';
+		}
+
+		// Normalize to https if site is served over SSL.
+		if ( is_ssl() ) {
+			$url = str_replace( 'http://', 'https://', $url );
+		}
+
+		return $url;
+	}
+
+	/**
 	 * Get formal WooCommerce custom fields data.
 	 *
 	 * @param string $id                the product id.
@@ -1473,12 +1513,16 @@ trait WPPFM_Processing_Support {
 	/**
 	 * Handles attributes that use their own procedures to ge the correct output value.
 	 *
-	 * @param object $product contains all the product data.
+	 * @param object          $product            contains all the product data.
+	 * @param WC_Product|null $woocommerce_product Optional. Already loaded WooCommerce product object to avoid redundant loading.
 	 *
 	 * @noinspection PhpPossiblePolymorphicInvocationInspection
 	 */
-	protected function handle_procedural_attributes( $product ) {
-		$woocommerce_product = wc_get_product( $product->ID );
+	protected function handle_procedural_attributes( $product, $woocommerce_product = null ) {
+		// Use provided WC_Product object if available, otherwise load it
+		if ( null === $woocommerce_product ) {
+			$woocommerce_product = wc_get_product( $product->ID );
+		}
 
 		$feed_id = $this->_feed_data->feedId;
 
@@ -1558,34 +1602,27 @@ trait WPPFM_Processing_Support {
 			$product->permalink = $permalink;
 		}
 
+		// @since 3.16.0 - Removed the usage of the wppfm_get_wpml_permalink filter. Refactored the code to use the get_attachment_url_translated function.
 		if ( in_array( 'attachment_url', $active_field_names, true ) ) {
-			// WPML support -> Returns an element ID in the selected language.
-			$object_id      = has_filter( 'wpml_object_id' ) && is_plugin_active( 'wpml-media-translation/plugin.php' ) ? apply_filters( 'wpml_object_id', $product->ID, 'attachment', true ) : $product->ID;
-			$attachment_url = wp_get_attachment_image_url( get_post_thumbnail_id( $object_id ), '' );
+			// Resolve the product's thumbnail URL (translated if applicable), fallback to parent.
+			$attachment_url = $this->get_attachment_url_translated( get_post_thumbnail_id( $product->ID ), $selected_language );
 
-			// If the attachment url is empty and the product has a parent, try getting the attachment url of the parent.
-			if ( false === $attachment_url && 0 !== $woocommerce_parent_id ) {
-				// WPML support -> Returns an element ID in the selected language.
-				$parent_object_id = has_filter( 'wpml_object_id' ) && is_plugin_active( 'wpml-media-translation/plugin.php' ) ? apply_filters( 'wpml_object_id', $woocommerce_parent_id, 'attachment', true ) : $woocommerce_parent_id;
-				$attachment_url   = wp_get_attachment_image_url( get_post_thumbnail_id( $parent_object_id ), '' );
+			if ( ! $attachment_url && 0 !== $woocommerce_parent_id ) {
+				$attachment_url = $this->get_attachment_url_translated( get_post_thumbnail_id( $woocommerce_parent_id ), $selected_language );
 			}
 
-			// WPML support -> Filter the permalink and convert it to a language-specific permalink.
-			$product->attachment_url = has_filter( 'wppfm_get_wpml_permalink' ) && is_plugin_active( 'wpml-media-translation/plugin.php' )
-				? apply_filters( 'wppfm_get_wpml_permalink', $attachment_url, $selected_language ) : $attachment_url;
+			$product->attachment_url = $attachment_url;
 		}
 
 		/**
 		 * Source for the products main image, even for variable products it returns the image of the parent (main) product
 		 * @since 3.4.0.
+		 * @since 3.16.0 - Removed the usage of the wppfm_get_wpml_permalink filter. Refactored the code to use the get_attachment_url_translated function.
 		 */
 		if ( in_array( 'product_main_image_url', $active_field_names, true ) ) {
-			$main_product_id = 0 !== $woocommerce_parent_id ? $woocommerce_parent_id : $product->ID;
-			$main_image_url = wp_get_attachment_url( get_post_thumbnail_id( $main_product_id ) );
-
-			// WPML support -> Filter the permalink and convert it to a language-specific permalink.
-			$product->product_main_image_url = has_filter( 'wppfm_get_wpml_permalink' ) && is_plugin_active( 'wpml-media-translation/plugin.php' )
-				? apply_filters( 'wppfm_get_wpml_permalink', $main_image_url, $selected_language ) : $main_image_url;
+			$main_product_id  = 0 !== $woocommerce_parent_id ? $woocommerce_parent_id : $product->ID;
+			$main_image_url   = $this->get_attachment_url_translated( get_post_thumbnail_id( $main_product_id ), $selected_language );
+			$product->product_main_image_url = $main_image_url;
 		}
 
 		if ( in_array( 'product_cat', $active_field_names, true ) ) {
@@ -1745,8 +1782,9 @@ trait WPPFM_Processing_Support {
 			} else {
 				$regular_price = $woocommerce_product->get_regular_price( $price_context );
 			}
-			$price                            = wc_get_price_including_tax( $woocommerce_product, array( 'price' => $regular_price ) );
-			$product->_regular_price_with_tax = wppfm_prep_money_values( $price, $selected_language, $selected_currency );
+			$feed_country_code               = $this->_feed_data->country;
+			$localized                       = $this->get_localized_price_for_country( $woocommerce_product, $regular_price, $feed_country_code, $selected_currency );
+			$product->_regular_price_with_tax = wppfm_prep_money_values( $localized, $selected_language, $selected_currency );
 		}
 
 		// @since 2.26.0.
@@ -1757,8 +1795,11 @@ trait WPPFM_Processing_Support {
 			} else {
 				$regular_price = $woocommerce_product->get_regular_price( $price_context );
 			}
-			$price                               = wc_get_price_excluding_tax( $woocommerce_product, array( 'price' => $regular_price ) );
-			$product->_regular_price_without_tax = wppfm_prep_money_values( $price, $selected_language, $selected_currency );
+			$feed_country_code                  = $this->_feed_data->country;
+			$price                               = $this->get_localized_price_ex_tax_for_country( $woocommerce_product, $regular_price, $feed_country_code, $selected_currency );
+			if ( '' !== $price && $price !== null ) {
+				$product->_regular_price_without_tax = wppfm_prep_money_values( $price, $selected_language, $selected_currency );
+			}
 		}
 
 		// @since 2.26.0.
@@ -1773,8 +1814,9 @@ trait WPPFM_Processing_Support {
 			}
 
 			if ( $sale_price ) {
-				$price                         = wc_get_price_including_tax( $woocommerce_product, array( 'price' => $sale_price ) );
-				$product->_sale_price_with_tax = wppfm_prep_money_values( $price, $selected_language, $selected_currency );
+				$feed_country_code            = $this->_feed_data->country;
+				$localized                    = $this->get_localized_price_for_country( $woocommerce_product, $sale_price, $feed_country_code, $selected_currency );
+				$product->_sale_price_with_tax = wppfm_prep_money_values( $localized, $selected_language, $selected_currency );
 			}
 		}
 
@@ -1790,8 +1832,11 @@ trait WPPFM_Processing_Support {
 			}
 
 			if ( $sale_price ) {
-				$price                            = wc_get_price_excluding_tax( $woocommerce_product, array( 'price' => $sale_price ) );
-				$product->_sale_price_without_tax = wppfm_prep_money_values( $price, $selected_language, $selected_currency );
+				$feed_country_code               = $this->_feed_data->country;
+				$price                            = $this->get_localized_price_ex_tax_for_country( $woocommerce_product, $sale_price, $feed_country_code, $selected_currency );
+				if ( '' !== $price && $price !== null ) {
+					$product->_sale_price_without_tax = wppfm_prep_money_values( $price, $selected_language, $selected_currency );
+				}
 			}
 		}
 
@@ -1855,6 +1900,7 @@ trait WPPFM_Processing_Support {
 	 * @param string $product_id        the product id.
 	 * @param string $selected_language selected language, if applicable.
 	 *
+	 * @since 3.16.0 - Removed the usage of the wppfm_get_wpml_permalink filter. Refactored the code to use the get_attachment_url_translated function.
 	 * @return array|string an array with image urls or an empty string if none are found.
 	 */
 	private function get_product_image_gallery( $product_id, $selected_language ) {
@@ -1866,21 +1912,11 @@ trait WPPFM_Processing_Support {
 		$attachment_ids = $product->get_gallery_image_ids();
 
 		foreach ( $attachment_ids as $attachment_id ) {
-			$link = wp_get_attachment_image_url( $attachment_id, '' );
-
-			// WPML support.
-			$image_link = has_filter( 'wppfm_get_wpml_permalink' )
-				? apply_filters( 'wppfm_get_wpml_permalink', $link, $selected_language ) : $link;
-
-			// Correct baseurl for https if required.
-			if ( is_ssl() ) {
-				$url = str_replace( 'http://', 'https://', $image_link );
-			} else {
-				$url = $image_link;
+			$url = $this->get_attachment_url_translated( $attachment_id, $selected_language );
+			if ( $url ) {
+				$image_urls[] = $url;
+				$images ++;
 			}
-
-			$image_urls[] = $url;
-			$images ++;
 
 			if ( $images > $max_nr_images ) {
 				break;
@@ -2042,6 +2078,149 @@ trait WPPFM_Processing_Support {
 		}
 
 		return 'min' === $min_max ? min( $product_prices ) : max( $product_prices );
+	}
+
+	/**
+	 * Returns a localized product price converted to the feed currency and calculated with taxes for the feed country.
+	 *
+	 * This emulates the frontend price shown to a visitor from the target country, including product tax class rules.
+	 *
+	 * @param WC_Product $product            WooCommerce product.
+	 * @param float      $raw_price          Base price (regular/sale) before conversion.
+	 * @param string     $feed_country_code  ISO country code for the feed target country (e.g. 'DE').
+	 * @param string     $feed_currency      Target feed currency (e.g. 'EUR').
+	 *
+	 * @since 3.17.0
+	 * @return float Localized gross price
+	 */
+private function get_localized_price_for_country( $product, $raw_price, $feed_country_code, $feed_currency ) {
+    if ( '' === $raw_price || null === $raw_price ) {
+        return '';
+    }
+    // 1) Convert to feed currency via WPML Multi-currency when available
+    $converted_price   = $raw_price;
+    $resolved_currency = $feed_currency ? $feed_currency : get_woocommerce_currency();
+    if ( defined( 'ICL_SITEPRESS_VERSION' ) ) {
+        $converted_price = apply_filters( 'wcml_raw_price_amount', $raw_price, $resolved_currency );
+    }
+
+
+		// 2) Calculate price including taxes while forcing the taxable address to the feed's country (no globals mutation).
+		$this->_temp_tax_country = $feed_country_code;
+		add_filter( 'woocommerce_customer_taxable_address', array( $this, 'override_tax_address' ), 999 );
+        try {
+            $localized_price = wc_get_price_including_tax( $product, array( 'price' => $converted_price ) );
+        } catch ( \Throwable $e ) {
+            $localized_price = (float) $converted_price; // fallback to converted price
+        }
+		remove_filter( 'woocommerce_customer_taxable_address', array( $this, 'override_tax_address' ), 999 );
+		$this->_temp_tax_country = null;
+
+		return apply_filters( 'wppfm_get_localized_product_price', $localized_price, $product, $feed_country_code, $feed_currency );
+	}
+
+	/**
+	 * Returns a localized product price excluding taxes for the feed country, converted to the feed currency.
+	 *
+	 * When prices are entered inclusive of tax, WooCommerce requires the correct tax location to strip tax properly.
+	 *
+	 * @param WC_Product $product            WooCommerce product.
+	 * @param float      $raw_price          Base price (regular/sale) before conversion.
+	 * @param string     $feed_country_code  ISO country code for the feed target country (e.g. 'DE').
+	 * @param string     $feed_currency      Target feed currency (e.g. 'EUR').
+	 *
+	 * @since 3.17.0
+	 * @return float Localized net price (excluding tax)
+	 */
+private function get_localized_price_ex_tax_for_country( $product, $raw_price, $feed_country_code, $feed_currency ) {
+    // 1) Compute net price in store currency using WooCommerce tax logic and target country
+    if ( '' === $raw_price || null === $raw_price ) {
+        return '';
+    }
+
+    $this->_temp_tax_country = $feed_country_code;
+    add_filter( 'woocommerce_customer_taxable_address', array( $this, 'override_tax_address' ), 999 );
+    try {
+        $is_taxable     = method_exists( $product, 'is_taxable' ) ? $product->is_taxable() : true;
+        $prices_include = function_exists( 'wc_prices_include_tax' ) ? wc_prices_include_tax() : false;
+        $tax_class      = method_exists( $product, 'get_tax_class' ) ? $product->get_tax_class() : '';
+        $price_param    = is_numeric( $raw_price ) ? (float) $raw_price : (float) $product->get_price();
+
+        // One-time explicit tax calculation to compute net if needed
+        $calc_total_tax = '';
+        $calc_taxes     = array();
+        $sum_tax        = 0.0;
+        if ( class_exists( 'WC_Tax' ) ) {
+            $rates_for_calc = WC_Tax::get_rates( $tax_class );
+            $calc_taxes     = WC_Tax::calc_tax( (float) $price_param, $rates_for_calc, $prices_include );
+            $sum_tax        = is_array( $calc_taxes ) ? array_sum( array_map( 'floatval', $calc_taxes ) ) : 0.0;
+            $calc_total_tax = sprintf( 'tax_sum:%s', $sum_tax );
+        }
+
+        // Two reference calculations
+        $net_no_arg   = wc_get_price_excluding_tax( $product );
+        $net_with_arg = wc_get_price_excluding_tax( $product, array( 'price' => $price_param ) );
+
+        if ( $is_taxable && $prices_include ) {
+            // Prefer explicit inclusive-tax calculation when it yields a positive tax sum
+            if ( $sum_tax > 0 ) {
+                $net_by_calc = max( 0.0, (float) $price_param - (float) $sum_tax );
+                $net_store_currency = $net_by_calc;
+            } else {
+                // Fallback: choose the lowest positive candidate from WooCommerce helpers
+                $candidates = array_filter( array( (float) $net_no_arg, (float) $net_with_arg ), function( $v ) { return $v > 0; } );
+                $net_store_currency = ! empty( $candidates ) ? min( $candidates ) : (float) $price_param;
+            }
+        } else {
+            $net_store_currency = $net_no_arg;
+        }
+    } catch ( \Throwable $e ) {
+        $net_store_currency = (float) $raw_price; // fallback
+    }
+    remove_filter( 'woocommerce_customer_taxable_address', array( $this, 'override_tax_address' ), 999 );
+    $this->_temp_tax_country = null;
+
+    // 2) Convert net to feed currency via WPML (if active) using a scoped client currency override
+    $resolved_currency = $feed_currency ? $feed_currency : get_woocommerce_currency();
+
+    $this->_temp_currency = $resolved_currency;
+    if ( defined( 'ICL_SITEPRESS_VERSION' ) ) {
+        add_filter( 'wcml_client_currency', array( $this, 'override_client_currency' ), 999 );
+    }
+
+    $net_converted = defined( 'ICL_SITEPRESS_VERSION' )
+        ? apply_filters( 'wcml_raw_price_amount', $net_store_currency, $resolved_currency )
+        : $net_store_currency;
+
+    if ( defined( 'ICL_SITEPRESS_VERSION' ) ) {
+        remove_filter( 'wcml_client_currency', array( $this, 'override_client_currency' ), 999 );
+    }
+    $this->_temp_currency = null;
+
+    return apply_filters( 'wppfm_get_localized_product_price_ex_tax', $net_converted, $product, $feed_country_code, $resolved_currency );
+}
+
+	/**
+	 * Forces the taxable address to the feed country while calculating prices.
+	 *
+	 * @param array $address [ country, state, postcode, city ]
+	 * @return array
+	 */
+	public function override_tax_address( $address ) {
+		if ( $this->_temp_tax_country ) {
+			return array( $this->_temp_tax_country, '', '', '' );
+		}
+		return $address;
+	}
+
+	/**
+	 * Forces the client currency for WPML Multi-currency while calculating prices.
+	 *
+	 * @param string $currency
+	 * @return string
+	 */
+	public function override_client_currency( $currency ) {
+		return $this->_temp_currency ? $this->_temp_currency : $currency;
 	}
 
 	/**

@@ -185,7 +185,7 @@ if ( ! class_exists( 'WPPFM_Settings_Page' ) ) :
 				<input name="wppfm-notice-mailaddress" id="wppfm-notice-mailaddress" type="email" class="wppfm-wide-text-input-field" value="' . esc_html( sanitize_email( $notice_mailaddress ) ) . '"> 
 				<label for="wppfm-notice-mailaddress">'
 				. esc_html__( 'Email address of the feed manager.', 'wp-product-feed-manager' ) . '</label></fieldset>
-				<p><i>' . esc_html__('Enter the email address of the person you want to be notified when a feed fails during an automatic feed update. This option requires an SMTP server for WordPress to be installed on your server.', 'wp-product-feed-manager') . '</i></p></fieldset>
+				<p><i>' . esc_html__('Enter the email address of the person you want to be notified when a feed fails during an automatic feed update. This option requires an SMTP server for WordPress to be installed on your server. If no emails are received, consider using an SMTP plugin to improve email delivery.', 'wp-product-feed-manager') . '</i></p></fieldset>
 				</td></tr>';
 
 			echo '<tr vertical-align="top" class="wppfm-setting-selector">

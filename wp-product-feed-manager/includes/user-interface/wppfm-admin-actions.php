@@ -80,10 +80,10 @@ add_action( 'wppfm_daily_event', 'wppfm_check_backups' );
  *
  * @since 1.10.0
  *
- * @global WPPFM_Feed_Processor $background_process
+ * @global WPPFM_Feed_Processor $wppfm_background_process
  */
 function initiate_background_process() {
-	global $background_process;
+	global $wppfm_background_process;
 
 	$feed_type = filter_input( INPUT_GET, 'feed-type', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
@@ -99,29 +99,29 @@ function initiate_background_process() {
 			require_once __DIR__ . '/../application/class-wppfm-feed-processor.php';
 		}
 
-		$background_process = new WPPFM_Feed_Processor();
+		$wppfm_background_process = new WPPFM_Feed_Processor();
 		return;
 	}
 
 	if ( 'google-product-review-feed' === $active_tab ) {
-		if ( ! class_exists( 'WPPRFM_Review_Feed_Processor' ) && function_exists( 'wpprfm_include_background_classes' ) ) {
-			wpprfm_include_background_classes();
+		if ( ! class_exists( 'WPPRFM_Review_Feed_Processor' ) && function_exists( 'wppfm_rf_include_background_classes' ) ) {
+			wppfm_rf_include_background_classes();
 		}
 
 		// @since 2.29.0 to prevent a PHP fatal error when a review feed fails and the user deactivates the plugin.
 		if ( class_exists( 'WPPRFM_Review_Feed_Processor' ) ) {
-			$background_process = new WPPRFM_Review_Feed_Processor();
+			$wppfm_background_process = new WPPRFM_Review_Feed_Processor();
 			return;
 		}
 	}
 
 	if ( 'google-merchant-promotions-feed' === $active_tab ) {
-		if ( ! class_exists( 'WPPPFM_Promotions_Feed_Processor' ) && function_exists( 'wpppfm_include_background_classes' ) ) {
-			wpppfm_include_background_classes();
+		if ( ! class_exists( 'WPPPFM_Promotions_Feed_Processor' ) && function_exists( 'wppfm_pf_include_background_classes' ) ) {
+			wppfm_pf_include_background_classes();
 		}
 
 		if ( class_exists( 'WPPPFM_Promotions_Feed_Processor' ) ) {
-			$background_process = new WPPPFM_Promotions_Feed_Processor();
+			$wppfm_background_process = new WPPPFM_Promotions_Feed_Processor();
 		}
 	}
 }
@@ -152,7 +152,6 @@ function wppfm_verify_feed_update_schedule_registration() {
 
 add_action( 'admin_menu', 'wppfm_verify_feed_update_schedule_registration' );
 
-
 /**
  * Generates a Sales Promotion notice for the free version of the plugin. Gets triggered by the admin_notices action.
  *
@@ -178,7 +177,7 @@ function wppfm_sales_promotion_notice() {
 		return false;
 	}
 
-	wp_localize_script( 'wppfm_notice-handling-script', 'ajax_object', array( 'ajax_url' => admin_url( 'admin-ajax.php') ) );
+	wp_localize_script( 'wppfm_notice-handling-script', 'wppfm_notice_ajax', array( 'ajax_url' => admin_url( 'admin-ajax.php') ) );
 
 	wp_register_style( 'wp-product-feed-manager-promotion-banner', WPPFM_PLUGIN_URL . '/css/wppfm-promotion-notice.css', '', WPPFM_VERSION_NUM, 'screen' );
 	wp_enqueue_style( 'wp-product-feed-manager-promotion-banner' );

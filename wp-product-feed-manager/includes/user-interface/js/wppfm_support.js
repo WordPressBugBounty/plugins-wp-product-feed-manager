@@ -353,10 +353,10 @@ function wppfm_enableFeedActionButtons( feedType = 'product-feed' ) {
 	let buttonIds = wppfm_getButtonIds( feedType );
 
 	// Enable the Generate and Save button.
-	jQuery( `#${buttonIds.generate}-top` ).removeClass( 'wppfm-disabled-button' ).blur();
-	jQuery( `#${buttonIds.generate}-bottom` ).removeClass( 'wppfm-disabled-button' ).blur();
-	jQuery( `#${buttonIds.save}-top` ).removeClass( 'wppfm-disabled-button' ).blur();
-	jQuery( `#${buttonIds.save}-bottom` ).removeClass( 'wppfm-disabled-button' ).blur();
+	jQuery( `#${buttonIds.generate}-top` ).removeClass( 'wppfm-disabled-button' ).trigger('blur');
+	jQuery( `#${buttonIds.generate}-bottom` ).removeClass( 'wppfm-disabled-button' ).trigger('blur');
+	jQuery( `#${buttonIds.save}-top` ).removeClass( 'wppfm-disabled-button' ).trigger('blur');
+	jQuery( `#${buttonIds.save}-bottom` ).removeClass( 'wppfm-disabled-button' ).trigger('blur');
 
 	if ( '' !== jQuery( '#wppfm-feed-editor-page-data-storage' ).data( 'wppfmFeedUrl' ) ) {
 		wppfm_enableViewFeedButtons();
@@ -384,8 +384,8 @@ function wppfm_disableFeedActionButtons( feedType = 'product-feed' ) {
  * Enables the view feed buttons.
  */
 function wppfm_enableViewFeedButtons() {
-	jQuery('#wppfm-view-feed-button-top').removeClass( 'wppfm-disabled-button' ).blur();
-	jQuery('#wppfm-view-feed-button-bottom').removeClass( 'wppfm-disabled-button' ).blur();
+	jQuery('#wppfm-view-feed-button-top').removeClass( 'wppfm-disabled-button' ).trigger('blur');
+	jQuery('#wppfm-view-feed-button-bottom').removeClass( 'wppfm-disabled-button' ).trigger('blur');
 }
 
 /**

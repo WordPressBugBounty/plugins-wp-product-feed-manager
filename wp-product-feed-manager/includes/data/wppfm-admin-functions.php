@@ -57,7 +57,7 @@ function wppfm_check_db_version() {
  *
  * @param string $key The source key to be checked
  *
- * @return boolean    True if the source key is money related, false if not
+ * @return boolean    True if the source key is money-related, false if not
  * @since 1.1.0
  *
  */
@@ -88,7 +88,7 @@ function wppfm_meta_key_is_money( $key ) {
 /**
  * Takes a value and formats it to a money value using the WooCommerce thousands separator, decimal separator and number of decimal values
  *
- * @param string $money_value The money value to be formatted
+ * @param string $money_value The money values to be formatted
  * @param string $feed_language Selected Language in WPML add-on, leave empty if no exchange rate correction is required @since 1.9.0
  * @param string $feed_currency Selected currency in WOOCS add-on, leave empty if no correction is required @since 2.28.0.
  *
@@ -125,7 +125,7 @@ function wppfm_prep_money_values( $money_value, $feed_language = '', $feed_curre
 		$number_decimals = apply_filters( 'wppfm_feed_price_decimals', wc_get_price_decimals() );
 
 		// To prevent Google Merchant Centre to interpret a thousand separator as a decimal separator, we need to remove
-		// the thousand separators if the decimals setting in WC is 0 and a period is used as decimal separator.
+		// the thousand separators if the decimals setting in WC is 0 and a period is used as a decimal separator.
 		// E.g., 1.452 would be interpreted by Google as 1,452.
 		// @since 2.11.0
 		if ( 0 === $number_decimals && '.' === $thousand_separator ) {
@@ -260,7 +260,7 @@ function wppfm_initialize_wp_filesystem() {
 
 	if ( 'direct' === $method ) {
 		$initialized = WP_Filesystem();
-	} elseif ( false !== $method ) {
+	} else {
 		ob_start();
 		$credentials = request_filesystem_credentials( '' );
 		ob_end_clean();
@@ -290,22 +290,167 @@ function wppfm_get_wp_filesystem_method_or_direct() {
 
 /**
  * Adds a new line to the end of a file.
+ * Uses native PHP file operations with append mode and file locking to prevent race conditions.
+ * Falls back to WP_Filesystem for FTP/SSH scenarios.
  *
  * @param string $file_path The path to the file.
  * @param string $new_line  The new line to be added.
  * @param bool $add_crt     Add a carriage return at the end of the line. Default is false.
  *
  * @since 3.12.0
+ * @since 3.15.0 - Improved to use true append mode with file locking to prevent race conditions and corruption.
  * @return bool|int The number of bytes written, or false on failure.
  */
 function wppfm_append_line_to_file( $file_path, $new_line, $add_crt = false ) {
+	// Prepare the line to write
+	$line_to_write = $new_line . ( $add_crt ? PHP_EOL : '' );
+
+	// Track file operation for performance monitoring
+	do_action( 'wppfm_before_file_write', $line_to_write );
+
+	// Try to use native PHP file operations first (most efficient and safe for local files)
+	// This prevents race conditions by using append mode with file locking
+	$real_path = wppfm_get_real_file_path( $file_path );
+
+	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable -- Prefer native checks for direct FS access before WP_Filesystem fallback.
+	if ( $real_path && is_writable( dirname( $real_path ) ) ) {
+		// Use native PHP file operations with append mode and locking
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Native append is faster when direct FS access is available.
+		$handle = @fopen( $real_path, 'a' );
+
+		if ( false !== $handle ) {
+			// Try to acquire exclusive lock to prevent race conditions
+			// LOCK_EX = exclusive lock (write lock), blocks other processes
+			// First try non-blocking lock (fast path)
+			$lock_acquired = @flock( $handle, LOCK_EX | LOCK_NB );
+
+			// If non-blocking lock failed, try blocking lock with retries
+			// This ensures data integrity even under high contention
+			if ( ! $lock_acquired ) {
+				$max_retries = 3;
+				$retry_delay = 100000; // 100ms in microseconds
+				$retry_count = 0;
+
+				while ( $retry_count < $max_retries && ! $lock_acquired ) {
+					usleep( $retry_delay );
+					$lock_acquired = @flock( $handle, LOCK_EX | LOCK_NB );
+					$retry_count++;
+				}
+
+				// If still no lock after retries, try blocking lock (will wait)
+				// This is safe because append operations are very fast
+				if ( ! $lock_acquired ) {
+					$lock_acquired = @flock( $handle, LOCK_EX );
+				}
+			}
+
+			if ( $lock_acquired ) {
+				// Write the line
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite -- Native write keeps append atomic before WP_Filesystem fallback.
+				$bytes_written = @fwrite( $handle, $line_to_write );
+
+				// Release lock immediately after write
+				@flock( $handle, LOCK_UN );
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Close native handle used for direct writes.
+				@fclose( $handle );
+
+				if ( false !== $bytes_written ) {
+					return $bytes_written;
+				}
+			} else {
+				// Could not acquire lock after all attempts, close handle and fall through to fallback
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Close native handle before WP_Filesystem fallback.
+				@fclose( $handle );
+			}
+		}
+	}
+
+	// Fallback to WP_Filesystem method (for FTP/SSH or if native operations fail)
+	// This maintains compatibility but is less efficient for large files
 	$wp_filesystem = wppfm_get_wp_filesystem();
 
+	// For fallback, we still need to read-all-write-all, but this should be rare
 	$contents  = $wp_filesystem->exists( $file_path ) ? $wp_filesystem->get_contents( $file_path ) : '';
-	$contents .= $new_line;
-	$contents .= $add_crt ? PHP_EOL : '';
+	$contents .= $line_to_write;
 
 	return $wp_filesystem->put_contents( $file_path, $contents, FS_CHMOD_FILE );
+}
+
+/**
+ * Gets the real file system path for a file.
+ * Handles both absolute and relative paths, and resolves WP_Filesystem paths when possible.
+ *
+ * @param string $file_path The file path (may be absolute or relative).
+ *
+ * @since 3.15.0
+ * @return string|false The real file system path, or false if cannot be determined.
+ */
+function wppfm_get_real_file_path( $file_path ) {
+	if ( empty( $file_path ) ) {
+		return false;
+	}
+
+	// Normalize the path (remove any trailing slashes, resolve . and ..)
+	$file_path = rtrim( $file_path, '/' );
+
+	// If file exists, get its realpath
+	if ( file_exists( $file_path ) && is_file( $file_path ) ) {
+		$real_path = realpath( $file_path );
+		if ( $real_path ) {
+			return $real_path;
+		}
+	}
+
+	// If file doesn't exist yet (new file), try to resolve the directory
+	$dir_path = dirname( $file_path );
+	$file_name = basename( $file_path );
+
+	// Check if directory exists and is writable
+	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable -- Direct path writable checks avoid unnecessary filesystem init.
+	if ( file_exists( $dir_path ) && is_dir( $dir_path ) && is_writable( $dir_path ) ) {
+		$real_dir = realpath( $dir_path );
+		if ( $real_dir ) {
+			return $real_dir . '/' . $file_name;
+		}
+	}
+
+	// Try to resolve using WPPFM_FEEDS_DIR if defined
+	if ( defined( 'WPPFM_FEEDS_DIR' ) ) {
+		// Check if the path contains WPPFM_FEEDS_DIR
+		if ( strpos( $file_path, WPPFM_FEEDS_DIR ) === 0 ) {
+			// Path already contains WPPFM_FEEDS_DIR, try to resolve it
+			if ( file_exists( WPPFM_FEEDS_DIR ) && is_dir( WPPFM_FEEDS_DIR ) ) {
+				$real_feeds_dir = realpath( WPPFM_FEEDS_DIR );
+				if ( $real_feeds_dir ) {
+					// Extract relative path from WPPFM_FEEDS_DIR
+					$relative_path = substr( $file_path, strlen( WPPFM_FEEDS_DIR ) );
+					$relative_path = ltrim( $relative_path, '/' );
+					return $real_feeds_dir . '/' . $relative_path;
+				}
+			}
+		}
+
+		// Try to find file in WPPFM_FEEDS_DIR by filename only
+		$feeds_dir_path = WPPFM_FEEDS_DIR . '/' . $file_name;
+		if ( file_exists( $feeds_dir_path ) && is_file( $feeds_dir_path ) ) {
+			$real_path = realpath( $feeds_dir_path );
+			if ( $real_path ) {
+				return $real_path;
+			}
+		}
+
+		// If directory exists, construct path for new file
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable -- Direct dir checks preferred before WP_Filesystem fallback.
+		if ( file_exists( WPPFM_FEEDS_DIR ) && is_dir( WPPFM_FEEDS_DIR ) && is_writable( WPPFM_FEEDS_DIR ) ) {
+			$real_feeds_dir = realpath( WPPFM_FEEDS_DIR );
+			if ( $real_feeds_dir ) {
+				return $real_feeds_dir . '/' . $file_name;
+			}
+		}
+	}
+
+	// If we can't determine the real path, return false to trigger fallback
+	return false;
 }
 
 /**
@@ -373,6 +518,7 @@ function wppfm_clear_feed_process_data() {
 	WPPFM_Feed_Controller::set_feed_processing_flag();
 	WPPFM_Db_Management::clean_options_table();
 	WPPFM_Db_Management::reset_status_of_failed_feeds();
+	WPPFM_Db_Management::reset_feed_runtime_state();
 
 	do_action( 'wppfm_feed_process_data_cleared' );
 
@@ -396,7 +542,7 @@ function wppfm_convert_string_with_dashes_to_upper_case_string_with_spaces( $ori
 
 /**
  * Converts any number string to a string with a number that has no thousand separators
- * and a period as decimal separator
+ * and a period as a decimal separator
  *
  * @param string $number_string
  *
@@ -432,8 +578,10 @@ function wppfm_get_file_path( $feed_name ) {
 	$feed_name            = str_replace( $forbidden_name_chars, '-', $feed_name );
 
 	// previous to plugin version 1.3.0 feeds where stored in the plugins, but after that version they are stored in the upload folder
-	if ( file_exists( WP_PLUGIN_DIR . '/wp-product-feed-manager-support/feeds/' . $feed_name ) ) {
-		return WP_PLUGIN_DIR . '/wp-product-feed-manager-support/feeds/' . $feed_name;
+	// @since 3.17.0 - Use dirname() to get the plugins directory from the plugin directory.
+	$legacy_plugin_path = dirname( WPPFM_PLUGIN_DIR ) . '/wp-product-feed-manager-support/feeds/' . $feed_name;
+	if ( file_exists( $legacy_plugin_path ) ) {
+		return $legacy_plugin_path;
 	} elseif ( file_exists( WPPFM_FEEDS_DIR . '/' . $feed_name ) ) {
 		return WPPFM_FEEDS_DIR . '/' . $feed_name;
 	} else { // as of version 1.5.0, all spaces in new filenames are replaced by a dash
@@ -453,8 +601,12 @@ function wppfm_get_file_url( $feed_name ) {
 	$feed_name            = str_replace( $forbidden_name_chars, '-', $feed_name );
 
 	// previous to plugin version 1.3.0 feeds where stored in the plugins, but after that version they are stored in the upload folder
-	if ( file_exists( WP_PLUGIN_DIR . '/wp-product-feed-manager-support/feeds/' . $feed_name ) ) {
-		$file_url = plugins_url() . '/wp-product-feed-manager-support/feeds/' . $feed_name;
+	// @since 3.17.0 - Use dirname() to get the plugins directory from the plugin directory.
+	$legacy_plugin_path = dirname( WPPFM_PLUGIN_DIR ) . '/wp-product-feed-manager-support/feeds/' . $feed_name;
+	if ( file_exists( $legacy_plugin_path ) ) {
+		// Use plugins_url() with the legacy plugin file path for proper URL resolution.
+		$legacy_plugin_file = dirname( WPPFM_PLUGIN_FILE ) . '/../wp-product-feed-manager-support/wp-product-feed-manager-support.php';
+		$file_url = plugins_url( 'feeds/' . $feed_name, $legacy_plugin_file );
 	} else { // as of version 1.5.0, all spaces in new filenames are replaced by a dash
 		$file_url = WPPFM_UPLOADS_URL . '/wppfm-feeds/' . $feed_name;
 	}
@@ -499,15 +651,18 @@ function wppfm_wc_installed_and_active() {
  *
  * @return boolean true if WooCommerce version is at least 3.0.0
  * @since 2.3.0
+ * @since 3.16.0 - Changed the use of WPPFM_PLUGIN_DIR + '..' to find the plugins folder, to the use of WP_PLUGIN_DIR.
  */
 function wppfm_wc_min_version_required() {
 	// To prevent several PHP Warnings if the WC folder name has been changed whilst the plugin is still registered.
 	// @since 2.11.0.
-	if ( ! file_exists( WPPFM_PLUGIN_DIR . '../woocommerce/woocommerce.php' ) ) {
+	// Use dirname() to get the plugins directory from the plugin directory.
+	$wc_plugin_file = dirname( WPPFM_PLUGIN_DIR ) . '/woocommerce/woocommerce.php';
+	if ( ! file_exists( $wc_plugin_file ) ) {
 		return false;
 	}
 
-	$wc_version = get_plugin_data( WPPFM_PLUGIN_DIR . '../woocommerce/woocommerce.php' )['Version'];
+	$wc_version = get_plugin_data( $wc_plugin_file )['Version'];
 
 	return version_compare( $wc_version, WPPFM_MIN_REQUIRED_WC_VERSION, '>=' );
 }

@@ -73,7 +73,7 @@ function wppfm_show_wp_message( $message, $type, $dismissible, $permanent_dismis
  *
  * @since 1.9.3
  *
- * @param wp_error $response Object wit the error message.
+ * @param wp_error $response Object with the error message.
  * @param string   $message  The error message to show.
  */
 function wppfm_handle_wp_errors_response( $response, $message ) {
@@ -97,7 +97,14 @@ function wppfm_handle_wp_errors_response( $response, $message ) {
  * @param string $filename      The file name in which the error message is written (default 'error').
  */
 function wppfm_write_log_file( $error_message, $filename = 'debug' ) {
-	$file = 'error' === $filename ? WP_CONTENT_DIR . '/' . $filename . '.log' : WPPFM_PLUGIN_DIR . $filename . '.log';
+	if ( 'error' === $filename ) {
+		// Get content directory using wp_upload_dir() and navigating up one level.
+		$upload_dir = wp_upload_dir();
+		$content_dir = dirname( $upload_dir['basedir'] );
+		$file = $content_dir . '/' . $filename . '.log';
+	} else {
+		$file = WPPFM_PLUGIN_DIR . $filename . '.log';
+	}
 
 	if ( is_null( $error_message ) || is_string( $error_message ) || is_int( $error_message ) || is_bool( $error_message ) || is_float( $error_message ) ) {
 		$message_line = $error_message;
@@ -115,12 +122,16 @@ function wppfm_write_log_file( $error_message, $filename = 'debug' ) {
 
 /**
  * Shows a message to inform the user that he has to update the WooCommerce plugin.
+ *
+ * @since 3.16.0 - Changed the use of WPPFM_PLUGIN_DIR + '..' to find the plugins folder, to the use of WP_PLUGIN_DIR.
  */
 function wppfm_update_your_woocommerce_version_message() {
 	// To prevent several PHP Warnings if the WC folder name has been changed whilst the plugin is still registered.
 	// @since 2.11.0.
-	if ( file_exists( WPPFM_PLUGIN_DIR . '../woocommerce/woocommerce.php' ) ) {
-		$wc_version = get_plugin_data( WPPFM_PLUGIN_DIR . '../woocommerce/woocommerce.php' )['Version'];
+	// Use dirname() to get the plugins directory from the plugin directory.
+	$wc_plugin_file = dirname( WPPFM_PLUGIN_DIR ) . '/woocommerce/woocommerce.php';
+	if ( file_exists( $wc_plugin_file ) ) {
+		$wc_version = get_plugin_data( $wc_plugin_file )['Version'];
 	} else {
 		$wc_version = '"UNKNOWN"';
 	}
@@ -160,7 +171,7 @@ function wppfm_you_have_no_woocommerce_installed_message() {
 }
 
 /**
- * Writes a http_requests_error.log file in the plugin folder when there is a normal http request failed.
+ * Writes an http_requests_error.log file in the plugin folder when there is a normal http request failed.
  *
  * @since 1.9.0
  *

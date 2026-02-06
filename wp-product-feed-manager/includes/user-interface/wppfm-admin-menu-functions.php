@@ -37,10 +37,10 @@ function wppfm_feed_editor_page() {
 
 	switch ( $feed_type ) {
 		case 'google-product-review-feed':
-			wpprfm_open_review_feed_page();
+			wppfm_rf_open_review_feed_page();
 			break;
 		case 'google-merchant-promotions-feed':
-			wpppfm_open_promotions_feed_page();
+			wppfm_pf_open_promotions_feed_page();
 			break;
 		default:
 			wppfm_open_product_feed_page();
@@ -115,3 +115,33 @@ function wppfm_check_prerequisites() {
 	}
 }
 
+/**
+ * Extracts the license owner's (customer) email address from a decoded EDD SL API response.
+ *
+ * Notes:
+ * - The response shape can vary by EDD/Software Licensing versions and store configuration.
+ * - We deliberately keep this tolerant and best-effort; callers must handle empty return values.
+ *
+ * @since 3.19.1
+ *
+ * @param mixed $license_data JSON-decoded response from the EDD SL API.
+ *
+ * @return string Sanitized email address or empty string when not available.
+ */
+function wppfm_extract_edd_sl_customer_email_from_license_data( $license_data ) {
+	if ( ! is_object( $license_data ) ) {
+		return '';
+	}
+
+	// Most common field name used by EDD SL.
+	if ( property_exists( $license_data, 'customer_email' ) && is_string( $license_data->customer_email ) ) {
+		return sanitize_email( $license_data->customer_email );
+	}
+
+	// Some stores/extensions may use a generic `email` field.
+	if ( property_exists( $license_data, 'email' ) && is_string( $license_data->email ) ) {
+		return sanitize_email( $license_data->email );
+	}
+
+	return '';
+}

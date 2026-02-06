@@ -30,6 +30,7 @@ if ( ! class_exists( 'WPPFM_Db_Management' ) ) :
 
 			// Check if the table can be queried
 			$table = $wpdb->prefix . $table_name;
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- No core API for table existence; query is prepared. Caching table existence checks doesn't make sense.
 			if ( $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table ) ) === $table ) {
 				return true;
 			}
@@ -364,6 +365,38 @@ if ( ! class_exists( 'WPPFM_Db_Management' ) ) :
 		public static function reset_status_of_failed_feeds() {
 			$queries_class = new WPPFM_Queries();
 			$queries_class->reset_all_feed_status();
+		}
+
+		/**
+		 * Clears runtime indicators that could keep the background process blocked.
+		 *
+		 * @since 3.18.0
+		 */
+		public static function reset_feed_runtime_state() {
+			// Remove any lingering process locks so the queue can restart immediately.
+			delete_site_transient( 'wppfm_feed_generation_process_process_lock' );
+			// Remove any lingering heartbeat markers so watchdog/processing checks don't think a dead process is alive.
+			delete_site_option( 'wppfm_feed_generation_process_process_heartbeat' );
+
+			// Remove pending-dispatch markers so cron health checks stop trying to resume stale jobs.
+			$pending_dispatch_feeds = get_site_option( 'wppfm_pending_dispatch_feeds', array() );
+
+			if ( ! empty( $pending_dispatch_feeds ) ) {
+				foreach ( $pending_dispatch_feeds as $feed_id ) {
+					delete_site_transient( 'wppfm_pending_dispatch_' . $feed_id );
+				}
+			}
+
+			delete_site_option( 'wppfm_pending_dispatch_feeds' );
+
+			// Reset progress counters/monitors so the next feed starts from zero.
+			set_transient(
+				'wppfm_nr_of_processed_products',
+				0,
+				defined( 'WPPFM_TRANSIENT_LIVE' ) ? WPPFM_TRANSIENT_LIVE : DAY_IN_SECONDS
+			);
+
+			delete_transient( 'wppfm_feed_file_size' );
 		}
 
 		private static function remove_left_data_part( $data_string ) {

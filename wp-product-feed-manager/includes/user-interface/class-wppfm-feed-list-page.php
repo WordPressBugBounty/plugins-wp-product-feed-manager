@@ -133,7 +133,7 @@ if ( ! class_exists( 'WPPFM_Feed_List_Page' ) ) :
 			}
 
 			$latest_blog  = $latest_blog_option[0];
-			$article_date = date( 'dmy', strtotime( $latest_blog['date'] ) );
+			$article_date = gmdate( 'dmy', strtotime( $latest_blog['date'] ) );
 			$article_id   = $latest_blog['id'];
 			$utm_params   = '?utm_source=pl_article_ad&utm_medium=textlink&utm_campaign=plugin_article&utm_id=ARCO.' . $article_date . '&utm_content=' . $article_id;
 			$href_url     = $latest_blog['url'] . $utm_params;

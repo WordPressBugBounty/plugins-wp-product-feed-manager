@@ -23,6 +23,8 @@ if ( ! class_exists( 'WPPFM_i18n_Scripts' ) ) :
 		 * Localizes the JavaScript strings that are used on the feed settings pages.
 		 */
 		public static function wppfm_feed_settings_i18n() {
+			$wpmr_url = 'https://www.wpmarketingrobot.com/';
+
 			$pars = array(
 				'prohibited_feed_name_characters'   => esc_html__( 'You are using characters in your file name that are not allowed!', 'wp-product-feed-manager' ),
 				'promotion_id_invalid'              => esc_html__( 'The promotion id you entered is invalid. It should not include spaces or special characters and the max length is 50 characters. Please try again', 'wp-product-feed-manager' ),
@@ -33,7 +35,8 @@ if ( ! class_exists( 'WPPFM_i18n_Scripts' ) ) :
 				'save_data_failed'                  => esc_html__( 'Saving the data to the database has failed! Please try again.', 'wp-product-feed-manager' ),
 				'no_category_required'              => esc_html__( 'no category required', 'wp-product-feed-manager' ),
 				'no_feed_generated'                 => esc_html__( 'no feed generated', 'wp-product-feed-manager' ),
-				'feed_started'                      => esc_html__( 'Started processing your feed in the background.', 'wp-product-feed-manager' ),
+				'feed_preparing'                    => esc_html__( 'Preparing and initializing your feed for processing', 'wp-product-feed-manager' ),
+				'feed_started'                      => esc_html__( 'Started processing your feed in the background', 'wp-product-feed-manager' ),
 				'feed_queued'                       => esc_html__( 'Pushed the feed into the background queue. Processing starts after all other feeds are processed.', 'wp-product-feed-manager' ),
 				'feed_writing_error'                => esc_html__( 'Error writing the feed. You do not have the correct authorities to write the file.', 'wp-product-feed-manager' ),
 				'feed_initiation_error'             => esc_html__( 'Error generating the feed. Feed generation initialization failed. Please check your error logs for more information about the issue.', 'wp-product-feed-manager' ),
@@ -49,7 +52,8 @@ if ( ! class_exists( 'WPPFM_i18n_Scripts' ) ) :
 				'feed_status_error'                 => esc_html__( 'Product feed %feedname% has some errors!', 'wp-product-feed-manager' ),
 				/* translators: %feedname%: name of the feed */
 				'feed_status_failed'                => esc_html__( 'Product feed %feedname% has failed!', 'wp-product-feed-manager' ),
-				'variation_only_for_premium'        => esc_html__( 'The option to add product variations to the feed is not available in the free version. Unlock this option by upgrading to the Premium plugin. For more information goto https://www.wpmarketingrobot.com/.', 'wp-product-feed-manager' ),
+				/* translators: %s: URL to WP Marketing Robot */
+				'variation_only_for_premium'        => sprintf( esc_html__( 'The option to add product variations to the feed is not available in the free version. Unlock this option by upgrading to the Premium plugin. For more information goto %s.', 'wp-product-feed-manager' ), $wpmr_url ),
 				'select_a_sub_category'             => esc_html__( 'Select a sub-category', 'wp-product-feed-manager' ),
 				'select_by_category_number'         => esc_html__( 'Select by category number', 'wp-product-feed-manager' ),
 				/* translators: %feedname%: name of the feed */
@@ -58,7 +62,8 @@ if ( ! class_exists( 'WPPFM_i18n_Scripts' ) ) :
 				'fill_current_condition_warning'    => esc_html__( 'Please fill in the current condition before adding a new one!', 'wp-product-feed-manager' ),
 				'select_a_source_field_warning'     => esc_html__( 'Please select a source field first before you select the conditions.', 'wp-product-feed-manager' ),
 				'select_a_valid_source_warning'     => esc_html__( 'Please select a valid source before adding a condition to that source.', 'wp-product-feed-manager' ),
-				'advanced_filter_only_for_premium'  => esc_html__( 'The Advanced Filter option is not available in the free version. Unlock the Advanced Filter option by upgrading to the Premium plugin. For more information goto https://www.wpmarketingrobot.com/.', 'wp-product-feed-manager' ),
+				/* translators: %s: URL to WP Marketing Robot */
+				'advanced_filter_only_for_premium'  => sprintf( esc_html__( 'The Advanced Filter option is not available in the free version. Unlock the Advanced Filter option by upgrading to the Premium plugin. For more information goto %s.', 'wp-product-feed-manager' ), $wpmr_url ),
 				'all_products_except'               => esc_html__( 'except the ones where', 'wp-product-feed-manager' ),
 				'fill_filter_warning'               => esc_html__( 'Please fill in the filter values before adding a new one', 'wp-product-feed-manager' ),
 				'no_separator'                      => esc_html__( 'No separator', 'wp-product-feed-manager' ),
@@ -98,7 +103,8 @@ if ( ! class_exists( 'WPPFM_i18n_Scripts' ) ) :
 				'feed_changes_saved'                => esc_html__( 'The feed settings are saved.', 'wp-product-feed-manager' ),
 				'query_requirements'                => esc_html__( 'Add at least one query in the previous change value row before adding a new row.', 'wp-product-feed-manager' ),
 				'first_fill_in_change_value'        => esc_html__( 'Please first fill in a change value option before adding a query to it.', 'wp-product-feed-manager' ),
-				'support_feeds_only_for_premium'    => esc_html__( 'The Google Supplemental Feeds are not available in the free version. Unlock this option by upgrading to the Premium plugin. For more information goto https://www.wpmarketingrobot.com/.', 'wp-product-feed-manager' ),
+				/* translators: %s: URL to WP Marketing Robot */
+				'support_feeds_only_for_premium'    => sprintf( esc_html__( 'The Google Supplemental Feeds are not available in the free version. Unlock this option by upgrading to the Premium plugin. For more information goto %s.', 'wp-product-feed-manager' ), $wpmr_url ),
 				/* translators: %channel%: the name of the selected channel */
 			);
 
@@ -193,6 +199,9 @@ if ( ! class_exists( 'WPPFM_i18n_Scripts' ) ) :
 				'no_backup'                            => esc_html__( 'No backup found', 'wp-product-feed-manager' ),
 				'how_to_import_backup_file'            => esc_html__( 'To restore the exported backup file, please upload it to the "wp-content/uploads/wppfm-backups" folder of the server where you want to restore it on.', 'wp-product-feed-manager' ),
 				'invalid_email_address'                => esc_html__( 'The input is not a valid email address. Please try again.', 'wp-product-feed-manager' ),
+				'test_email_sent'                      => esc_html__( 'Notice recipient saved. A test email has been sent — check your inbox and spam folder. If you do not receive it within a few minutes, consider using an SMTP plugin as your server may not be configured for reliable email delivery.', 'wp-product-feed-manager' ),
+				'test_email_failed'                    => esc_html__( 'Notice recipient saved, but the test email could not be delivered. Consider using an SMTP plugin to improve email delivery.', 'wp-product-feed-manager' ),
+				'notice_recipient_saved'               => esc_html__( 'Notice recipient saved.', 'wp-product-feed-manager' ),
 			);
 
 			self::add_general_words( $pars );
@@ -205,8 +214,11 @@ if ( ! class_exists( 'WPPFM_i18n_Scripts' ) ) :
 		}
 
 		public static function wppfm_support_i18n() {
+			$support_email = 'info@wpmarketingrobot.com';
+
 			$pars = array(
-				'signup_failed'            => esc_html__( 'There was an unknown error with the sign up process, please contact us at info@wpmarketingrobot.com!', 'wp-product-feed-manager' ),
+				/* translators: %s: support email address */
+				'signup_failed'            => sprintf( esc_html__( 'There was an unknown error with the sign up process, please contact us at %s!', 'wp-product-feed-manager' ), $support_email ),
 				'email_not_valid'          => esc_html__( 'The email you entered is not a valid email address. Please check the address again.', 'wp-product-feed-manager' ),
 			);
 

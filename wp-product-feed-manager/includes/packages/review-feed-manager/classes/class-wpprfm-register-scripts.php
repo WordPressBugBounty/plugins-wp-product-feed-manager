@@ -25,11 +25,11 @@ if ( ! class_exists( 'WPPRFM_Register_Scripts' ) ) :
 			$this->_version_stamp = defined( 'WP_DEBUG' ) && WP_DEBUG ? time() : WPPFM_VERSION_NUM;
 			$this->_js_min        = defined( 'WP_DEBUG' ) && WP_DEBUG ? '' : '.min';
 
-			add_action( 'admin_enqueue_scripts', array( $this, 'wpprfm_register_product_review_scripts' ) );
-			add_action( 'admin_enqueue_scripts', array( $this, 'wpprfm_register_product_review_nonce' ) );
+			add_action( 'admin_enqueue_scripts', array( $this, 'wppfm_rf_register_product_review_scripts' ) );
+			add_action( 'admin_enqueue_scripts', array( $this, 'wppfm_rf_register_product_review_nonce' ) );
 		}
 
-		public function wpprfm_register_product_review_scripts() {
+		public function wppfm_rf_register_product_review_scripts() {
 
 			// do not load the other scripts unless a wppfm page is on
 			if ( ! wppfm_on_own_main_plugin_page() ) {
@@ -46,16 +46,16 @@ if ( ! class_exists( 'WPPRFM_Register_Scripts' ) ) :
 			wp_enqueue_script( 'wpprfm_ajax-data-handling-script', WPPRFM_PACKAGE_URL . '/js/wpprfm-ajax-data-handling' . $this->_js_min . '.js', array( 'jquery' ), $this->_version_stamp, true );
 		}
 
-		public function wpprfm_register_product_review_nonce() {
+		public function wppfm_rf_register_product_review_nonce() {
 			wp_localize_script(
 				'wpprfm_ajax-data-handling-script',
-				'reviewAjaxNonce',
+				'wppfm_review_ajax',
 				array(
 					// URL to wp-admin/admin-ajax.php to process the request
 					'ajaxurl'                      => admin_url( 'admin-ajax.php' ),
 					// generate the nonce's
-					'reviewFeedGetAttributesNonce' => wp_create_nonce( 'myajax-review-feed-get-attributes-nonce' ),
-					'reviewFeedGetMainDataNonce'   => wp_create_nonce( 'myajax-review-feed-get-main-data-nonce' ),
+					'reviewFeedGetAttributesNonce' => wp_create_nonce( 'wppfm-rf-ajax-review-feed-get-attributes-nonce' ),
+					'reviewFeedGetMainDataNonce'   => wp_create_nonce( 'wppfm-rf-ajax-review-feed-get-main-data-nonce' ),
 				)
 			);
 		}

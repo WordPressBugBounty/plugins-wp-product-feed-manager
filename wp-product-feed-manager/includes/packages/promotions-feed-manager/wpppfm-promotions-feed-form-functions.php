@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Starts the Google Merchant Promotions Feed page activated through the Google Feed Type selector.
  */
-function wpppfm_open_promotions_feed_page() {
+function wppfm_pf_open_promotions_feed_page() {
 
 	$promotions_page = new WPPPFM_Add_Promotions_Feed_Editor_Page();
 	$promotions_page->show();

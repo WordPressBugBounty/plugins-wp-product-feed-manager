@@ -10,7 +10,7 @@ var ajax_object;
 				jQuery.post(
 						ajax_object.ajax_url,
 						{
-							action: 'myajax-cancel-promotion-notice',
+							action: 'wppfm-ajax-cancel-promotion-notice',
 						},
 						function( response ) {
 							console.log(response);

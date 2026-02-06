@@ -17,12 +17,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Only activate wpprfm support if all requirements are met.
-if ( wpppfm_prerequisites() ) {
+if ( wppfm_pf_prerequisites() ) {
 	$package_version = '1.0.0';
 
-	wpppfm_define_constants( $package_version );
+    wppfm_pf_define_constants( $package_version );
 
-	wpppfm_includes();
+    wppfm_pf_includes();
 } else {
 	if ( function_exists( 'wppfm_show_wp_error' ) ) {
 		wppfm_show_wp_error( __( 'You need at least version 2.39.0 of the WooCommerce Product Feed Manager plugin to use the WooCommerce Google Review Feed Manager add-on', 'wp-product-feed-manager' ) );
@@ -34,7 +34,7 @@ if ( wpppfm_prerequisites() ) {
  *
  * Required are minimum version 3.0.0 for the premium versions and 2.0.0 for the free one.
  */
-function wpppfm_prerequisites(): bool {
+function wppfm_pf_prerequisites(): bool {
 	if ( ( 'free' !== WPPFM_PLUGIN_VERSION_ID )
 		&& version_compare( WPPFM_VERSION_NUM, '3.0.0', '>=' ) ) {
 		return true;
@@ -49,7 +49,7 @@ function wpppfm_prerequisites(): bool {
 /**
  * Includes all required files and classes.
  */
-function wpppfm_includes() {
+function wppfm_pf_includes() {
 
 	// Do not load the other scripts unless a wppfm page is on.
 	if ( ! wppfm_on_own_main_plugin_page() ) {
@@ -64,13 +64,13 @@ function wpppfm_includes() {
 	require_once __DIR__ . '/traits/wpppfm-product-details-selector-box.php';
 
 	// Include the required classes.
-	wpppfm_include_classes();
+    wppfm_pf_include_classes();
 }
 
 /**
  * Define the required constants.
  */
-function wpppfm_define_constants( $package_version ) {
+function wppfm_pf_define_constants( $package_version ) {
 	// Store the version of this package.
 	if ( ! defined( 'WPPPFM_PACKAGE_VERSION' ) ) {
 		define( 'WPPPFM_PACKAGE_VERSION', $package_version );
@@ -90,7 +90,7 @@ function wpppfm_define_constants( $package_version ) {
 /**
  * Include the background classes.
  */
-function wpppfm_include_background_classes() {
+function wppfm_pf_include_background_classes() {
 	require_once __DIR__ . '/traits/wpppfm-processing-support.php';
 	require_once __DIR__ . '/traits/wpppfm-xml-element-functions.php';
 
@@ -103,4 +103,4 @@ function wpppfm_include_background_classes() {
 	}
 }
 
-add_action( 'wppfm_includes', 'wpppfm_include_background_classes' );
+add_action( 'wppfm_includes', 'wppfm_pf_include_background_classes' );

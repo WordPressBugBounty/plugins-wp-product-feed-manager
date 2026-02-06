@@ -21,7 +21,7 @@ function wppfm_changeValuesOptions() {
 
 	// @since 2.22.0 - Strip tags and limit characters.
 	// @since 2.34.0 - HTML entity decode.
-	return [ 'change nothing', 'overwrite', 'replace', 'remove', 'add prefix', 'add suffix', 'recalculate', 'convert to child-element', 'strip tags', 'html entity decode', 'limit characters' ];
+	return [ 'change nothing', 'overwrite', 'replace', 'remove', 'add prefix', 'add suffix', 'recalculate', 'convert to child-element', 'strip tags', 'html entity decode', 'html entity encode', 'limit characters' ];
 }
 
 /**

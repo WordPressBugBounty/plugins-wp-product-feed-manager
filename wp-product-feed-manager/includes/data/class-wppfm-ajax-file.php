@@ -24,22 +24,22 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 			parent::__construct();
 
 			// Add the hooks.
-			add_action( 'wp_ajax_myajax-get-next-categories', array( $this, 'myajax_read_next_categories' ) );
-			add_action( 'wp_ajax_myajax-get-category-lists', array( $this, 'myajax_read_category_lists' ) );
-			add_action( 'wp_ajax_myajax-delete-feed-file', array( $this, 'myajax_delete_feed_file' ) );
-			add_action( 'wp_ajax_myajax-update-feed-file', array( $this, 'myajax_update_feed_file' ) );
-			add_action( 'wp_ajax_myajax-log-message', array( $this, 'myajax_log_message' ) );
-			add_action( 'wp_ajax_myajax-auto-feed-fix-mode-selection', array( $this, 'myajax_auto_feed_fix_mode_selection' ) );
-			add_action( 'wp_ajax_myajax-background-processing-mode-selection', array( $this, 'myajax_background_processing_mode_selection' ) );
-			add_action( 'wp_ajax_myajax-feed-logger-status-selection', array( $this, 'myajax_feed_logger_status_selection' ) );
-			add_action( 'wp_ajax_myajax-show-product-identifiers-selection', array( $this, 'myajax_show_product_identifiers_selection' ) );
-			add_action( 'wp_ajax_myajax-switch-to-manual-channel-update-selection', array( $this, 'myajax_switch_to_manual_channel_update' ) );
-			add_action( 'wp_ajax_myajax-wpml-use-full-url-resolution-selection', array( $this, 'myajax_wpml_use_full_url_resolution_selection' ) );
-			add_action( 'wp_ajax_myajax-omit-price-filters-selection', array( $this, 'myajax_omit_price_filters_selection' ) );
-			add_action( 'wp_ajax_myajax-third-party-attribute-keywords', array( $this, 'myajax_set_third_party_attribute_keywords' ) );
-			add_action( 'wp_ajax_myajax-set-notice-mailaddress', array( $this, 'myajax_set_notice_mailaddress' ) );
-			add_action( 'wp_ajax_myajax-clear-feed-process-data', array( $this, 'myajax_clear_feed_process_data' ) );
-			add_action( 'wp_ajax_myajax-reinitiate-plugin', array( $this, 'myajax_reinitiate_plugin' ) );
+			add_action( 'wp_ajax_wppfm-ajax-get-next-categories', array( $this, 'myajax_read_next_categories' ) );
+			add_action( 'wp_ajax_wppfm-ajax-get-category-lists', array( $this, 'myajax_read_category_lists' ) );
+			add_action( 'wp_ajax_wppfm-ajax-delete-feed-file', array( $this, 'myajax_delete_feed_file' ) );
+			add_action( 'wp_ajax_wppfm-ajax-update-feed-file', array( $this, 'myajax_update_feed_file' ) );
+			add_action( 'wp_ajax_wppfm-ajax-log-message', array( $this, 'myajax_log_message' ) );
+			add_action( 'wp_ajax_wppfm-ajax-auto-feed-fix-mode-selection', array( $this, 'myajax_auto_feed_fix_mode_selection' ) );
+			add_action( 'wp_ajax_wppfm-ajax-background-processing-mode-selection', array( $this, 'myajax_background_processing_mode_selection' ) );
+			add_action( 'wp_ajax_wppfm-ajax-feed-logger-status-selection', array( $this, 'myajax_feed_logger_status_selection' ) );
+			add_action( 'wp_ajax_wppfm-ajax-show-product-identifiers-selection', array( $this, 'myajax_show_product_identifiers_selection' ) );
+			add_action( 'wp_ajax_wppfm-ajax-switch-to-manual-channel-update-selection', array( $this, 'myajax_switch_to_manual_channel_update' ) );
+			add_action( 'wp_ajax_wppfm-ajax-wpml-use-full-url-resolution-selection', array( $this, 'myajax_wpml_use_full_url_resolution_selection' ) );
+			add_action( 'wp_ajax_wppfm-ajax-omit-price-filters-selection', array( $this, 'myajax_omit_price_filters_selection' ) );
+			add_action( 'wp_ajax_wppfm-ajax-third-party-attribute-keywords', array( $this, 'myajax_set_third_party_attribute_keywords' ) );
+			add_action( 'wp_ajax_wppfm-ajax-set-notice-mailaddress', array( $this, 'myajax_set_notice_mailaddress' ) );
+			add_action( 'wp_ajax_wppfm-ajax-clear-feed-process-data', array( $this, 'myajax_clear_feed_process_data' ) );
+			add_action( 'wp_ajax_wppfm-ajax-reinitiate-plugin', array( $this, 'myajax_reinitiate_plugin' ) );
 		}
 
 		/**
@@ -47,7 +47,7 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_read_next_categories() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'nextCategoryNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-next-category-nonce' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'nextCategoryNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-next-category-nonce' ) ) {
 				$file_class = new WPPFM_File();
 
 				$channel_id      = filter_input( INPUT_POST, 'channelId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
@@ -77,7 +77,7 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_read_category_lists() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'categoryListsNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-category-lists-nonce' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'categoryListsNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-category-lists-nonce' ) ) {
 				$file_class = new WPPFM_File();
 
 				$channel_id             = filter_input( INPUT_POST, 'channelId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
@@ -111,7 +111,7 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_delete_feed_file() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'deleteFeedNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-delete-feed-nonce', 'delete_feeds' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'deleteFeedNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-delete-feed-nonce', 'delete_feeds' ) ) {
 				$file_name = filter_input( INPUT_POST, 'fileTitle', FILTER_CALLBACK, ['options' => [$this, 'sanitize_title_string']] );
 
 				$file = realpath( WPPFM_FEEDS_DIR . '/' . basename( $file_name ) );
@@ -135,14 +135,33 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_update_feed_file() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'updateFeedFileNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-update-feed-file-nonce', 'edit_feeds' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'updateFeedFileNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-update-feed-file-nonce', 'edit_feeds' ) ) {
 
 				// Fetch the data from $_POST.
 				$feed_id                  = filter_input( INPUT_POST, 'feedId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 				$background_mode_disabled = get_option( 'wppfm_disabled_background_mode', 'false' );
 
 				// @since: 2.40.0
-				do_action( 'wppfm_feed_generation_message', $feed_id, 'Received the myajax-update-feed-file post request call from javascript to initiate the feed generation process.' );
+				do_action( 'wppfm_feed_generation_message', $feed_id, 'Received the wppfm-ajax-update-feed-file post request call from javascript to initiate the feed generation process.' );
+
+				/**
+				 * Send FluentCRM tag "First feed generated" (tag id=12) once per licensed user.
+				 *
+				 * Only count a generation started from the Feed Editor page ("Save & Generate Feed"),
+				 * and avoid counting regenerations initiated from the Feed List.
+				 *
+				 * The admin referrer check is used as a best-effort guard to distinguish the origin.
+				 *
+				 * @since 3.19.0
+				 */
+				$referrer = wp_get_referer();
+				if (
+					is_string( $referrer )
+					&& false !== strpos( $referrer, 'page=wppfm-feed-editor-page' )
+					&& function_exists( 'wppfm_fluentcrm_send_tag_once_for_current_user' )
+				) {
+					wppfm_fluentcrm_send_tag_once_for_current_user( 12, 'wppfm_fluentcrm_tag_12_sent' );
+				}
 
 				WPPFM_Feed_Controller::add_id_to_feed_queue( $feed_id );
 
@@ -170,7 +189,7 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_log_message() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'logMessageNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-log-message-nonce' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'logMessageNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-log-message-nonce' ) ) {
 				// Fetch the data from $_POST.
 				$message      = filter_input( INPUT_POST, 'messageList', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 				$file_name    = filter_input( INPUT_POST, 'fileName', FILTER_CALLBACK, ['options' => [$this, 'sanitize_title_string']] );
@@ -192,7 +211,7 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_auto_feed_fix_mode_selection() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'updateAutoFeedFixNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-auto-feed-fix-nonce', 'manage_options' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'updateAutoFeedFixNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-auto-feed-fix-nonce', 'manage_options' ) ) {
 				$selection = filter_input( INPUT_POST, 'fix_selection', FILTER_CALLBACK, ['options' => [$this, 'sanitize_true_false_string']] );
 				update_option( 'wppfm_auto_feed_fix', $selection );
 
@@ -212,7 +231,7 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_background_processing_mode_selection() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'backgroundModeNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-background-mode-nonce', 'manage_options' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'backgroundModeNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-background-mode-nonce', 'manage_options' ) ) {
 				$selection = filter_input( INPUT_POST, 'mode_selection', FILTER_CALLBACK, ['options' => [$this, 'sanitize_true_false_string']] );
 				update_option( 'wppfm_disabled_background_mode', $selection );
 
@@ -232,7 +251,7 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_feed_logger_status_selection() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'feedLoggerStatusNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-logger-status-nonce', 'manage_options' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'feedLoggerStatusNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-logger-status-nonce', 'manage_options' ) ) {
 				$selection = filter_input( INPUT_POST, 'statusSelection', FILTER_CALLBACK, ['options' => [$this, 'sanitize_true_false_string']] );
 				update_option( 'wppfm_process_logger_status', $selection );
 
@@ -252,7 +271,7 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_show_product_identifiers_selection() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'showPINonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-show-pi-nonce', 'manage_options' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'showPINonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-show-pi-nonce', 'manage_options' ) ) {
 				$selection = filter_input( INPUT_POST, 'showPiSelection', FILTER_CALLBACK, ['options' => [$this, 'sanitize_true_false_string']] );
 				update_option( 'wppfm_show_product_identifiers', $selection );
 
@@ -272,7 +291,7 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_switch_to_manual_channel_update() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'manualChannelUpdateNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-manual-channel-update-nonce', 'manage_options' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'manualChannelUpdateNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-manual-channel-update-nonce', 'manage_options' ) ) {
 				$selection = filter_input( INPUT_POST, 'manualChannelUpdateSelection', FILTER_CALLBACK, ['options' => [$this, 'sanitize_true_false_string']] );
 				update_option( 'wppfm_manual_channel_update', $selection );
 
@@ -292,7 +311,7 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_wpml_use_full_url_resolution_selection() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'urlResolutionNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-use-full-url-resolution-nonce', 'manage_options' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'urlResolutionNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-use-full-url-resolution-nonce', 'manage_options' ) ) {
 				$selection = filter_input( INPUT_POST, 'urlResolutionSelection', FILTER_CALLBACK, ['options' => [$this, 'sanitize_true_false_string']] );
 				update_option( 'wppfm_use_full_url_resolution', $selection );
 
@@ -312,7 +331,7 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_omit_price_filters_selection() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'omitPriceFiltersNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-omit-price-filters-nonce', 'manage_options' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'omitPriceFiltersNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-omit-price-filters-nonce', 'manage_options' ) ) {
 				$selection = filter_input( INPUT_POST, 'omitPriceFiltersSelection', FILTER_CALLBACK, ['options' => [$this, 'sanitize_true_false_string']] );
 				update_option( 'wppfm_omit_price_filters', $selection );
 
@@ -330,7 +349,7 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_set_third_party_attribute_keywords() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'thirdPartyKeywordsNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-set-third-party-keywords-nonce', 'manage_options' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'thirdPartyKeywordsNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-set-third-party-keywords-nonce', 'manage_options' ) ) {
 				$new_keywords = filter_input( INPUT_POST, 'keywords', FILTER_CALLBACK, ['options' => [$this, 'sanitize_third_party_attributes_string']] );
 				$clean_keywords = sanitize_option( 'wppfm_third_party_attribute_keywords', $new_keywords );
 				update_option( 'wppfm_third_party_attribute_keywords', $clean_keywords );
@@ -345,20 +364,33 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		}
 
 		/**
-		 * Changes the notice recipient email address
+		 * Changes the notice recipient email address and sends a test email to verify delivery.
 		 */
 		public function myajax_set_notice_mailaddress() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'noticeMailaddressNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-set-notice-mailaddress-nonce', 'manage_options' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'noticeMailaddressNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-set-notice-mailaddress-nonce', 'manage_options' ) ) {
 				$mailaddress = filter_input( INPUT_POST, 'mailaddress', FILTER_SANITIZE_EMAIL );
 				update_option( 'wppfm_notice_mailaddress', $mailaddress );
 
-				echo esc_html( get_option( 'wppfm_notice_mailaddress' ) );
+				$saved_email = get_option( 'wppfm_notice_mailaddress' );
+				$test_sent  = false;
+
+				// Send test email when a valid address is configured.
+				if ( ! empty( $saved_email ) && is_email( $saved_email ) && class_exists( 'WPPFM_Email' ) ) {
+					$test_sent = WPPFM_Email::send_test_email( $saved_email );
+				}
+
+				wp_send_json_success(
+					array(
+						'email'     => $saved_email,
+						'test_sent' => $test_sent,
+					)
+				);
 			} else {
 				$this->show_not_allowed_error_message();
 			}
 
-			// IMPORTANT: don't forget to exit.
+			// IMPORTANT: don't forget to exit (wp_send_json_success exits, but ensure for error path).
 			exit;
 		}
 
@@ -369,7 +401,7 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_reinitiate_plugin() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'reInitiateNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-reinitiate-nonce', 'update_plugins' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'reInitiateNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-reinitiate-nonce', 'update_plugins' ) ) {
 
 				if ( wppfm_reinitiate_plugin() ) {
 					echo 'Plugin re-initiated';
@@ -391,7 +423,7 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_clear_feed_process_data() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'clearFeedNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'myajax-clear-feed-nonce', 'manage_options' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'clearFeedNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-clear-feed-nonce', 'manage_options' ) ) {
 
 				if ( wppfm_clear_feed_process_data() ) {
 					echo esc_html__( 'Feed processing data cleared', 'wp-product-feed-manager' );

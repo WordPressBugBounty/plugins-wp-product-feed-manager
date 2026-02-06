@@ -802,3 +802,45 @@ input#wppfm-sign-up-mail-input {
     margin-right: 10px;
     width: 50%;
 }
+
+/* Processing animation for feed messages */
+.wppfm-processing-dots {
+    display: inline-block;
+}
+
+.wppfm-processing-dots::after {
+    /*
+     * Cross-browser animated dots.
+     *
+     * We cannot animate `content` per the CSS Animations spec (Chrome-only behavior),
+     * so we reveal a fixed '...' string by animating `width` with `overflow: hidden`.
+     * Using a monospace font makes each dot reliably 1ch wide, so widths below map
+     * cleanly to: '', '.', '..', '...'.
+     */
+    content: '...';
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    vertical-align: bottom;
+    font-family: monospace;
+    width: 0ch;
+    animation: wppfm-dots 1.5s infinite;
+}
+
+@keyframes wppfm-dots {
+    0%, 24% {
+        width: 0ch;
+    }
+    25%, 49% {
+        width: 1ch;
+    }
+    50%, 74% {
+        width: 2ch;
+    }
+    75%, 99% {
+        width: 3ch;
+    }
+    100% {
+        width: 0ch;
+    }
+}

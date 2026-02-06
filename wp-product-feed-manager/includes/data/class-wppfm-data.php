@@ -187,7 +187,12 @@ if ( ! class_exists( 'WPPFM_Data' ) ) :
 		public function get_feed_status( $feed_id ) {
 			$feed_status = $this->_queries_class->get_current_feed_status( $feed_id );
 
-			return $feed_status[0]->status_id;
+			if ( empty( $feed_status ) || ! isset( $feed_status[0] ) ) {
+				do_action( 'wppfm_feed_generation_message', $feed_id ? $feed_id : 'unknown', 'Could not determine the current feed status from the database.', 'ERROR' );
+				return null;
+			}
+
+			return property_exists( $feed_status[0], 'status_id' ) ? $feed_status[0]->status_id : null;
 		}
 
 		public function set_nr_of_feed_products( $feed_id, $nr ) {

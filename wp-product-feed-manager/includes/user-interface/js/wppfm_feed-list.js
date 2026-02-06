@@ -246,6 +246,12 @@ function wppfm_switchStatusAction( feedId, status ) {
 
 	feedName = feedName.replace(/\s+/g, '-').toLowerCase(); // Replace spaces in the feed name by a dash.
 
+	if ( status !== undefined && status !== null ) {
+		status = status.toString().trim();
+	} else {
+		status = '';
+	}
+
 	switch ( status ) {
 		case '1':
 			actionText = ' | Auto-off ';

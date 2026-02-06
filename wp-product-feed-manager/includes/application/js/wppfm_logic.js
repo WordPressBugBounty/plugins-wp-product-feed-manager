@@ -171,6 +171,9 @@ function wppfm_getCorrectValueSelector(
 		// @since 2.34.0.
 		case '9':
 		case 'html entity decode':
+		// @since 3.16.0.
+		case '11':
+		case 'html entity encode':
 			wppfm_valueInputOptionsChanged( rowId, sourceLevel, valueEditorLevel ); // save the value in meta now as there is no second input field required.
 			selectorCode = '';
 			break;
@@ -284,20 +287,24 @@ function wppfm_regenerateFeed( feedId ) {
 }
 
 /**
- * Opens the feed in a new window
- *
+ * Opens the feed in a new window if it's a valid feed URL
+ * 
+ * @param {string} url The URL to open
+ * 
  * @since 2.39.0 Fixed an issue where the "View feed" functions would not work if the user has the "Relative URL" plugin active.
- * @param url
+ * @since 3.16.0 Improved URL validation to be more robust and language-independent
  */
-function wppfm_viewFeed( url ) {
-	if ( -1 !== url.indexOf( 'wp-content/uploads/' ) ) { // Filter out duplicate feeds that have not been generated yet.
+function wppfm_viewFeed(url) {
+	// Check if URL is provided and appears to be a valid feed URL
+	if (url && /\/wppfm-feeds\/.*\.xml$/.test(url)) {
 		window.open(url);
 	} else {
-		alert( wppfm_feed_list_form_vars.feed_not_generated );
+		// Show translated "feed not generated" message
+		alert(wppfm_feed_list_form_vars.feed_not_generated);
 	}
 
-	// deselect the view feed button
-	wppfm_enableViewFeedButtons()
+	// Deselect the view feed button
+	wppfm_enableViewFeedButtons();
 }
 
 function wppfm_addRowValueEditor(

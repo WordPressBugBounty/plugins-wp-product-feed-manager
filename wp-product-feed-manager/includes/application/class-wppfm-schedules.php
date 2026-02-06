@@ -30,6 +30,15 @@ if ( ! class_exists( 'WPPFM_Schedules' ) ) :
 			$active_feeds_schedules = $data_class->get_schedule_data();
 			$failed_feeds           = $data_class->get_failed_feeds();
 
+			// @since 3.18.0 Guard scheduler with background-process lock in addition to processing flag.
+			$background_process_locked = false;
+
+			if ( class_exists( 'WPPFM_Feed_Processor' ) ) {
+				$background_process = new WPPFM_Feed_Processor();
+				$background_process_locked = $background_process->is_process_running();
+				unset( $background_process );
+			}
+
 			// Update scheduled feeds.
 			foreach ( $active_feeds_schedules as $schedule ) {
 				if ( '' === $schedule['schedule'] ) { // Here is a feed that has no schedule but has been set to auto update, so we need to set it to manual.
@@ -51,10 +60,11 @@ if ( ! class_exists( 'WPPFM_Schedules' ) ) :
 			$active_feed_id = WPPFM_Feed_Controller::get_next_id_from_feed_queue();
 
 			// If there is no feed processing in progress and the feed queue is not empty, start updating the current feed.
-			if ( ! WPPFM_Feed_Controller::feed_queue_is_empty() && ! WPPFM_Feed_Controller::feed_is_processing() ) {
+			if ( ! WPPFM_Feed_Controller::feed_queue_is_empty() && ! WPPFM_Feed_Controller::feed_is_processing() && ! $background_process_locked ) {
 				do_action( 'wppfm_automatic_feed_update_triggered', $active_feed_id );
 				$feed_master_class = new WPPFM_Feed_Master_Class( $active_feed_id );
 				$feed_master_class->initiate_update_next_feed_in_queue();
+				$background_process_locked = true;
 			}
 
 			// Update previously failed feeds.
@@ -63,11 +73,12 @@ if ( ! class_exists( 'WPPFM_Schedules' ) ) :
 					WPPFM_Feed_Controller::add_id_to_feed_queue( $failed_feed['product_feed_id'] );
 
 					// If there is no feed processing in progress, start updating the current feed.
-					if ( ! WPPFM_Feed_Controller::feed_is_processing() ) {
+					if ( ! WPPFM_Feed_Controller::feed_is_processing() && ! $background_process_locked ) {
 						do_action( 'wppfm_automatic_feed_prepare_update_triggered', $active_feed_id );
 
 						$feed_master_class = new WPPFM_Feed_Master_Class( $active_feed_id );
 						$feed_master_class->update_feed_file();
+						$background_process_locked = true;
 					} else {
 						$data_class->update_feed_status( $failed_feed['product_feed_id'], 4 ); // Feed status to waiting in queue.
 					}

@@ -26,11 +26,11 @@ if ( ! class_exists( 'WPPPFM_Register_Scripts' ) ) :
 			$this->_version_stamp = defined( 'WP_DEBUG' ) && WP_DEBUG ? time() : WPPPFM_PACKAGE_VERSION;
 			$this->_js_min        = defined( 'WP_DEBUG' ) && WP_DEBUG ? '' : '.min';
 
-			add_action( 'admin_enqueue_scripts', array( $this, 'wpppfm_register_merchant_promotions_scripts' ) );
-			add_action( 'admin_enqueue_scripts', array( $this, 'wpppfm_register_merchant_promotions_nonce' ) );
+			add_action( 'admin_enqueue_scripts', array( $this, 'wppfm_pf_register_merchant_promotions_scripts' ) );
+			add_action( 'admin_enqueue_scripts', array( $this, 'wppfm_pf_register_merchant_promotions_nonce' ) );
 		}
 
-		public function wpppfm_register_merchant_promotions_scripts() {
+		public function wppfm_pf_register_merchant_promotions_scripts() {
 
 			// do not load the other scripts unless a wppfm page is on
 			if ( ! wppfm_on_own_main_plugin_page() ) {
@@ -48,7 +48,7 @@ if ( ! class_exists( 'WPPPFM_Register_Scripts' ) ) :
 
 			// register the simple datetimepicker script and style
 			wp_enqueue_script( 'simple-datetimepicker', WPPFM_PLUGIN_URL . '/includes/libraries/jQuery-Simple-Datetimepicker/jquery.simple-dtpicker.js', array( 'jquery' ), $this->_version_stamp, true );
-			wp_localize_script( 'simple-datetimepicker', 'my_script_vars', array( 'language' => get_user_locale() ) );
+			wp_localize_script( 'simple-datetimepicker', 'wppfm_script_vars', array( 'language' => get_user_locale() ) );
 			wp_register_style( 'simple-datetimepicker-style', WPPFM_PLUGIN_URL . '/includes/libraries/jQuery-Simple-Datetimepicker/jquery.simple-dtpicker.css', array(), $this->_version_stamp, 'screen' );
 			wp_enqueue_style( 'simple-datetimepicker-style' );
 
@@ -63,15 +63,15 @@ if ( ! class_exists( 'WPPPFM_Register_Scripts' ) ) :
 			wp_enqueue_script( 'wpppfm_feed-form-tabs', WPPPFM_PACKAGE_URL . '/js/wpppfm-feed-form-tabs' . $this->_js_min . '.js', array( 'jquery' ), $this->_version_stamp, true );
 		}
 
-		public function wpppfm_register_merchant_promotions_nonce() {
+		public function wppfm_pf_register_merchant_promotions_nonce() {
 			wp_localize_script(
 				'wpppfm_ajax-data-handling-script',
-				'promotionsAjaxNonce',
+				'wppfm_promotions_ajax',
 				array(
 					// URL to wp-admin/admin-ajax.php to process the request
 					'ajaxurl'                        => admin_url( 'admin-ajax.php' ),
 					// generate the nonce's
-					'promotionsFeedGetMainDataNonce' => wp_create_nonce( 'myajax-promotions-feed-get-main-data-nonce' ),
+					'promotionsFeedGetMainDataNonce' => wp_create_nonce( 'wppfm-pf-ajax-promotions-feed-get-main-data-nonce' ),
 				)
 			);
 		}

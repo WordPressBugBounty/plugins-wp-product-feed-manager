@@ -163,6 +163,7 @@ if ( ! class_exists( 'WPPPFM_Data' ) ) :
 			$product_brands = array();
 			$brands_list    = array();
 
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Querying product meta for dynamic brand data. Caching doesn't make sense for frequently changing product data.
 			$results = $wpdb->get_results(
 				$wpdb->prepare(
 					"SELECT meta_key, meta_value FROM $wpdb->postmeta WHERE meta_key LIKE %s",
@@ -198,6 +199,7 @@ if ( ! class_exists( 'WPPPFM_Data' ) ) :
 
 			$group_ids = array();
 
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Querying product meta for dynamic group ID data. Caching doesn't make sense for frequently changing product data.
 			$results = $wpdb->get_results(
 				$wpdb->prepare(
 					"SELECT meta_key, meta_value FROM $wpdb->postmeta WHERE meta_key LIKE %s",

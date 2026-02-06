@@ -103,23 +103,23 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 					// URL to wp-admin/admin-ajax.php to process the request
 					'ajaxurl'                        => admin_url( 'admin-ajax.php' ),
 					// generate the nonce's
-					'categoryListsNonce'             => wp_create_nonce( 'myajax-category-lists-nonce' ),
-					'deleteFeedNonce'                => wp_create_nonce( 'myajax-delete-feed-nonce' ),
-					'feedDataNonce'                  => wp_create_nonce( 'myajax-feed-data-nonce' ),
-					'feedStatusNonce'                => wp_create_nonce( 'myajax-feed-status-nonce' ),
-					'inputFieldsNonce'               => wp_create_nonce( 'myajax-input-fields-nonce' ),
-					'inputFeedFiltersNonce'          => wp_create_nonce( 'myajax-feed-filters-nonce' ),
-					'logMessageNonce'                => wp_create_nonce( 'myajax-log-message-nonce' ),
-					'nextCategoryNonce'              => wp_create_nonce( 'myajax-next-category-nonce' ),
-					'outputFieldsNonce'              => wp_create_nonce( 'myajax-output-fields-nonce' ),
-					'postFeedsListNonce'             => wp_create_nonce( 'myajax-post-feeds-list-nonce' ),
-					'switchFeedStatusNonce'          => wp_create_nonce( 'myajax-switch-feed-status-nonce' ),
-					'duplicateFeedNonce'             => wp_create_nonce( 'myajax-duplicate-existing-feed-nonce' ),
-					'updateFeedDataNonce'            => wp_create_nonce( 'myajax-update-feed-data-nonce' ),
-					'updateAutoFeedFixNonce'         => wp_create_nonce( 'myajax-set-auto-feed-fix-nonce' ),
-					'updateFeedFileNonce'            => wp_create_nonce( 'myajax-update-feed-file-nonce' ),
-					'nextFeedInQueueNonce'           => wp_create_nonce( 'myajax-next-feed-in-queue-nonce' ),
-					'noticeDismissionNonce'          => wp_create_nonce( 'myajax-notice-dismission-nonce' ),
+					'categoryListsNonce'             => wp_create_nonce( 'wppfm-ajax-category-lists-nonce' ),
+					'deleteFeedNonce'                => wp_create_nonce( 'wppfm-ajax-delete-feed-nonce' ),
+					'feedDataNonce'                  => wp_create_nonce( 'wppfm-ajax-feed-data-nonce' ),
+					'feedStatusNonce'                => wp_create_nonce( 'wppfm-ajax-feed-status-nonce' ),
+					'inputFieldsNonce'               => wp_create_nonce( 'wppfm-ajax-input-fields-nonce' ),
+					'inputFeedFiltersNonce'          => wp_create_nonce( 'wppfm-ajax-feed-filters-nonce' ),
+					'logMessageNonce'                => wp_create_nonce( 'wppfm-ajax-log-message-nonce' ),
+					'nextCategoryNonce'              => wp_create_nonce( 'wppfm-ajax-next-category-nonce' ),
+					'outputFieldsNonce'              => wp_create_nonce( 'wppfm-ajax-output-fields-nonce' ),
+					'postFeedsListNonce'             => wp_create_nonce( 'wppfm-ajax-post-feeds-list-nonce' ),
+					'switchFeedStatusNonce'          => wp_create_nonce( 'wppfm-ajax-switch-feed-status-nonce' ),
+					'duplicateFeedNonce'             => wp_create_nonce( 'wppfm-ajax-duplicate-existing-feed-nonce' ),
+					'updateFeedDataNonce'            => wp_create_nonce( 'wppfm-ajax-update-feed-data-nonce' ),
+					'updateAutoFeedFixNonce'         => wp_create_nonce( 'wppfm-ajax-set-auto-feed-fix-nonce' ),
+					'updateFeedFileNonce'            => wp_create_nonce( 'wppfm-ajax-update-feed-file-nonce' ),
+					'nextFeedInQueueNonce'           => wp_create_nonce( 'wppfm-ajax-next-feed-in-queue-nonce' ),
+					'noticeDismissionNonce'          => wp_create_nonce( 'wppfm-ajax-notice-dismission-nonce' ),
 				)
 			);
 		}
@@ -166,24 +166,24 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 					// URL to wp-admin/admin-ajax.php to process the request.
 					'ajaxurl'                      => admin_url( 'admin-ajax.php' ),
 					// generate the required nonce's
-					'setAutoFeedFixNonce'          => wp_create_nonce( 'myajax-auto-feed-fix-nonce' ),
-					'setBackgroundModeNonce'       => wp_create_nonce( 'myajax-background-mode-nonce' ),
-					'setFeedLoggerStatusNonce'     => wp_create_nonce( 'myajax-logger-status-nonce' ),
-					'setShowPINonce'               => wp_create_nonce( 'myajax-show-pi-nonce' ),
-					'setManualChannelUpdateNonce'  => wp_create_nonce( 'myajax-manual-channel-update-nonce' ),
-					'setUseFullResolutionNonce'    => wp_create_nonce( 'myajax-use-full-url-resolution-nonce' ),
-					'setOmitPriceFiltersNonce'     => wp_create_nonce( 'myajax-omit-price-filters-nonce' ),
-					'setThirdPartyKeywordsNonce'   => wp_create_nonce( 'myajax-set-third-party-keywords-nonce' ),
-					'setNoticeMailaddressNonce'    => wp_create_nonce( 'myajax-set-notice-mailaddress-nonce' ),
-					'setBatchProcessingLimitNonce' => wp_create_nonce( 'myajax-set-batch-processing-limit-nonce' ),
-					'backupNonce'                  => wp_create_nonce( 'myajax-backup-nonce' ),
-					'deleteBackupNonce'            => wp_create_nonce( 'myajax-delete-backup-nonce' ),
-					'restoreBackupNonce'           => wp_create_nonce( 'myajax-restore-backup-nonce' ),
-					'duplicateBackupNonce'         => wp_create_nonce( 'myajax-duplicate-backup-nonce' ),
-					'postBackupListNonce'          => wp_create_nonce( 'myajax-backups-list-nonce' ),
-					'postSetupOptionsNonce'        => wp_create_nonce( 'myajax-setting-options-nonce' ),
-					'setClearFeedProcessNonce'     => wp_create_nonce( 'myajax-clear-feed-nonce' ),
-					'setReInitiateNonce'           => wp_create_nonce( 'myajax-reinitiate-nonce' ),
+					'setAutoFeedFixNonce'          => wp_create_nonce( 'wppfm-ajax-auto-feed-fix-nonce' ),
+					'setBackgroundModeNonce'       => wp_create_nonce( 'wppfm-ajax-background-mode-nonce' ),
+					'setFeedLoggerStatusNonce'     => wp_create_nonce( 'wppfm-ajax-logger-status-nonce' ),
+					'setShowPINonce'               => wp_create_nonce( 'wppfm-ajax-show-pi-nonce' ),
+					'setManualChannelUpdateNonce'  => wp_create_nonce( 'wppfm-ajax-manual-channel-update-nonce' ),
+					'setUseFullResolutionNonce'    => wp_create_nonce( 'wppfm-ajax-use-full-url-resolution-nonce' ),
+					'setOmitPriceFiltersNonce'     => wp_create_nonce( 'wppfm-ajax-omit-price-filters-nonce' ),
+					'setThirdPartyKeywordsNonce'   => wp_create_nonce( 'wppfm-ajax-set-third-party-keywords-nonce' ),
+					'setNoticeMailaddressNonce'    => wp_create_nonce( 'wppfm-ajax-set-notice-mailaddress-nonce' ),
+					'setBatchProcessingLimitNonce' => wp_create_nonce( 'wppfm-ajax-set-batch-processing-limit-nonce' ),
+					'backupNonce'                  => wp_create_nonce( 'wppfm-ajax-backup-nonce' ),
+					'deleteBackupNonce'            => wp_create_nonce( 'wppfm-ajax-delete-backup-nonce' ),
+					'restoreBackupNonce'           => wp_create_nonce( 'wppfm-ajax-restore-backup-nonce' ),
+					'duplicateBackupNonce'         => wp_create_nonce( 'wppfm-ajax-duplicate-backup-nonce' ),
+					'postBackupListNonce'          => wp_create_nonce( 'wppfm-ajax-backups-list-nonce' ),
+					'postSetupOptionsNonce'        => wp_create_nonce( 'wppfm-ajax-setting-options-nonce' ),
+					'setClearFeedProcessNonce'     => wp_create_nonce( 'wppfm-ajax-clear-feed-nonce' ),
+					'setReInitiateNonce'           => wp_create_nonce( 'wppfm-ajax-reinitiate-nonce' ),
 				)
 			);
 		}
@@ -223,9 +223,97 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 			wp_enqueue_script( 'wppfm_channel-functions-script', WPPFM_PLUGIN_URL . '/includes/application/js/wppfm_channel-functions' . $this->_js_min . '.js', array( 'jquery' ), $this->_version_stamp, true );
 
 			foreach ( $installed_channels as $channel ) {
-				wp_enqueue_script( 'wppfm_' . $channel['short'] . '-source-script', WPPFM_UPLOADS_URL . '/wppfm-channels/' . $channel['short'] . '/wppfm_' . $channel['short'] . '-source.js', array( 'jquery' ), $this->_version_stamp, true );
+				$source_url = $this->wppfm_get_channel_source_script_url( $channel['short'] );
+
+				// Skip enqueueing when the channel script is missing to prevent invalid script responses.
+				if ( false === $source_url ) {
+					continue;
+				}
+
+				wp_enqueue_script( 'wppfm_' . $channel['short'] . '-source-script', $source_url, array( 'jquery' ), $this->_version_stamp, true );
 			}
 		}
+
+		/**
+		 * Resolves the public URL for a channel source script based on the actual file path.
+		 *
+		 * @since 3.20.0
+		 *
+		 * @param string $channel_short Channel short name.
+		 * @return string|false Resolved URL or false when the file is missing.
+		 */
+		private function wppfm_get_channel_source_script_url( $channel_short ) {
+			$wp_upload_dir = wp_get_upload_dir();
+			$source_path   = WPPFM_CHANNEL_DATA_DIR . '/' . $channel_short . '/wppfm_' . $channel_short . '-source.js';
+
+			// Abort early if the expected script file is missing.
+			if ( ! file_exists( $source_path ) ) {
+				return false;
+			}
+
+		/**
+		 * Build the URL from the actual file path to avoid upload URL mismatches.
+		 *
+		 * @since 3.20.0
+		 */
+			if ( false !== strpos( $source_path, $wp_upload_dir['basedir'] ) ) {
+			$source_url = str_replace( $wp_upload_dir['basedir'], $wp_upload_dir['baseurl'], $source_path );
+			} else {
+				// Fallback for uncommon setups where basedir does not map cleanly to baseurl.
+				$source_url = WPPFM_UPLOADS_URL . '/wppfm-channels/' . $channel_short . '/wppfm_' . $channel_short . '-source.js';
+			}
+ 
+		/**
+		 * Normalize the uploads URL host when the only difference is "www.".
+		 *
+		 * This avoids redirect loops that return HTML instead of JavaScript when
+		 * the server enforces a canonical host different from WordPress settings.
+		 *
+		 * @since 3.20.0
+		 *
+		 * @param string $source_url Resolved URL before normalization.
+		 * @return string Normalized URL.
+		 */
+		$source_url = $this->wppfm_normalize_uploads_url_host( $source_url );
+
+			/**
+			 * Filters the resolved channel source URL.
+			 *
+			 * @since 3.20.0
+			 *
+			 * @param string $source_url    Resolved URL.
+			 * @param string $channel_short Channel short name.
+			 * @param string $source_path   Absolute filesystem path.
+			 */
+			return apply_filters( 'wppfm_channel_source_url', $source_url, $channel_short, $source_path );
+		}
+ 
+	/**
+	 * Normalizes the uploads URL host when it only differs by "www.".
+	 *
+	 * @since 3.20.0
+	 *
+	 * @param string $url Uploads URL to normalize.
+	 * @return string Normalized uploads URL.
+	 */
+	private function wppfm_normalize_uploads_url_host( $url ) {
+		$uploads_host = wp_parse_url( $url, PHP_URL_HOST );
+		$home_host    = wp_parse_url( home_url(), PHP_URL_HOST );
+ 
+		if ( empty( $uploads_host ) || empty( $home_host ) ) {
+			return $url;
+		}
+ 
+		$uploads_host_trimmed = preg_replace( '/^www\./i', '', $uploads_host );
+		$home_host_trimmed    = preg_replace( '/^www\./i', '', $home_host );
+ 
+		// Only adjust when the hosts only differ by "www.".
+		if ( $uploads_host_trimmed !== $home_host_trimmed || $uploads_host === $home_host ) {
+			return $url;
+		}
+ 
+		return str_replace( $uploads_host, $home_host, $url );
+	}
 
 		/**
 		 * Registers the Google channel scripts in case of a Google only version.

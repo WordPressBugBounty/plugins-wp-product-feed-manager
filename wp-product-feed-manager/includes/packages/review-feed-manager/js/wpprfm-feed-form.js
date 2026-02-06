@@ -145,6 +145,12 @@ function wpprfm_initiateReviewFeed() {
 function wpprfm_initiateSaveAndGenerateReviewFeed() {
 
 	wppfm_showWorkingSpinner();
+	
+	// Show preparation message and hide waiting icon since we have specific feedback
+	//noinspection JSUnresolvedVariable
+	wppfm_showInfoMessage( wppfm_feed_settings_form_vars.feed_preparing + ' <span class="wppfm-processing-dots"></span>' );
+	wppfm_hideWorkingSpinner();
+	
 	wppfm_disableFeedActionButtons( 'google-product-review-feed' );
 
 	// Save the feed data to the database.

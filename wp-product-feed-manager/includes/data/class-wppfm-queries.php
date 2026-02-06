@@ -651,6 +651,7 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 			$main_table = $this->_table_prefix . 'feedmanager_product_feedmeta';
 
 			// First, remove all metadata belonging to this feed except the product_filter_query.
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Deleting feed metadata by meta_key. This is necessary for feed management and uses an indexed feed_id.
 			$this->_wpdb->query(
 				$this->_wpdb->prepare( "DELETE FROM $main_table WHERE product_feed_id = %d AND meta_key != %s", $feed_id, 'product_filter_query' ) );
 
@@ -659,12 +660,13 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 			// Now insert the new metadata in the feedmanager_product_feedmeta table.
 			foreach( $meta_data as $meta ) {
 				if ( ! empty( $meta->value ) && '{}' !== $meta->value ) {
+					// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key,WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Inserting feed metadata. meta_key and meta_value are required fields for the feedmanager_product_feedmeta table structure.
 					$result = $this->_wpdb->insert(
 						$main_table,
 						array(
 							'product_feed_id' => $feed_id,
-							'meta_key'        => $meta->key,
-							'meta_value'      => $meta->value,
+							'meta_key'        => $meta->key, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required field for table structure.
+							'meta_value'      => $meta->value, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Required field for table structure.
 						),
 						array(
 							'%d',
@@ -720,18 +722,20 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 			$main_table = $this->_table_prefix . 'feedmanager_product_feedmeta';
 
 			if ( $filter ) {
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Querying feed filter metadata by meta_key. Uses indexed feed_id to minimize performance impact.
 				$exists = $this->_wpdb->get_results(
 					$this->_wpdb->prepare( "SELECT meta_id FROM $main_table WHERE product_feed_id = %d AND meta_key = 'product_filter_query'", $feed_id ) );
 
 				if ( $exists ) {
+					// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key,WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Updating feed filter metadata. meta_key and meta_value are required fields for the feedmanager_product_feedmeta table structure.
 					$this->_wpdb->update(
 						$main_table,
 						array(
-							'meta_value' => $filter,
+							'meta_value' => $filter, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Required field for table structure.
 						),
 						array(
 							'product_feed_id' => $feed_id,
-							'meta_key'        => 'product_filter_query',
+							'meta_key'        => 'product_filter_query', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required field for table structure.
 						),
 						array(
 							'%s',
@@ -742,12 +746,13 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 						)
 					);
 				} else {
+					// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key,WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Inserting feed filter metadata. meta_key and meta_value are required fields for the feedmanager_product_feedmeta table structure.
 					$this->_wpdb->insert(
 						$main_table,
 						array(
 							'product_feed_id' => $feed_id,
-							'meta_key'        => 'product_filter_query',
-							'meta_value'      => $filter,
+							'meta_key'        => 'product_filter_query', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required field for table structure.
+							'meta_value'      => $filter, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Required field for table structure.
 						),
 						array(
 							'%d',
@@ -757,6 +762,7 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 					);
 				}
 			} else {
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Deleting feed filter metadata by meta_key. Uses indexed feed_id to minimize performance impact.
 				$this->_wpdb->query(
 					$this->_wpdb->prepare( "DELETE FROM $main_table WHERE product_feed_id = %d AND meta_key = %s", $feed_id, 'product_filter_query' ) );
 			}
@@ -768,12 +774,13 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 			$counter = 0;
 
 			for ( $i = 0; $i < count( $meta_data ); $i ++ ) {
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key,WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Inserting feed metadata. meta_key and meta_value are required fields for the feedmanager_product_feedmeta table structure.
 				$result = $this->_wpdb->insert(
 					$main_table,
 					array(
 						'product_feed_id' => $feed_id,
-						'meta_key'        => $meta_data[ $i ]['meta_key'],
-						'meta_value'      => $meta_data[ $i ]['meta_value'],
+						'meta_key'        => $meta_data[ $i ]['meta_key'], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required field for table structure.
+						'meta_value'      => $meta_data[ $i ]['meta_value'], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Required field for table structure.
 					),
 					array(
 						'%d',
@@ -789,12 +796,13 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 				$this->store_feed_filter( $feed_id, $feed_filter_data[ $i ]['meta_value'] );
 			}
 
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key,WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Inserting category mapping metadata. meta_key and meta_value are required fields for the feedmanager_product_feedmeta table structure.
 			$counter += $this->_wpdb->insert(
 				$main_table,
 				array(
 					'product_feed_id' => $feed_id,
-					'meta_key'        => 'category_mapping',
-					'meta_value'      => $category_mapping[0]['meta_value'],
+					'meta_key'        => 'category_mapping', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required field for table structure.
+					'meta_value'      => $category_mapping[0]['meta_value'], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Required field for table structure.
 				),
 				array(
 					'%d',

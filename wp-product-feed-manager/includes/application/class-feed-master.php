@@ -61,7 +61,7 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		 *
 		 * @param string $feed_id The id of the feed. Default 0.
 		 *
-		 * @global stdClass $background_process
+		 * @global stdClass $wppfm_background_process
 		 */
 		public function __construct( $feed_id = '0' ) {
 			// Get the correct feed type class. Possible outcomes are WPPFM_Feed_Processor, WPPPFM_Promotions_Feed_Processor or WPPRFM_Review_Feed_Processor.
@@ -110,42 +110,51 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 				return false;
 			}
 
-			// Store the feed data in a property.
-			$this->_feed = $feed_data;
+		// Store the feed data in a property.
+		$this->_feed = $feed_data;
 
-			// Only one feed can be processing, so if other feeds than the current feed are on a processing
-			// status, set these to an error status.
-			$this->_data_class->check_for_failed_feeds( $this->_feed->feedId );
+		// Only one feed can be processing, so if other feeds than the current feed are on a processing
+		// status, set these to an error status.
+		$this->_data_class->check_for_failed_feeds( $this->_feed->feedId );
 
-			$prepare_update = $this->prepare_feed_file_update();
+		// Hook for performance monitoring - feed preparation starting
+		do_action( 'wppfm_feed_generation_preparing', $this->_feed->feedId );
 
-			if ( true !== $prepare_update ) {
-				if ( ! $silent ) {
-					echo esc_attr( $prepare_update );
-				}
+		$prepare_update = $this->prepare_feed_file_update();
 
-				return false;
-			}
-
-			WPPFM_Feed_Controller::set_feed_processing_flag( true );
-
-			$this->prepare_background_process();
-
-			$this->fill_the_background_queue();
-
-			$this->activate_feed_file_update( $this->_feed->feedId );
-
-			delete_transient( 'wppfm_running_silent' );
-
-			$nr_of_products_in_feed = $this->_background_process->nr_of_products_in_queue();
-
+		if ( true !== $prepare_update ) {
 			if ( ! $silent ) {
-				echo 'started_processing-' . esc_html( $nr_of_products_in_feed );
+				echo esc_attr( $prepare_update );
 			}
+
+			return false;
 		}
 
+		WPPFM_Feed_Controller::set_feed_processing_flag( true );
+
+		$this->prepare_background_process();
+
+		$this->fill_the_background_queue();
+
+		// Hook for performance monitoring - feed processing starting
+		do_action( 'wppfm_feed_generation_ready_to_start', $this->_feed->feedId );
+
+		$this->activate_feed_file_update( $this->_feed->feedId );
+
+		// Note: Do NOT delete wppfm_running_silent here. The transient must persist until the
+		// feed actually completes (success or failure), so that failure detection can send the
+		// notice email when running in silent/automatic mode. The transient is cleared in the
+		// background process complete() method when the batch finishes.
+
+		$nr_of_products_in_feed = $this->_background_process->nr_of_products_in_queue();
+
+		if ( ! $silent ) {
+			echo 'started_processing-' . esc_html( $nr_of_products_in_feed );
+		}
+	}
+
 		/**
-		 * Gets triggered by the myajax-get-feed-status http call from the JavaScript side. Checks if the feed is still processed correctly. If not, it will change the feed status to fail.
+		 * Gets triggered by the wppfm-ajax-get-feed-status http call from the JavaScript side. Checks if the feed is still processed correctly. If not, it will change the feed status to fail.
 		 *
 		 * @param string $feed_id   The id of the feed to be checked.
 		 *
@@ -184,6 +193,7 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 					// If running silent (automatic feed update), inform the user about the failed feed.
 					if ( get_transient( 'wppfm_running_silent' ) ) {
 						WPPFM_Email::send_feed_failed_message();
+						delete_transient( 'wppfm_running_silent' ); // Prevent duplicate email from end_batch.
 					}
 
 					if ( ! WPPFM_Feed_Controller::feed_queue_is_empty() ) {

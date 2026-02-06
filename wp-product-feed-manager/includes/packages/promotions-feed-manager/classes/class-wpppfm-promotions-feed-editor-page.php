@@ -75,6 +75,7 @@ if ( ! class_exists( 'WPPPFM_Promotions_Feed_Editor_Page' ) ) :
 		 * Stores data in the DOM for the Feed Manager Feed Editor page
 		 */
 		private function add_data_storage() {
+			// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- wc_esc_json() is used for proper JSON escaping in data attribute.
 			echo
 				'<div id="wppfm-feed-editor-page-data-storage" class="wppfm-data-storage-element"
 				data-wppfm-feed-data="' . wc_esc_json( wp_json_encode( $this->_feed_data ), false ) . '"
@@ -85,6 +86,7 @@ if ( ! class_exists( 'WPPPFM_Promotions_Feed_Editor_Page' ) ) :
 				data-wppfm-plugin-version-nr="' . esc_attr( WPPFM_VERSION_NUM ) . '"
 				data-wppfm-plugin-distributor="' . esc_attr( WPPFM_PLUGIN_DISTRIBUTOR ) . '">
 			</div>';
+			// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 
 		/**

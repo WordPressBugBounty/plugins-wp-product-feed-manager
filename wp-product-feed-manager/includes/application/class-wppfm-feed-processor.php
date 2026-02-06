@@ -73,6 +73,22 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 		private $_channel_class;
 
 		/**
+		 * File write buffer for batching writes.
+		 *
+		 * @var array
+		 * @since 3.15.0
+		 */
+		private $file_write_buffer = array();
+
+		/**
+		 * Buffer size before flushing to disk.
+		 *
+		 * @var int
+		 * @since 3.15.0
+		 */
+		private $file_buffer_size = 50;
+
+		/**
 		 * Starts a single feed update task.
 		 *
 		 * @param array    $item            the work value, usually a product id, but it can also be an XML header line.
@@ -110,16 +126,20 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 		 * Handles the actions after completing a feed update task.
 		 */
 		public function complete() {
+			if ( ! $this->ensure_feed_context_is_available() ) {
+				$this->handle_missing_feed_context();
+				return;
+			}
+
 			do_action( 'wppfm_feed_generation_message', $this->_feed_data->feedId, 'Started the complete function to clean up the feed process and queue.' );
 
+			// Flush any remaining buffer before completing
+			if ( method_exists( $this, 'flush_file_buffer' ) ) {
+				$this->flush_file_buffer();
+			}
+
 			// Remove the properties from the option table.
-			$properties_key = get_site_option( 'wppfm_background_process_key' );
-			delete_site_option( 'wppfm_background_process_key' );
-			delete_site_option( 'file_path_' . $properties_key );
-			delete_site_option( 'feed_data_' . $properties_key );
-			delete_site_option( 'pre_data_' . $properties_key );
-			delete_site_option( 'channel_details_' . $properties_key );
-			delete_site_option( 'relations_table_' . $properties_key );
+			$this->cleanup_background_process_options();
 
 			$feed_status = '0' !== $this->_feed_data->status && '3' !== $this->_feed_data->status && '4' !== $this->_feed_data->status ? $this->_feed_data->status : $this->_feed_data->baseStatusId;
 			$feed_title  = $this->_feed_data->title . '.' . pathinfo( $this->_feed_file_path, PATHINFO_EXTENSION );
@@ -130,11 +150,17 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 			WPPFM_Feed_Controller::remove_id_from_feed_queue( $this->_feed_data->feedId );
 			WPPFM_Feed_Controller::set_feed_processing_flag();
 
-			$message = sprintf( 'Completed feed %s. The feed should contain %d products and its status has been set to %s.', $this->_feed_data->feedId, count( $this->processed_products ), $feed_status );
-			do_action( 'wppfm_feed_generation_message', $this->_feed_data->feedId, $message );
-			do_action( 'wppfm_register_feed_url', $this->_feed_data->feedId, $this->_feed_data->url );
+		$message = sprintf( 'Completed feed %s. The feed should contain %d products and its status has been set to %s.', $this->_feed_data->feedId, count( $this->processed_products ), $feed_status );
+		do_action( 'wppfm_feed_generation_message', $this->_feed_data->feedId, $message );
+		do_action( 'wppfm_register_feed_url', $this->_feed_data->feedId, $this->_feed_data->url );
 
-			if ( ! WPPFM_Feed_Controller::feed_queue_is_empty() ) {
+		// Hook for performance monitoring - feed generation complete
+		do_action( 'wppfm_feed_generation_complete', $this->_feed_data->feedId );
+
+		// Clean up preserved feed context transient now that completion succeeded.
+		delete_transient( 'wppfm_feed_completion_context_' . $this->_feed_data->feedId );
+
+		if ( ! WPPFM_Feed_Controller::feed_queue_is_empty() ) {
 				do_action( 'wppfm_next_in_queue_feed_update_activated', $this->_feed_data->feedId );
 
 				// So there is another feed in the queue.
@@ -201,10 +227,10 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 
 			$class_data = new WPPFM_Data();
 
-			$product_placeholder       = array();
-			$post_columns_query_string = $this->_pre_data['database_fields']['post_column_string'] ? substr( $this->_pre_data['database_fields']['post_column_string'], 0, - 2 ) : '';
-			$product_parent_id         = $product_id; // Keep the Parent Id equal to the Product Id for non-variation products
-			$product_data              = (array) $this->get_products_main_data( $product_id, $wc_product->get_parent_id(), $post_columns_query_string );
+		$product_placeholder       = array();
+		$post_columns_query_string = $this->_pre_data['database_fields']['post_column_string'] ? substr( $this->_pre_data['database_fields']['post_column_string'], 0, - 2 ) : '';
+		$product_parent_id         = $product_id; // Keep the Parent Id equal to the Product Id for non-variation products
+		$product_data              = (array) $this->get_products_main_data( $product_id, $wc_product->get_parent_id(), $post_columns_query_string, $wc_product );
 
 			/**
 			 * Users can use the wppfm_leave_links_in_descriptions filter if they want to keep links in the product descriptions by changing the
@@ -314,29 +340,103 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 
 		/**
 		 * Appends a processed product to the feed.
+		 * Uses buffering to reduce file I/O operations.
 		 *
 		 * @param array  $product_placeholder an array with the product data to be written to the feed file.
 		 * @param string $feed_id             the id of the feed.
 		 * @param string $product_id          the id of the product.
 		 *
 		 * @return string product added or boolean false.
+		 * @since 3.15.0 - Updated to use buffering for better performance.
 		 */
 		private function write_product_object( $product_placeholder, $feed_id, $product_id ) {
 
 			$product_text = $this->generate_feed_text( $product_placeholder );
 
-            if ( false === wppfm_append_line_to_file( $this->_feed_file_path, $product_text, true ) ) {
-				wppfm_write_log_file( sprintf( 'Could not write product %s to the feed', $product_id ) );
-				$message = sprintf( 'Could not write product %s to the feed', $product_id );
-				do_action( 'wppfm_feed_generation_message', $this->_feed_data->feedId, $message, 'ERROR' );
+			// Buffer the output instead of writing immediately
+			return $this->buffer_product_output( $product_text, $feed_id, $product_id );
+		}
 
-				return false;
-			} else {
-				//@since 2.3.0
-				do_action( 'wppfm_add_product_to_feed', $feed_id, $product_id );
-
-				return 'product added';
+		/**
+		 * Buffer product output for batch writing.
+		 *
+		 * @param string $product_text  The generated product text.
+		 * @param string $feed_id       Feed ID.
+		 * @param string $product_id    Product ID.
+		 *
+		 * @return string 'product added' on success, false on failure.
+		 * @since 3.15.0
+		 */
+		private function buffer_product_output( $product_text, $feed_id, $product_id ) {
+			// Initialize buffer if not already initialized
+			if ( ! isset( $this->file_write_buffer ) ) {
+				$this->file_write_buffer = array();
 			}
+
+			// Get buffer size from filter (allows customization)
+			$this->file_buffer_size = apply_filters( 'wppfm_file_buffer_size', 50 );
+
+			// Add to buffer
+			$this->file_write_buffer[] = $product_text;
+
+			// Flush if buffer is full
+			if ( count( $this->file_write_buffer ) >= $this->file_buffer_size ) {
+				if ( ! $this->flush_file_buffer() ) {
+					wppfm_write_log_file( sprintf( 'Could not flush buffer for product %s to the feed', $product_id ) );
+					$message = sprintf( 'Could not flush buffer for product %s to the feed', $product_id );
+					do_action( 'wppfm_feed_generation_message', $this->_feed_data->feedId, $message, 'ERROR' );
+					return false;
+				}
+			}
+
+			// @since 2.3.0
+			do_action( 'wppfm_add_product_to_feed', $feed_id, $product_id );
+
+			return 'product added';
+		}
+
+		/**
+		 * Flush buffered content to file.
+		 * Uses the improved wppfm_append_line_to_file() function with file locking.
+		 * Made protected so it can be called from parent class methods.
+		 * For XML files, ensures each item is on its own line.
+		 *
+		 * @return bool Success status.
+		 * @since 3.15.0
+		 */
+		protected function flush_file_buffer() {
+			if ( empty( $this->file_write_buffer ) ) {
+				return true;
+			}
+
+			// Determine file type to handle line breaks appropriately
+			$file_extension = pathinfo( $this->_feed_file_path, PATHINFO_EXTENSION );
+			
+			// For XML files, join items with newlines to ensure each item is on its own line
+			// For other file types (CSV, TXT, TSV), join without separator as they handle formatting internally
+			if ( 'xml' === $file_extension ) {
+				// Join with PHP_EOL to ensure proper line breaks between XML items
+				$combined_text = implode( PHP_EOL, $this->file_write_buffer );
+			} else {
+				// For non-XML files, join without separator (they may have their own formatting)
+				$combined_text = implode( '', $this->file_write_buffer );
+			}
+
+			// Write using the improved append function (with file locking)
+			// For XML, we add PHP_EOL at the end to ensure the last item ends with a newline
+			// For other formats, we don't add extra newline as they handle it themselves
+			$add_newline = ( 'xml' === $file_extension );
+			
+			if ( false === wppfm_append_line_to_file( $this->_feed_file_path, $combined_text, $add_newline ) ) {
+				wppfm_write_log_file( 'Failed to flush file buffer to feed file' );
+				do_action( 'wppfm_feed_generation_message', $this->_feed_data->feedId, 'Failed to flush file buffer', 'ERROR' );
+				return false;
+			}
+
+			// Clear buffer after successful write
+			$this->file_write_buffer = array();
+
+			return true;
 		}
 
 		/**
@@ -364,6 +464,176 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 			}
 
 			return '';
+		}
+
+		/**
+		 * Ensures the feed context is available before completing the process.
+		 *
+		 * @return bool
+		 */
+		private function ensure_feed_context_is_available() {
+			if ( $this->_feed_data && property_exists( $this->_feed_data, 'feedId' ) ) {
+				return true;
+			}
+
+			list( , $batch_metadata ) = $this->get_current_batch_metadata();
+
+			if ( $batch_metadata ) {
+				if ( empty( $this->_feed_data ) && isset( $batch_metadata['feed_data'] ) ) {
+					$this->_feed_data = $batch_metadata['feed_data'];
+				}
+
+				if ( empty( $this->_feed_file_path ) && ! empty( $batch_metadata['file_path'] ) ) {
+					$this->_feed_file_path = $batch_metadata['file_path'];
+				}
+			}
+
+			return $this->_feed_data && property_exists( $this->_feed_data, 'feedId' );
+		}
+
+		/**
+		 * Handles the situation where the feed context can no longer be restored.
+		 */
+		private function handle_missing_feed_context() {
+			$feed_id = $this->resolve_active_feed_id();
+			$log_id  = $feed_id ? $feed_id : 'unknown';
+
+			do_action( 'wppfm_feed_generation_message', $log_id, 'Feed completion aborted because the feed metadata could not be restored.', 'ERROR' );
+
+		// Clean up any preserved context to avoid stale data.
+		if ( $feed_id ) {
+			delete_transient( 'wppfm_feed_completion_context_' . $feed_id );
+		}
+
+			if ( $feed_id ) {
+				$data_class = new WPPFM_Data();
+				$data_class->update_feed_status( $feed_id, 6 );
+				WPPFM_Feed_Controller::remove_id_from_feed_queue( $feed_id );
+			}
+
+			$this->clear_the_queue();
+			$this->cleanup_background_process_options();
+			WPPFM_Feed_Controller::set_feed_processing_flag();
+		}
+
+	/**
+	 * Preserves feed context before batch deletion so complete() can access it.
+	 *
+	 * @param string $feed_id        Feed ID.
+	 * @param string $properties_key Batch properties key.
+	 */
+	protected function preserve_feed_context_for_completion( $feed_id, $properties_key ) {
+		if ( ! $properties_key ) {
+			do_action( 'wppfm_feed_generation_message', $feed_id, 'Warning: No properties key available to preserve feed context for completion', 'WARNING' );
+			return;
+		}
+
+		set_transient( 'wppfm_feed_completion_context_' . $feed_id, $properties_key, 15 * MINUTE_IN_SECONDS );
+		do_action( 'wppfm_feed_generation_message', $feed_id, sprintf( 'Preserved feed context for completion (properties key: %s)', $properties_key ) );
+	}
+
+	/**
+	 * Ensures feed context is available before calling complete().
+	 *
+	 * @param string $feed_id Feed ID.
+	 */
+	protected function ensure_feed_context_before_completion( $feed_id ) {
+		// If feed context is already available, nothing to do.
+		if ( $this->_feed_data && property_exists( $this->_feed_data, 'feedId' ) ) {
+			do_action( 'wppfm_feed_generation_message', $feed_id, 'Feed context already available, no restoration needed' );
+			return;
+		}
+
+		$properties_key = get_transient( 'wppfm_feed_completion_context_' . $feed_id );
+
+		if ( ! $properties_key ) {
+			do_action( 'wppfm_feed_generation_message', $feed_id, 'Warning: No preserved feed context found for completion', 'WARNING' );
+			return;
+		}
+
+		$batch_metadata = get_site_option( 'wppfm_batch_metadata_' . $properties_key );
+
+		if ( $batch_metadata && is_array( $batch_metadata ) ) {
+			if ( empty( $this->_feed_data ) && isset( $batch_metadata['feed_data'] ) ) {
+				$this->_feed_data = $batch_metadata['feed_data'];
+			}
+
+			if ( empty( $this->_feed_file_path ) && ! empty( $batch_metadata['file_path'] ) ) {
+				$this->_feed_file_path = $batch_metadata['file_path'];
+			}
+
+			if ( empty( $this->_pre_data ) && ! empty( $batch_metadata['pre_data'] ) ) {
+				$this->_pre_data = $batch_metadata['pre_data'];
+			}
+
+			if ( empty( $this->_channel_details ) && ! empty( $batch_metadata['channel_details'] ) ) {
+				$this->_channel_details = $batch_metadata['channel_details'];
+			}
+
+			if ( empty( $this->_relations_table ) && ! empty( $batch_metadata['relations_table'] ) ) {
+				$this->_relations_table = $batch_metadata['relations_table'];
+			}
+
+			do_action( 'wppfm_feed_generation_message', $feed_id, 'Restored feed context from preserved metadata: feed_data, file_path, pre_data, channel_details, relations_table' );
+		} else {
+			do_action( 'wppfm_feed_generation_message', $feed_id, 'Warning: Could not load batch metadata for preserved context', 'WARNING' );
+		}
+	}
+
+		/**
+		 * Removes the stored batch metadata from the options table.
+		 */
+		private function cleanup_background_process_options() {
+			list( $properties_key ) = $this->get_current_batch_metadata();
+
+			delete_site_option( 'wppfm_background_process_key' );
+
+			if ( $properties_key ) {
+				delete_site_option( 'wppfm_batch_metadata_' . $properties_key );
+				delete_site_option( $properties_key );
+			}
+		}
+
+		/**
+		 * Resolves the active feed id from the available context.
+		 *
+		 * @return string|null
+		 */
+		private function resolve_active_feed_id() {
+			if ( $this->_feed_data && property_exists( $this->_feed_data, 'feedId' ) ) {
+				return $this->_feed_data->feedId;
+			}
+
+			list( , $batch_metadata ) = $this->get_current_batch_metadata();
+
+			if ( $batch_metadata && ! empty( $batch_metadata['feed_id'] ) ) {
+				return $batch_metadata['feed_id'];
+			}
+
+			$request_feed_id = filter_input( INPUT_GET, 'feed_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+
+			return $request_feed_id ? $request_feed_id : null;
+		}
+
+		/**
+		 * Returns the current batch metadata and key stored in the options table.
+		 *
+		 * @return array
+		 */
+		private function get_current_batch_metadata() {
+			$properties_key = get_site_option( 'wppfm_background_process_key' );
+
+			if ( ! $properties_key ) {
+				return array( null, null );
+			}
+
+			$batch_metadata = get_site_option( 'wppfm_batch_metadata_' . $properties_key );
+
+			if ( ! is_array( $batch_metadata ) ) {
+				$batch_metadata = null;
+			}
+
+			return array( $properties_key, $batch_metadata );
 		}
 	}
 

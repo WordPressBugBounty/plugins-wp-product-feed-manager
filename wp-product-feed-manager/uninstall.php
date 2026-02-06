@@ -83,29 +83,8 @@ function wppfm_remove_custom_capabilities() {
  * Removes the registration info from the database.
  */
 function wppfm_unregister_plugin() {
-	// Retrieve the license from the database.
-	$license = get_option( 'wppfm_lic_key' );
-
 	foreach( wp_load_alloptions() as $option => $value ) {
 		if( false !== strpos( $option, 'wppfm_' ) ) { delete_option( $option );	}
 	}
 
-	if ( $license ) { // If the plugin is a licensed version, then deactivate it on the license server.
-		// Data to send in our API request.
-		$api_params = array(
-			'edd_action' => 'deactivate_license',
-			'license'    => $license,
-			'item_name'  => rawurlencode( 'Woocommerce Google Feed Manager' ), // the name of the plugin in EDD.
-			'url'        => home_url(),
-		);
-
-		// Call the custom API.
-		wp_remote_post(
-			'https://www.wpmarketingrobot.com/',
-			array(
-				'timeout' => 15,
-				'body'    => $api_params,
-			)
-		);
-	}
 }

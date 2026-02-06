@@ -7,7 +7,7 @@ function wppfm_getFeedList( callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-get-list-of-feeds',
+			action: 'wppfm-ajax-get-list-of-feeds',
 			postFeedsListNonce: myAjaxNonces.postFeedsListNonce,
 
 		},
@@ -22,7 +22,7 @@ function wppfm_getBackupsList( callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-get-list-of-backups',
+			action: 'wppfm-ajax-get-list-of-backups',
 			postBackupListNonce: myAjaxNonces.postBackupListNonce,
 
 		},
@@ -38,7 +38,7 @@ function wppfm_getSettingsOptions( callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-get-settings-options',
+			action: 'wppfm-ajax-get-settings-options',
 			postSetupOptionsNonce: myAjaxNonces.postSetupOptionsNonce,
 
 		},
@@ -63,7 +63,7 @@ function wppfm_getOutputFields( feedId, channelId, feedType, callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-get-output-fields',
+			action: 'wppfm-ajax-get-output-fields',
 			feedId: feedId,
 			channelId: channelId,
 			feedType: feedType,
@@ -89,7 +89,7 @@ function wppfm_getSourceFields( sourceId, callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-get-input-fields',
+			action: 'wppfm-ajax-get-input-fields',
 			sourceId: sourceId,
 			inputFieldsNonce: myAjaxNonces.inputFieldsNonce,
 
@@ -106,7 +106,7 @@ function wppfm_getMainFeedFilters( feedId, callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-get-main-feed-filters',
+			action: 'wppfm-ajax-get-main-feed-filters',
 			feedId: feedId,
 			inputFeedFiltersNonce: myAjaxNonces.inputFeedFiltersNonce,
 
@@ -124,7 +124,7 @@ function wppfm_getNextCategories( channelId, requestedLevel, parentCategory, lan
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-get-next-categories',
+			action: 'wppfm-ajax-get-next-categories',
 			channelId: channelId,
 			requestedLevel: requestedLevel,
 			parentCategory: parentCategory,
@@ -150,7 +150,7 @@ function wppfm_getCategoryListsFromString( channelId, mainCategoriesString, lang
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-get-category-lists',
+			action: 'wppfm-ajax-get-category-lists',
 			channelId: channelId,
 			mainCategories: mainCategoriesString,
 			fileLanguage: language,
@@ -169,7 +169,7 @@ function wppfm_updateFeedToDb( feedData, metaData, feedFilter, callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-update-feed-data',
+			action: 'wppfm-ajax-update-feed-data',
 			feed: JSON.stringify( feedData ),
 			feedFilter: feedFilter && feedFilter.length > 0 ? feedFilter[ 0 ][ 'meta_value' ] : '',
 			metaData: JSON.stringify( metaData ),
@@ -186,7 +186,7 @@ function wppfm_updateFeedFile( feed_id, callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-update-feed-file',
+			action: 'wppfm-ajax-update-feed-file',
 			dataType: 'text',
 			feedId: feed_id,
 			updateFeedFileNonce: myAjaxNonces.updateFeedFileNonce,
@@ -203,7 +203,7 @@ function wppfm_getCurrentFeedStatus( feedId, callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-get-feed-status',
+			action: 'wppfm-ajax-get-feed-status',
 			sourceId: feedId,
 			feedStatusNonce: myAjaxNonces.feedStatusNonce,
 
@@ -219,7 +219,7 @@ function wppfm_switchFeedStatus( feedId, callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-switch-feed-status',
+			action: 'wppfm-ajax-switch-feed-status',
 			feedId: feedId,
 			switchFeedStatusNonce: myAjaxNonces.switchFeedStatusNonce,
 
@@ -237,7 +237,7 @@ function wppfm_duplicateExistingFeed( feedId, callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-duplicate-existing-feed',
+			action: 'wppfm-ajax-duplicate-existing-feed',
 			feedId: feedId,
 			duplicateFeedNonce: myAjaxNonces.duplicateFeedNonce,
 
@@ -258,7 +258,7 @@ function wppfm_logMessageOnServer( message, fileName, callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-log-message',
+			action: 'wppfm-ajax-log-message',
 			messageList: message,
 			fileName: fileName,
 			logMessageNonce: myAjaxNonces.logMessageNonce,
@@ -276,7 +276,7 @@ function wppfm_auto_feed_fix_mode( selection, callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-auto-feed-fix-mode-selection',
+			action: 'wppfm-ajax-auto-feed-fix-mode-selection',
 			fix_selection: selection,
 			updateAutoFeedFixNonce: myAjaxNonces.setAutoFeedFixNonce,
 
@@ -293,7 +293,7 @@ function wppfm_background_processing_mode( selection, callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-background-processing-mode-selection',
+			action: 'wppfm-ajax-background-processing-mode-selection',
 			mode_selection: selection,
 			backgroundModeNonce: myAjaxNonces.setBackgroundModeNonce,
 
@@ -310,7 +310,7 @@ function wppfm_feed_logger_status( selection, callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-feed-logger-status-selection',
+			action: 'wppfm-ajax-feed-logger-status-selection',
 			statusSelection: selection,
 			feedLoggerStatusNonce: myAjaxNonces.setFeedLoggerStatusNonce,
 
@@ -335,7 +335,7 @@ function wppfm_show_pi_status( selection, callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-show-product-identifiers-selection',
+			action: 'wppfm-ajax-show-product-identifiers-selection',
 			showPiSelection: selection,
 			showPINonce: myAjaxNonces.setShowPINonce,
 
@@ -353,7 +353,7 @@ function wppfm_switch_to_manual_channel_update( selection, callback ) {
 	jQuery.post(
 			myAjaxNonces.ajaxurl,
 			{
-				action: 'myajax-switch-to-manual-channel-update-selection',
+				action: 'wppfm-ajax-switch-to-manual-channel-update-selection',
 				manualChannelUpdateSelection: selection,
 				manualChannelUpdateNonce: myAjaxNonces.setManualChannelUpdateNonce,
 
@@ -378,7 +378,7 @@ function wppfm_wpml_use_full_url_resolution( selection, callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-wpml-use-full-url-resolution-selection',
+			action: 'wppfm-ajax-wpml-use-full-url-resolution-selection',
 			urlResolutionSelection: selection,
 			urlResolutionNonce: myAjaxNonces.setUseFullResolutionNonce,
 
@@ -403,7 +403,7 @@ function wppfm_omit_price_filters( selection, callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-omit-price-filters-selection',
+			action: 'wppfm-ajax-omit-price-filters-selection',
 			omitPriceFiltersSelection: selection,
 			omitPriceFiltersNonce: myAjaxNonces.setOmitPriceFiltersNonce,
 
@@ -420,7 +420,7 @@ function wppfm_change_third_party_attribute_keywords( keywords, callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-third-party-attribute-keywords',
+			action: 'wppfm-ajax-third-party-attribute-keywords',
 			keywords: keywords,
 			thirdPartyKeywordsNonce: myAjaxNonces.setThirdPartyKeywordsNonce,
 
@@ -434,19 +434,26 @@ function wppfm_change_third_party_attribute_keywords( keywords, callback ) {
 
 function wppfm_change_notice_mailaddress( mailAddress, callback ) {
 
-	jQuery.post(
-		myAjaxNonces.ajaxurl,
-		{
-			action: 'myajax-set-notice-mailaddress',
+	jQuery.ajax( {
+		url: myAjaxNonces.ajaxurl,
+		type: 'POST',
+		data: {
+			action: 'wppfm-ajax-set-notice-mailaddress',
 			mailaddress: mailAddress,
 			noticeMailaddressNonce: myAjaxNonces.setNoticeMailaddressNonce,
-
 		},
-		function( response ) {
-
-			callback( response.trim() );
-		}
-	);
+		dataType: 'json',
+		success: function( response ) {
+			if ( response && response.success && response.data ) {
+				callback( response.data );
+			} else {
+				callback( { email: mailAddress, test_sent: false } );
+			}
+		},
+		error: function() {
+			callback( null );
+		},
+	} );
 }
 
 function wppfm_change_background_processing_time_limit( limit, callback ) {
@@ -454,7 +461,7 @@ function wppfm_change_background_processing_time_limit( limit, callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-background-processing-time-limit',
+			action: 'wppfm-ajax-background-processing-time-limit',
 			limit: limit,
 			batchProcessingLimitNonce: myAjaxNonces.setBatchProcessingLimitNonce,
 
@@ -470,7 +477,7 @@ function wppfm_clear_feed_process_data( callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-clear-feed-process-data',
+			action: 'wppfm-ajax-clear-feed-process-data',
 			clearFeedNonce: myAjaxNonces.setClearFeedProcessNonce,
 
 		},
@@ -485,7 +492,7 @@ function wppfm_reinitiate_plugin( callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-reinitiate-plugin',
+			action: 'wppfm-ajax-reinitiate-plugin',
 			reInitiateNonce: myAjaxNonces.setReInitiateNonce,
 
 		},
@@ -570,7 +577,7 @@ function wppfm_removeFeedFile( callback, feedTitle ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-delete-feed-file',
+			action: 'wppfm-ajax-delete-feed-file',
 			fileTitle: feedTitle,
 			deleteFeedNonce: myAjaxNonces.deleteFeedNonce,
 
@@ -587,7 +594,7 @@ function wppfm_deleteFeedFromDb( feedId, callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-delete-feed',
+			action: 'wppfm-ajax-delete-feed',
 			feedId: feedId,
 			deleteFeedNonce: myAjaxNonces.deleteFeedNonce,
 
@@ -603,7 +610,7 @@ function wppfm_checkNextFeedInQueue( callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-get-next-feed-in-queue',
+			action: 'wppfm-ajax-get-next-feed-in-queue',
 			nextFeedInQueueNonce: myAjaxNonces.nextFeedInQueueNonce,
 
 		},
@@ -619,7 +626,7 @@ function wppfm_initiateBackup( fileName, callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-backup-current-data',
+			action: 'wppfm-ajax-backup-current-data',
 			fileName: fileName,
 			backupNonce: myAjaxNonces.backupNonce,
 
@@ -636,7 +643,7 @@ function wppfm_deleteBackup( fileName, callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-delete-backup-file',
+			action: 'wppfm-ajax-delete-backup-file',
 			fileName: fileName,
 			deleteBackupNonce: myAjaxNonces.deleteBackupNonce,
 
@@ -653,7 +660,7 @@ function wppfm_restoreBackup( fileName, callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-restore-backup-file',
+			action: 'wppfm-ajax-restore-backup-file',
 			fileName: fileName,
 			restoreBackupNonce: myAjaxNonces.restoreBackupNonce,
 
@@ -670,7 +677,7 @@ function wppfm_duplicateBackup( fileName, callback ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
-			action: 'myajax-duplicate-backup-file',
+			action: 'wppfm-ajax-duplicate-backup-file',
 			fileName: fileName,
 			duplicateBackupNonce: myAjaxNonces.duplicateBackupNonce,
 

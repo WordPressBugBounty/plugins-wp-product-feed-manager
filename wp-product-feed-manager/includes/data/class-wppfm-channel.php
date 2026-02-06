@@ -68,6 +68,7 @@ if ( ! class_exists( 'WPPFM_Channel' ) ) :
 				new Wppfm_Channel_Info( '37', 'tiktok_catalog', 'TikTok Catalog', 'https://getstarted.tiktok.com/gofulltiktok?lang=en', 'https://ads.tiktok.com/help/article/catalog-product-parameters?lang=en' ),
 				new Wppfm_Channel_Info( '38', 'atalanda', 'Atalanda', 'https://atalanda.com/mitmachen', 'https://atalanda.com/dev#google_xml' ),
 				new Wppfm_Channel_Info( '39', 'reddit', 'Reddit Catalog', 'https://business.reddithelp.com/helpcenter/articles/Knowledge/catalogs', 'https://business.reddithelp.com/helpcenter/s/article/catalog-requirements' ),
+				new Wppfm_Channel_Info( '40', 'chatgpt', 'ChatGpt', 'https://developers.openai.com/commerce', 'https://developers.openai.com/commerce/specs/feed' ),
 				new Wppfm_Channel_Info( '996', 'marketingrobot_tsv', 'Custom TSV Export' ),
 				new Wppfm_Channel_Info( '997', 'marketingrobot_txt', 'Custom TXT Export' ),
 				new Wppfm_Channel_Info( '998', 'marketingrobot_csv', 'Custom CSV Export' ),

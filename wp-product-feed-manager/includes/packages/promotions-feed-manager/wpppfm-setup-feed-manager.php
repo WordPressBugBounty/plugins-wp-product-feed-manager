@@ -17,9 +17,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @return  array   Array with all the feed types, including the Merchant Promotions Feed.
  */
-function wpppfm_add_promotions_feed_type( $types ) {
+function wppfm_pf_add_promotions_feed_type( $types ) {
 	$types['3'] = 'Google Merchant Promotions Feed';
 	return $types;
 }
 
-add_filter( 'wppfm_feed_types', 'wpppfm_add_promotions_feed_type' );
+add_filter( 'wppfm_feed_types', 'wppfm_pf_add_promotions_feed_type' );

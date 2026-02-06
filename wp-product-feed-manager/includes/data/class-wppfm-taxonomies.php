@@ -143,6 +143,7 @@ if ( ! class_exists( 'WPPFM_Taxonomies' ) ) :
 				'hierarchical' => 1,
 				'orderby'      => 'name',
 				'order'        => 'ASC',
+				// phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude -- The exclude parameter is necessary to filter out specific categories from category mapping. This is a user-configurable feature and essential functionality.
 				'exclude'      => apply_filters( 'wppfm_category_mapping_exclude', array() ),
 				'exclude_tree' => apply_filters( 'wppfm_category_mapping_exclude_tree', array() ),
 				'number'       => absint( apply_filters( 'wppfm_category_mapping_max_categories', 0 ) ),

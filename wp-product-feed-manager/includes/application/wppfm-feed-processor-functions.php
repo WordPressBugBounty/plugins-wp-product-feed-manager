@@ -14,12 +14,20 @@ trait WPPFM_Feed_Processor_Functions {
 
 	/**
 	 * Adds a file format string to the feed.
+	 * Always flushes buffer before writing format lines (headers/footers) to ensure correct order.
 	 *
 	 * @param array $line_data containing the file format line.
 	 *
 	 * @return boolean true if the format line has been added, false if it failed.
+	 * @since 3.15.0 - Updated to flush buffer before writing format lines.
 	 */
 	private function add_file_format_line_to_feed( $line_data ) {
+		// Always flush buffer before writing format lines (headers/footers)
+		// This ensures headers are written first and footers are written last
+		if ( method_exists( $this, 'flush_file_buffer' ) ) {
+			$this->flush_file_buffer();
+		}
+
 		return false !== wppfm_append_line_to_file( $this->_feed_file_path, $line_data['file_format_line'] );
 	}
 
@@ -59,13 +67,14 @@ trait WPPFM_Feed_Processor_Functions {
 	/**
 	 * Gets the main data of a specific product.
 	 *
-	 * @param string $product_id                the product id.
-	 * @param string $parent_product_id         the products parent id.
-	 * @param string $post_columns_query_string a query string with the post-columns.
+	 * @param string          $product_id                the product id.
+	 * @param string          $parent_product_id         the products parent id.
+	 * @param string          $post_columns_query_string a query string with the post-columns.
+	 * @param WC_Product|null $wc_product                Optional. Already loaded WooCommerce product object to avoid redundant loading.
 	 *
 	 * @return object|bool with the product main data.
 	 */
-	private function get_products_main_data( $product_id, $parent_product_id, $post_columns_query_string ) {
+	private function get_products_main_data( $product_id, $parent_product_id, $post_columns_query_string, $wc_product = null ) {
 		$queries_class   = new WPPFM_Queries();
 		$prep_meta_class = new WPPFM_Feed_Value_Editors();
 
@@ -119,10 +128,10 @@ trait WPPFM_Feed_Processor_Functions {
 			$product_data->{$third_party_field} = $this->get_third_party_custom_field_data( $product_data->ID, $parent_product_id, $third_party_field );
 		}
 
-		if ( $this->_feed_data ) { // @since 2.29.0 - To not start this function when using the WooCommerce Google Review Feed Manager plugin version 0.15.0 or lower.
-			$this->handle_procedural_attributes( $product_data );
-		}
+	if ( $this->_feed_data ) { // @since 2.29.0 - To not start this function when using the WooCommerce Google Review Feed Manager plugin version 0.15.0 or lower.
+		$this->handle_procedural_attributes( $product_data, $wc_product );
+	}
 
-		return $product_data;
+	return $product_data;
 	}
 }

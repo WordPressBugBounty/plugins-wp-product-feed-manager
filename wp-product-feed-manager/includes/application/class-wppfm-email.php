@@ -25,9 +25,12 @@ if ( ! class_exists( 'WPPFM_Email' ) ) :
 		 * @return bool true if the message has been sent.
 		 */
 		public static function send_feed_failed_message() {
-			$to = get_option( 'wppfm_notice_mailaddress', get_bloginfo( 'admin_email' ) );
-
-			if ( ! $to ) {
+			$to = get_option( 'wppfm_notice_mailaddress', '' );
+			// Fall back to admin email when notice recipient is not configured or invalid.
+			if ( empty( $to ) || ! is_email( $to ) ) {
+				$to = get_bloginfo( 'admin_email' );
+			}
+			if ( empty( $to ) || ! is_email( $to ) ) {
 				return false;
 			}
 
@@ -59,6 +62,36 @@ Should this problem persist, please open a support ticket.',
 				WPPFM_EDD_SL_ITEM_NAME,
 				get_bloginfo( 'name' )
 			);
+		}
+
+		/**
+		 * Sends a test email to the given address to verify email delivery is working.
+		 *
+		 * @param string $to Recipient email address.
+		 * @return bool Whether the test email was sent successfully.
+		 */
+		public static function send_test_email( $to ) {
+			if ( empty( $to ) || ! is_email( $to ) ) {
+				return false;
+			}
+
+			$subject = sprintf(
+				/* translators: %s: site name */
+				__( 'Test email from %s - Feed Manager Notice Recipient', 'wp-product-feed-manager' ),
+				get_bloginfo( 'name' )
+			);
+
+			$message = sprintf(
+				/* translators: 1: plugin name, 2: site name */
+				__(
+					'This is a test email from the %1$s plugin on your %2$s shop. If you receive this message, feed failure notifications should be delivered to this address.',
+					'wp-product-feed-manager'
+				),
+				WPPFM_EDD_SL_ITEM_NAME,
+				get_bloginfo( 'name' )
+			);
+
+			return self::send( $to, $subject, $message );
 		}
 
 		/**

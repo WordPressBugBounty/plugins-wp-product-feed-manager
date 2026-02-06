@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @return array    Array with the sources.
  */
-function wpprfm_add_review_specific_sources( $standard_sources ) {
+function wppfm_rf_add_review_specific_sources( $standard_sources ) {
 
 	$additional_sources = WPPRFM_Feed_Sources::review_feed_specific_sources();
 
@@ -28,7 +28,7 @@ function wpprfm_add_review_specific_sources( $standard_sources ) {
 	return $standard_sources;
 }
 
-add_filter( 'wppfm_all_source_fields', 'wpprfm_add_review_specific_sources' );
+add_filter( 'wppfm_all_source_fields', 'wppfm_rf_add_review_specific_sources' );
 
 /**
  * Sets the correct Google Review Feed Header.
@@ -39,11 +39,11 @@ add_filter( 'wppfm_all_source_fields', 'wpprfm_add_review_specific_sources' );
  *
  * @return string   String with the new Google Review Feed header.
  */
-function wpprfm_header_string( $header, $feed_id, $feed_type_id ) {
+function wppfm_rf_header_string( $header, $feed_id, $feed_type_id ) {
 	return '2' === $feed_type_id ? WPPRFM_Feed_File_Element::google_review_feed_header_element( $feed_id ) : $header;
 }
 
-add_filter( 'wppfm_header_string', 'wpprfm_header_string', 10, 3 );
+add_filter( 'wppfm_header_string', 'wppfm_rf_header_string', 10, 3 );
 
 /**
  * Sets the correct Google Review Feed Footer.
@@ -54,16 +54,16 @@ add_filter( 'wppfm_header_string', 'wpprfm_header_string', 10, 3 );
  *
  * @return string   The html code for the review feed footer.
  */
-function wpprfm_footer_string( $footer, $feed_id, $feed_type_id ) {
+function wppfm_rf_footer_string( $footer, $feed_id, $feed_type_id ) {
 	return '2' === $feed_type_id ? WPPRFM_Feed_File_Element::google_review_feed_footer_element() : $footer;
 }
 
-add_filter( 'wppfm_footer_string', 'wpprfm_footer_string', 10, 3 );
+add_filter( 'wppfm_footer_string', 'wppfm_rf_footer_string', 10, 3 );
 
 /**
  * Starts the Google Product Review Feed page when clicked on the tab
  */
-function wpprfm_open_review_feed_page() {
+function wppfm_rf_open_review_feed_page() {
 
 	$review_page = new WPPRFM_Add_Review_Feed_Editor_Page();
 	$review_page->show();

@@ -114,6 +114,29 @@ if ( ! class_exists( 'WPPFM_Feed_Value_Editors' ) ) :
 		}
 
 		/**
+		 * Performs an html_entity_encode action on a value.
+		 * 
+		 * Uses multiple encoding functions to ensure thorough encoding of special characters,
+		 * HTML entities, and other problematic characters.
+		 *
+		 * @since 3.16.0
+		 *
+		 * @param string $current_value the current value.
+		 *
+		 * @return string the resulting value.
+		 */
+		public function html_entity_encode_value( $current_value ) {
+			// First convert all HTML special chars
+			$encoded = htmlspecialchars($current_value, ENT_QUOTES|ENT_SUBSTITUTE|ENT_HTML401, 'UTF-8', true);
+			
+			// Then convert remaining special characters to HTML entities
+			$encoded = htmlentities($encoded, ENT_QUOTES|ENT_SUBSTITUTE|ENT_HTML401, 'UTF-8', true);
+			
+			// Finally use ENT_COMPAT to convert any remaining characters
+			return mb_convert_encoding($encoded, 'HTML-ENTITIES', 'UTF-8');
+		}
+
+		/**
 		 * Limits the number of characters in a value.
 		 *
 		 * @param string[] $condition     array with query strings describing the limit characters query. This parameter contains the requested max number of characters.
@@ -201,10 +224,10 @@ if ( ! class_exists( 'WPPFM_Feed_Value_Editors' ) ) :
 				'',
 				' ',
 				', ',
-				'.',
+				'. ',
 				'; ',
 				':',
-				'-',
+				' - ',
 				'/',
 				'\\',
 				'||',

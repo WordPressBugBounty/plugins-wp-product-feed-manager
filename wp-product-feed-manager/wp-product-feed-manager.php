@@ -1,16 +1,18 @@
 <?php
 /**
- * Plugin Name: WP Product Feed Manager
+ * Plugin Name: Product Feed Manager for WooCommerce
  * Plugin URI: https://www.wpmarketingrobot.com
  * Description: An easy-to-use WordPress plugin that generates and submits your product feeds to merchant centres.
  * Author: WP Marketing Robot
  * Author URI: https://www.wpmarketingrobot.com
  * Developer: Michel Jongbloed
  * Developer URI: https://www.wpmarketingrobot.com
- * Version: 2.15.2
- * Modified: 16-09-2025
+ * Version: 2.20.0
+ * Modified: 31-01-2026
  * WC requires at least: 8.4
- * WC tested up to: 10.1.2
+ * WC tested up to: 10.4.3
+ * License: GPL-3.0-or-later
+ * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  *
  * This plugin is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +28,7 @@
  * You can read the GNU General Public License here <http://www.gnu.org/licenses/>.
  * Requires at least: 6.5
  * Requires Plugins: woocommerce
- * Tested up to: 6.8
+ * Tested up to: 6.9
  *
  * @package WordPress
  *
@@ -52,7 +54,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		 *
 		 * @var string  Containing the version number of the plugin.
 		 */
-		public $version = '2.15.2';
+		public $version = '2.20.0';
 
 		/**
 		 * Author Name.
@@ -120,16 +122,11 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 			// Includes.
 			$this->includes();
 
-			// Register my version.
-			add_option( 'myplugin_version', WPPFM_VERSION_NUM );
-
 			// Register my schedule.
 			add_action( 'wppfm_feed_update_schedule', array( $this, 'activate_feed_update_schedules' ) );
-			add_action( 'wp_ajax_dismiss_admin_notice', array( $this, 'dismiss_admin_notice' ) );
+			add_action( 'wp_ajax_wppfm_dismiss_admin_notice', array( $this, 'wppfm_dismiss_admin_notice' ) );
 
-			// Set up localisation.
-			// @since 3.11.0.- Changed from the plugins_loaded to the  after_setup_theme action to prevent a "Translation loading was triggered too early" error message.
-			add_action( 'after_setup_theme', array( $this, 'load_text_domain' ) );
+			add_filter( 'load_textdomain_mofile', array( $this, 'prefer_bundled_translations' ), 10, 2 );
 
 			// Declare compatibility with custom order tables.
 			add_action( 'before_woocommerce_init', array( $this, 'declare_compatibility_for_custom_order_tables' ) );
@@ -141,6 +138,11 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		 * Defines a few important constants.
 		 */
 		private function define_constants() {
+			// Store the main plugin file path.
+			if ( ! defined( 'WPPFM_PLUGIN_FILE' ) ) {
+				define( 'WPPFM_PLUGIN_FILE', __FILE__ );
+			}
+
 			// Store the name of the plugin.
 			if ( ! defined( 'WPPFM_PLUGIN_NAME' ) ) {
 				define( 'WPPFM_PLUGIN_NAME', 'wp-product-feed-manager' );
@@ -158,7 +160,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 
 			// Store the url of the plugin.
 			if ( ! defined( 'WPPFM_PLUGIN_URL' ) ) {
-				define( 'WPPFM_PLUGIN_URL', plugins_url() . '/' . WPPFM_PLUGIN_NAME );
+				define( 'WPPFM_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 			}
 
 			// Store the version of my plugin.
@@ -199,7 +201,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 
 			// Store the plugin title.
 			if ( ! defined( 'WPPFM_EDD_SL_ITEM_NAME' ) ) {
-				define( 'WPPFM_EDD_SL_ITEM_NAME', 'WP Product Feed Manager' );
+				define( 'WPPFM_EDD_SL_ITEM_NAME', 'Product Feed Manager for WooCommerce' );
 			}
 
 			// Store the plugin title.
@@ -286,7 +288,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 			// Include the admin menu and the includes file.
 			require_once __DIR__ . '/includes/application/wppfm-feed-processing-support.php';
 			require_once __DIR__ . '/includes/application/wppfm-feed-processor-functions.php';
-//			require_once __DIR__ . '/includes/application/wppfm-plugin-reversion-functions.php';
+			require_once __DIR__ . '/includes/application/wppfm-cron-functions.php';
 			require_once __DIR__ . '/includes/user-interface/wppfm-admin-menu-functions.php';
 			require_once __DIR__ . '/includes/user-interface/wppfm-admin-actions.php';
 			require_once __DIR__ . '/includes/user-interface/wppfm-edit-feed-form-functions.php';
@@ -299,8 +301,12 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 			require_once __DIR__ . '/includes/wppfm-wpincludes.php';
 			require_once __DIR__ . '/includes/packages/logger/wp-product-feed-manager-logger.php';
 
+			// Include performance monitor for feed optimization testing
+			// @since 3.16.0.0
+			require_once __DIR__ . '/includes/application/class-wppfm-feed-performance-monitor.php';
+
 			if ( 'true' === get_option( 'wppfm_show_product_identifiers', 'false' ) ) {
-				require_once __DIR__ . '/includes/user-interface/wppfm-product-identifiers.php'; // @since 2.10.0
+			require_once __DIR__ . '/includes/user-interface/wppfm-product-identifiers.php'; // @since 2.10.0
 			}
 
 			// Include all required classes.
@@ -329,7 +335,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		 *
 		 * @since 1.9.8
 		 */
-		public function dismiss_admin_notice() {
+		public function wppfm_dismiss_admin_notice() {
 			if ( is_admin() ) {
 				update_option( 'wppfm_license_notice_suppressed', true );
 			}
@@ -356,15 +362,36 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 			$wppfm_database->make();
 
 			wp_schedule_event( time(), 'hourly', 'wppfm_feed_update_schedule' );
+
+			// @since 3.18.0 also prime the feed watchdog cron to recover orphaned queues.
+			if ( apply_filters( 'wppfm_enable_feed_watchdog', true ) && ! wp_next_scheduled( 'wppfm_feed_watchdog_cron' ) ) {
+				wp_schedule_event( time(), 'wppfm_feed_watchdog_interval', 'wppfm_feed_watchdog_cron' );
+			}
 		}
 
 		/**
-		 * Registers the text domain.
+		 * Forces the plugin to load bundled translation files when available.
 		 *
-		 * @since 2.1.6
+		 * @since 3.19.0
+		 *
+		 * @param string $mofile Loaded MO file path supplied by WordPress.
+		 * @param string $domain Text domain that is being initialised.
+		 *
+		 * @return string
 		 */
-		public function load_text_domain() {
-			load_plugin_textdomain( 'wp-product-feed-manager', false, WPPFM_PLUGIN_NAME . '/languages' );
+		public function prefer_bundled_translations( $mofile, $domain ) {
+			if ( 'wp-product-feed-manager' !== $domain ) {
+				return $mofile;
+			}
+
+			$locale = function_exists( 'determine_locale' ) ? determine_locale() : get_locale();
+			$bundled_mo = WPPFM_PLUGIN_DIR . 'languages/wp-product-feed-manager-' . $locale . '.mo';
+
+			if ( file_exists( $bundled_mo ) && is_readable( $bundled_mo ) ) {
+				return $bundled_mo;
+			}
+
+			return $mofile;
 		}
 
 		/**
@@ -373,6 +400,8 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		public function on_deactivation() {
 			// Stop the scheduled feed update actions.
 			wp_clear_scheduled_hook( 'wppfm_feed_update_schedule' );
+			// @since 3.18.0 unschedule the watchdog cron that keeps the queue healthy.
+			wp_clear_scheduled_hook( 'wppfm_feed_watchdog_cron' );
 			// Remove all keyed option items from the option table and clears any stuck feed processing data.
 			wppfm_clear_feed_process_data();
 		}

@@ -768,6 +768,11 @@ function wppfm_setGoogleAnalytics() {
 
 function wppfm_generateAndSaveFeed() {
 	wppfm_showWorkingSpinner();
+	
+	// Show preparation message and hide waiting icon since we have specific feedback
+	//noinspection JSUnresolvedVariable
+	wppfm_showInfoMessage( wppfm_feed_settings_form_vars.feed_preparing + ' <span class="wppfm-processing-dots"></span>' );
+	wppfm_hideWorkingSpinner();
 
 	//noinspection JSUnresolvedVariable
 	_feedHolder[ 'mainCategory' ] = ! wppfm_channelUsesOwnCategories(
@@ -843,7 +848,7 @@ function wppfm_handleUpdateFeedFileActionResult( updateResult ) {
 		case 'started_processing':
 			errorMessageElement.hide();
 			//noinspection JSUnresolvedVariable
-			wppfm_showInfoMessage( wppfm_feed_settings_form_vars.feed_started );
+			wppfm_showInfoMessage( wppfm_feed_settings_form_vars.feed_started + ' <span class="wppfm-processing-dots"></span>' );
 			wppfm_feedProcessStatusCheck( _feedHolder[ 'feedId' ], feedProcessStatusCheckRepeatTime );
 			break;
 
@@ -2623,42 +2628,55 @@ function wppfm_validSourceSelected( rowId, sourceLevel ) {
 	}
 }
 
+/**
+ * Handles changes to value input options in the feed form.
+ * 
+ * This function processes changes when a user selects different value editing options and 
+ * stores them in a standardized format in the feed holder.
+ *
+ * Storage format: "[change/and]#[option]#[value]#[withValue/calculation]"
+ *
+ * @param {number} rowId - ID of the form row
+ * @param {number} sourceLevel - Level in the source hierarchy 
+ * @param {number} valueEditorLevel - Level of the value editor
+ */
 function wppfm_valueInputOptionsChanged( rowId, sourceLevel, valueEditorLevel ) {
-	var option = jQuery( '#value-options-' + rowId + '-' + sourceLevel + '-' + valueEditorLevel + ' option:selected' ).text();
+	// Build the selector string
+	const selector = `#value-options-${rowId}-${sourceLevel}-${valueEditorLevel}`;
+	const option = jQuery( selector + ' option:selected' ).text();
 
 	if ( ! option ) {
 		return;
 	}
 
-	var value  = jQuery( '#value-options-input-' + rowId + '-' + sourceLevel + '-' + valueEditorLevel ).val();
-	var store  = '';
-	var pre    = sourceLevel > 0 ? 'and' : 'change';
+	// Get common values
+	const value = jQuery( `#value-options-input-${rowId}-${sourceLevel}-${valueEditorLevel}` ).val();
+	const prefix = sourceLevel > 0 ? 'and' : 'change';
 
-	if ( option !== 'replace' && option !== 'recalculate' ) {
-
-		store = pre + '#' + option + '#';
-		store += option === 'change nothing' || option === 'strip tags' || option === 'html entity decode' ? 'blank' : value;
-
+	// Handle basic options
+	const basicOptions = ['change nothing', 'strip tags', 'html entity decode', 'html entity encode'];
+	if ( ! ['replace', 'recalculate'].includes(option) ) {
+		const storeValue = basicOptions.includes(option) ? 'blank' : value;
+		const store = `${prefix}#${option}#${storeValue}`;
 		_feedHolder.addChangeValue( rowId, sourceLevel, valueEditorLevel, store );
-	} else if ( option === 'replace' ) {
+		return;
+	}
 
-		var withValue = jQuery( '#value-options-input-with-' + rowId + '-' + sourceLevel + '-' + valueEditorLevel ).val();
-
+	// Handle replace option
+	if ( option === 'replace' ) {
+		const withValue = jQuery( `#value-options-input-with-${rowId}-${sourceLevel}-${valueEditorLevel}` ).val();
 		if ( value && withValue ) {
-
-			store = pre + '#' + option + '#' + value + '#' + withValue;
+			const store = `${prefix}#${option}#${value}#${withValue}`;
 			_feedHolder.addChangeValue( rowId, sourceLevel, valueEditorLevel, store );
 		}
+		return;
+	}
 
-	} else if ( option === 'recalculate' ) {
-
-		var calculation = jQuery( '#value-options-recalculate-options-' + rowId + '-' + sourceLevel + '-' + valueEditorLevel + ' option:selected' ).text();
-
-		if ( value ) {
-
-			store = pre + '#' + option + '#' + calculation + '#' + value;
-			_feedHolder.addChangeValue( rowId, sourceLevel, valueEditorLevel, store );
-		}
+	// Handle recalculate option
+	if ( option === 'recalculate' && value ) {
+		const calculation = jQuery( `#value-options-recalculate-options-${rowId}-${sourceLevel}-${valueEditorLevel} option:selected` ).text();
+		const store = `${prefix}#${option}#${calculation}#${value}`;
+		_feedHolder.addChangeValue( rowId, sourceLevel, valueEditorLevel, store );
 	}
 }
 

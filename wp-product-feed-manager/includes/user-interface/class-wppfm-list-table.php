@@ -276,7 +276,7 @@ if ( ! class_exists( 'WPPFM_List_Table' ) ) :
 			$feed_type_link = wppfm_convert_string_with_spaces_to_lower_case_string_with_dashes( $feed_type );
 			$action_id      = wppfm_convert_string_with_spaces_to_lower_case_string_with_dashes( $title );
 
-			echo '<strong><a href="javascript:void(0);" id="wppfm-edit-' . esc_attr( $action_id ) . '-action" onclick="parent.location=\'admin.php?page=wppfm-feed-editor-page&feed-type=' . esc_url( $feed_type_link ) . '&id=' . esc_attr( $feed_id ) . '\'">' . esc_html__( 'Edit', 'wp-product-feed-manager' ) . '</a>';
+			echo '<strong><a href="javascript:void(0);" id="wppfm-edit-' . esc_attr( $action_id ) . '-action" onclick="parent.location=\'admin.php?page=wppfm-feed-editor-page&feed-type=' . esc_attr( $feed_type_link ) . '&id=' . esc_attr( $feed_id ) . '\'">' . esc_html__( 'Edit', 'wp-product-feed-manager' ) . '</a>';
 			echo ' | <a href="javascript:void(0);" id="wppfm-delete-' . esc_attr( $action_id ) . '-action" onclick="wppfm_deleteSpecificFeed(' . esc_attr( $feed_id ) . ', \'' . esc_attr( $file_name ) . '\')">' . esc_html__( 'Delete', 'wp-product-feed-manager' ) . '</a>';
 			echo 'Product Feed' === $feed_type ? ' | <a href="javascript:void(0);" id="wppfm-regenerate-' . esc_attr( $action_id ) . '-action" onclick="wppfm_regenerateFeed(' . esc_attr( $feed_id ) . ')">' . esc_html__( 'Regenerate', 'wp-product-feed-manager' ) . '</a></strong>' : '';
 			$this->feed_status_checker_script( $feed_id );

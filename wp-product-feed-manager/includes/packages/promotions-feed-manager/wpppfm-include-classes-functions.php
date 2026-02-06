@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @return void
  */
-function wpppfm_include_classes() {
+function wppfm_pf_include_classes() {
 
 	if ( ! class_exists( 'WPPPFM_Add_Promotions_Feed_Editor_Page' ) ) {
 		require_once __DIR__ . '/classes/class-wpppfm-add-promotions-feed-editor-page.php';

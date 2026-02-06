@@ -110,7 +110,7 @@ function wpppfm_initiateDatePickers( promotionId ) {
 		'firstDayOfWeek': '1',
 		'closeOnSelected': true,
 		'autodateOnStart': false,
-		'locale': my_script_vars.language.slice(0, 2),
+		'locale': wppfm_script_vars.language.slice(0, 2),
 	}
 
 	jQuery( `#wpppfm-promotion-effective-start-date-input-field-${promotionId}` ).appendDtpicker( dtPickerSettings );
@@ -175,6 +175,12 @@ function wpppfm_storePresetInputsInPromotions( key, promotionNr ) {
 function wpppfm_initiateSaveAndGeneratePromotionsFeed() {
 
 	wppfm_showWorkingSpinner();
+	
+	// Show preparation message and hide waiting icon since we have specific feedback
+	//noinspection JSUnresolvedVariable
+	wppfm_showInfoMessage( wppfm_feed_settings_form_vars.feed_preparing + ' <span class="wppfm-processing-dots"></span>' );
+	wppfm_hideWorkingSpinner();
+	
 	wppfm_disableFeedActionButtons( 'google-merchant-promotions-feed' );
 
 	// save the feed data to the database

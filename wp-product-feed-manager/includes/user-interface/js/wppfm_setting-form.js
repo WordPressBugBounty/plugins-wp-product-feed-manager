@@ -78,8 +78,17 @@ function wppfm_notice_mailaddress_changed() {
 	if ( newNoticeEmail ) {
 		wppfm_change_notice_mailaddress(
 				newNoticeEmail,
-				function( response ) {
-					console.log( 'Notice recipient setting changed to ' + response );
+				function( data ) {
+					if ( ! data ) {
+						return;
+					}
+					if ( data.test_sent && typeof wppfm_showSuccessMessage === 'function' ) {
+						wppfm_showSuccessMessage( wppfm_setting_form_vars.test_email_sent );
+					} else if ( data.email && ! data.test_sent && typeof wppfm_showWarningMessage === 'function' ) {
+						wppfm_showWarningMessage( wppfm_setting_form_vars.test_email_failed );
+					} else if ( data.email && typeof wppfm_showSuccessMessage === 'function' ) {
+						wppfm_showSuccessMessage( wppfm_setting_form_vars.notice_recipient_saved );
+					}
 				}
 		);
 	} else {

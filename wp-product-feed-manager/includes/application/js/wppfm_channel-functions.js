@@ -49,6 +49,7 @@ function wppfm_showChannelInputs( channel, isNew ) {
 		'37': 'switchToTikTokCatalogFeedFormMainInputs',
 		'38': 'switchToAtalandaFeedFormMainInputs',
 		'39': 'switchToRedditFeedFormMainInputs',
+		'40': 'switchToChatGPTFeedFormMainInputs',
 		'996': 'switchToMarketingrobotTsvFeedFormMainInputs',
 		'997': 'switchToMarketingrobotTxtFeedFormMainInputs',
 		'998': 'switchToMarketingrobotCsvFeedFormMainInputs',
@@ -59,7 +60,14 @@ function wppfm_showChannelInputs( channel, isNew ) {
 
 	// call the correct function
 	if ( fName.hasOwnProperty( channel ) ) {
-		window[ fName[ channel ] ]( isNew, channel );
+		// Channel-specific input helpers live in channel source files (wppfm-channels). If those files
+		// cannot be loaded (e.g. because the uploads folder was changed), this guard prevents the entire
+		// feed editor from crashing and shows a clear message to the admin.
+		if ( 'function' === typeof window[ fName[ channel ] ] ) {
+			window[ fName[ channel ] ]( isNew, channel );
+		} else {
+			wppfm_notifyMissingChannelFunction( fName[ channel ], channel );
+		}
 	}
 
 	wppfm_refreshAttributes( channel );
@@ -92,6 +100,49 @@ function wppfm_clearMainChannelSelectors() {
 
 function wppfm_refreshAttributes( channel ) {
 	return '';
+}
+
+/**
+ * Shows a one-time admin-facing error if a channel function is missing.
+ *
+ * This typically indicates that a channel source file (stored in `wppfm-channels`) could not be loaded.
+ * A common reason is a custom uploads folder (Settings -> Media -> "Store uploads in this folder"),
+ * where the `wppfm-channels` folder was not moved along with uploads.
+ *
+ * @since 3.19.1
+ * @since 3.20.0 Added a user-friendly message for server-side blocks.
+ *
+ * @param {string} functionName Channel function that was expected to exist.
+ * @param {string} channelId    Channel id used to resolve the function.
+ */
+function wppfm_notifyMissingChannelFunction( functionName, channelId ) {
+	// Avoid spamming multiple errors during initialization.
+	if ( window.wppfm_missing_channel_function_notice_shown ) {
+		return;
+	}
+
+	window.wppfm_missing_channel_function_notice_shown = true;
+
+	var message =
+		'The Product Feed Editor could not load the required channel files. ' +
+		'If you recently changed the uploads folder, please make sure the "wppfm-channels" folder is inside the active uploads folder and reload this page. ' +
+		'If it still does not load, your server may be blocking access to that folder. ' +
+		'Please ask your host to allow access to "/images/wppfm-channels/".';
+
+	// Prefer the plugin’s UI message handler when available.
+	if ( 'function' === typeof window.wppfm_showErrorMessage ) {
+		window.wppfm_showErrorMessage( message );
+	} else {
+		// Fallback for unexpected load orders.
+		window.alert( message );
+	}
+
+	// Provide a diagnostic hint for support/debugging without breaking the UI.
+	if ( window.console && 'function' === typeof window.console.error ) {
+		window.console.error(
+			'WPPFM: Missing channel function "' + functionName + '" for channel "' + channelId + '".'
+		);
+	}
 }
 
 /**
@@ -198,6 +249,7 @@ function wppfm_reactOnChannelInputChanged( channel, feedId, categoryChanged, nam
 			'37': 'tikTokCatalogInputChanged',
 			'38': 'atalandaInputChanged',
 			'39': 'redditInputChanged',
+			'40': 'chatGPTInputChanged',
 			'996': 'marketingrobotTsvInputChanged',
 			'997': 'marketingrobotTxtInputChanged',
 			'998': 'marketingrobotCsvInputChanged',
@@ -212,7 +264,11 @@ function wppfm_reactOnChannelInputChanged( channel, feedId, categoryChanged, nam
 
 	// call the correct function
 	if ( functionName ) {
-		window[ functionName ]( feedId, categoryChanged, nameChanged );
+		if ( 'function' === typeof window[ functionName ] ) {
+			window[ functionName ]( feedId, categoryChanged, nameChanged );
+		} else {
+			wppfm_notifyMissingChannelFunction( functionName, channel );
+		}
 	}
 }
 
@@ -307,6 +363,7 @@ function wppfm_fillCategoryVariables(
 		'13': 'fillAvantLinkCategoryVariables',
 		'14': 'fillZboziCategoryVariables',
 		'38': 'fillAtalandaCategoryVariables',
+		'40': 'fillChatGPTCategoryVariables',
 	};
 
 	// call the correct function
@@ -349,7 +406,7 @@ function wppfm_displayCorrectStaticField(
  * Gets the advised input fields
  *
  * @param {string} channel
- * @returns {array} array containing the advised inputs
+ * @returns {Object} object containing advised inputs (field label => source field key)
  */
 function wppfm_getAdvisedInputs( channel ) {
 	var fName = {
@@ -391,14 +448,20 @@ function wppfm_getAdvisedInputs( channel ) {
 		'37': 'woocommerceToTikTokCatalogFields',
 		'38': 'woocommerceToAtalandaFields',
 		'39': 'woocommerceToRedditFields',
+		'40': 'woocommerceToChatGPTFields',
 	};
 
 	if ( fName.hasOwnProperty( channel ) ) {
 		// call the correct function
-		return window[ fName[ channel ] ]();
-	} else {
-		return [];
+		if ( 'function' === typeof window[ fName[ channel ] ] ) {
+			return window[ fName[ channel ] ]();
+		}
+
+		wppfm_notifyMissingChannelFunction( fName[ channel ], channel );
 	}
+
+	// Safe fallback so the feed editor can continue rendering.
+	return {};
 }
 
 /**
@@ -472,6 +535,9 @@ function wppfm_setOutputAttributeLevels( channel, feedHolder, selectArgument ) {
 		case '38':
 			return setAtalandaOutputAttributeLevels( feedHolder );
 
+		case '40':
+			return setChatGPTOutputAttributeLevels( feedHolder );
+
 		case '996':
 			return setMarketingrobotTsvOutputAttributeLevels( feedHolder );
 
@@ -533,15 +599,19 @@ function wppfm_restrictedStaticFields( channel, fieldName ) {
 		'37': 'tikTokCatalogStaticFieldOptions',
 		'38': 'atalandaStaticFieldOptions',
 		'39': 'redditStaticFieldOptions',
+		'40': 'chatGPTStaticFieldOptions',
 	};
 
 	if ( fName.hasOwnProperty( channel ) ) {
 		// call the correct function
-		return window[ fName[ channel ] ]( fieldName );
-	} else {
+		if ( 'function' === typeof window[ fName[ channel ] ] ) {
+			return window[ fName[ channel ] ]( fieldName );
+		}
 
-		return [];
+		wppfm_notifyMissingChannelFunction( fName[ channel ], channel );
 	}
+
+	return [];
 }
 
 /**
@@ -833,6 +903,18 @@ function wppfm_setChannelRelatedPresets( outputsField, channel ) {
 				// only switch to the 'preset' value if no user value is set
 				if ( ! outputsField[ 'value' ] ) {
 					outputsField[ 'value' ] = setRedditPresets(	outputsField[ 'field_label' ] );
+				}
+			}
+			break;
+
+		case '40': // ChatGPT
+			if ( outputsField[ 'field_label' ] === 'enable_search' || outputsField[ 'field_label' ] === 'enable_checkout' || outputsField[ 'field_label' ] === 'condition' 
+				|| outputsField[ 'field_label' ] === 'availability' || outputsField[ 'field_label' ] === 'gender'
+					|| outputsField[ 'field_label' ] === 'price' || outputsField[ 'field_label' ] === 'sale_price' || outputsField[ 'field_label'] === 'sale_price_effective_date' ) {
+
+				// only switch to the 'preset' value if no user value is set
+				if ( ! outputsField[ 'value' ] ) {
+					outputsField[ 'value' ] = setChatGPTPresets(	outputsField[ 'field_label' ] );
 				}
 			}
 			break;

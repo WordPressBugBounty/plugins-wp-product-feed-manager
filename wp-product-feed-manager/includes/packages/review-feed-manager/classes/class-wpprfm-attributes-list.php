@@ -62,19 +62,19 @@ if ( ! class_exists( 'WPPRFM_Attributes_List' ) ) :
 		 * @var array   Array with the main feed elements and the functions that handle them.
 		 */
 		private static $main_xml_feed_elements = array(
-			'reviewer'          => 'wpprfm_handle_reviewer',
-			'review_timestamp'  => 'wpprfm_handle_simple_element',
-			'title'             => 'wpprfm_handle_simple_element',
-			'content'           => 'wpprfm_handle_simple_element',
-			'pros'              => 'wpprfm_handle_pros',
-			'cons'              => 'wpprfm_handle_cons',
-			'review_url'        => 'wpprfm_handle_review_url',
-			'reviewer_images'   => 'wpprfm_handle_reviewer_images',
-			'ratings'           => 'wpprfm_handle_ratings',
-			'products'          => 'wpprfm_handle_products',
-			'is_spam'           => 'wpprfm_handle_simple_element',
-			'collection_method' => 'wpprfm_handle_simple_element',
-			'transaction_id'    => 'wpprfm_handle_simple_element',
+			'reviewer'          => 'wppfm_rf_handle_reviewer',
+			'review_timestamp'  => 'wppfm_rf_handle_simple_element',
+			'title'             => 'wppfm_rf_handle_simple_element',
+			'content'           => 'wppfm_rf_handle_simple_element',
+			'pros'              => 'wppfm_rf_handle_pros',
+			'cons'              => 'wppfm_rf_handle_cons',
+			'review_url'        => 'wppfm_rf_handle_review_url',
+			'reviewer_images'   => 'wppfm_rf_handle_reviewer_images',
+			'ratings'           => 'wppfm_rf_handle_ratings',
+			'products'          => 'wppfm_rf_handle_products',
+			'is_spam'           => 'wppfm_rf_handle_simple_element',
+			'collection_method' => 'wppfm_rf_handle_simple_element',
+			'transaction_id'    => 'wppfm_rf_handle_simple_element',
 		);
 
 		/**

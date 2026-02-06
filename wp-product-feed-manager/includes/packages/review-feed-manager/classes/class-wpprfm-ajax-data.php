@@ -19,8 +19,8 @@ if ( ! class_exists( 'WPPRFM_Ajax_Data' ) ) :
 			parent::__construct();
 
 			// hooks
-			add_action( 'wp_ajax_myajax-get-product-review-feed-attributes', array( $this, 'myajax_get_product_review_feed_attributes' ) );
-			add_action( 'wp_ajax_myajax-get-review-data', array( $this, 'myajax_get_product_review_feed_main_data' ) );
+			add_action( 'wp_ajax_wppfm-rf-ajax-get-product-review-feed-attributes', array( $this, 'myajax_get_product_review_feed_attributes' ) );
+			add_action( 'wp_ajax_wppfm-rf-ajax-get-review-data', array( $this, 'myajax_get_product_review_feed_main_data' ) );
 		}
 
 		/**
@@ -28,7 +28,7 @@ if ( ! class_exists( 'WPPRFM_Ajax_Data' ) ) :
 		 */
 		public function myajax_get_product_review_feed_attributes() {
 
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'reviewFeedGetAttributesNonce' ), 'myajax-review-feed-get-attributes-nonce' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'reviewFeedGetAttributesNonce' ), 'wppfm-rf-ajax-review-feed-get-attributes-nonce' ) ) {
 				$feed_id = filter_input( INPUT_POST, 'feedId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 				$product_review_feed_attributes = WPPRFM_Attributes_List::get_review_feed_attributes();
@@ -52,7 +52,7 @@ if ( ! class_exists( 'WPPRFM_Ajax_Data' ) ) :
 		 */
 		public function myajax_get_product_review_feed_main_data() {
 
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'reviewFeedGetMainDataNonce' ), 'myajax-review-feed-get-main-data-nonce' ) ) {
+			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'reviewFeedGetMainDataNonce' ), 'wppfm-rf-ajax-review-feed-get-main-data-nonce' ) ) {
 				$review_feed_query_class  = new WPPRFM_Queries();
 				$product_feed_query_class = new WPPFM_Queries();
 

@@ -101,23 +101,95 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 		 * Sets the background_process_is_running option.
 		 *
 		 * @since 3.11.0 switched from using an option to using a transient to store the process status.
+		 * @since 3.18.0 records the process start timestamp to bridge the lock acquisition grace period.
 		 * @param bool $set required setting. Default false.
 		 */
 		public static function set_feed_processing_flag( $set = false ) {
 			$status = false !== $set ? 'true' : 'false';
 			set_site_transient( 'wppfm_background_process_is_active', $status, DAY_IN_SECONDS );
+
+			if ( 'true' === $status ) {
+				// @since 3.18.0 recorded process start time to bridge the lock acquisition grace period.
+				set_site_transient( 'wppfm_background_process_started_at', time(), DAY_IN_SECONDS );
+			} else {
+				// @since 3.18.0 ensure any previously recorded start timestamp is cleared when processing stops.
+				delete_site_transient( 'wppfm_background_process_started_at' );
+			}
 		}
 
 		/**
 		 * Get the background_process_is_active status option.
 		 *
 		 * @since 3.11.0 switched from using an option to using a transient to store the process status.
+		 * @since 3.18.0 requires a valid background-process lock or a short grace period after startup.
 		 * @return bool true if the process is still running.
 		 */
 		public static function feed_is_processing() {
-			$status = get_site_transient( 'wppfm_background_process_is_active' );
+			$status   = get_site_transient( 'wppfm_background_process_is_active' );
+			$use_lock = apply_filters( 'wppfm_use_lock_for_processing_flag', true );
 
-			return 'true' === $status;
+			if ( 'true' !== $status ) {
+				return false;
+			}
+
+			if ( ! $use_lock ) {
+				return true;
+			}
+
+			$process_lock = get_site_transient( 'wppfm_feed_generation_process_process_lock' );
+
+			if ( $process_lock ) {
+				return true;
+			}
+
+			$start_timestamp = intval( get_site_transient( 'wppfm_background_process_started_at' ) );
+			$grace_period    = apply_filters( 'wppfm_feed_processing_lock_grace_seconds', MINUTE_IN_SECONDS );
+
+			if ( $start_timestamp > 0 && ( time() - $start_timestamp ) <= max( 10, intval( $grace_period ) ) ) {
+				// @since 3.18.0 apply a grace period after start to allow the background worker to obtain the lock.
+				return true;
+			}
+
+			// @since 3.18.0+ Heartbeat fallback for environments where transients may be evicted early.
+			// This helps prevent overlapping workers and watchdog restarts when a process is still active but the lock transient vanished.
+			if ( self::background_process_heartbeat_is_fresh() ) {
+				return true;
+			}
+
+			return false;
+		}
+
+		/**
+		 * Returns the durable background-process heartbeat payload (if present).
+		 *
+		 * @since 3.18.0
+		 *
+		 * @return array|null
+		 */
+		public static function get_background_process_heartbeat() {
+			$heartbeat = get_site_option( 'wppfm_feed_generation_process_process_heartbeat' );
+
+			return is_array( $heartbeat ) ? $heartbeat : null;
+		}
+
+		/**
+		 * Returns true when the durable heartbeat indicates a process is likely still active.
+		 *
+		 * @since 3.18.0
+		 *
+		 * @return bool
+		 */
+		public static function background_process_heartbeat_is_fresh() {
+			$heartbeat = self::get_background_process_heartbeat();
+
+			if ( ! $heartbeat || empty( $heartbeat['ts'] ) ) {
+				return false;
+			}
+
+			$ttl = apply_filters( 'wppfm_feed_generation_process_heartbeat_ttl', 10 * MINUTE_IN_SECONDS );
+			$ttl = max( 60, intval( $ttl ) );
+
+			return ( time() - intval( $heartbeat['ts'] ) ) <= $ttl;
 		}
 
 		/**
@@ -135,23 +207,13 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 				return null;
 			}
 
-			$trans = get_transient( 'wppfm_feed_file_size' );
+			$monitor_data = self::get_feed_growth_monitor_data( $feed_file );
+			$prev_feed_size = $monitor_data['size'];
+			$prev_feed_time_stamp = $monitor_data['timestamp'];
+			$prev_processed_products = $monitor_data['processed'];
+			$bonus_delay = $monitor_data['bonus_delay'];
 
-			// Get the feed file name that's stored in the transient or take the $feed_file parameter.
-			$trans_feed_file = $trans ? substr( $trans, strrpos( $trans, '|' ) + 1 ) : $feed_file;
-
-			// if the transient was empty or the feed file in the transient is not the currently active file, reset the transient.
-			if ( false === $trans || $feed_file !== $trans_feed_file ) {
-				$trans = '0|0|' . $feed_file;
-				set_transient( 'wppfm_feed_file_size', $trans, WPPFM_TRANSIENT_LIVE );
-			}
-
-			// Get the last data.
-			$stored               = explode( '|', $trans );
-			$prev_feed_size       = $stored[0];
-			$prev_feed_time_stamp = $stored[1];
-			$feed_file            = $trans_feed_file;
-			$curr_feed_size       = file_exists( $feed_file ) ? filesize( $feed_file ) : false;
+			$curr_feed_size = file_exists( $feed_file ) ? filesize( $feed_file ) : false;
 
 			// If the file does not exist, return true.
 			if ( false === $curr_feed_size ) {
@@ -159,20 +221,39 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 				return true;
 			}
 
-			// If the size of the feed has not grown.
-			if ( $curr_feed_size <= $prev_feed_size ) {
-				$delay = apply_filters( 'wppfm_delay_failed_label', WPPFM_DELAY_FAILED_LABEL, $feed_file );
-				// And the delay time has passed.
-				if ( ( (int)$prev_feed_time_stamp + (int)$delay ) < time() ) {
-					delete_transient( 'wppfm_feed_file_size' ); // Reset the counter.
-					return true;
-				} else {
-					return false;
-				}
-			} else { // If the file size has increased, reset the timer and return false.
-				set_transient( 'wppfm_feed_file_size', $curr_feed_size . '|' . time() . '|' . $feed_file, WPPFM_TRANSIENT_LIVE );
+			$current_processed_products = self::get_processed_products_counter();
+
+			$feed_grew     = $curr_feed_size > $prev_feed_size;
+			$products_grew = $current_processed_products > $prev_processed_products;
+
+			if ( $feed_grew || $products_grew ) {
+				$bonus = $products_grew ? apply_filters( 'wppfm_failed_detection_alpha', 60, $feed_file ) : 0;
+
+				self::persist_feed_growth_monitor_data(
+					array(
+						'size'        => $curr_feed_size,
+						'timestamp'   => time(),
+						'file'        => $feed_file,
+						'processed'   => $current_processed_products,
+						'bonus_delay' => $bonus,
+					)
+				);
+
 				return false;
 			}
+
+			$base_delay = apply_filters( 'wppfm_failed_detection_base_delay', WPPFM_DELAY_FAILED_LABEL, $feed_file );
+			$base_delay = max( 0, intval( $base_delay ) );
+			$bonus_delay = max( 0, intval( $bonus_delay ) );
+			$delay = $base_delay + $bonus_delay;
+
+			// And the delay time has passed.
+			if ( (int) $prev_feed_time_stamp + $delay < time() ) {
+				delete_transient( 'wppfm_feed_file_size' ); // Reset the counter.
+				return true;
+			}
+
+			return false;
 		}
 
 		/**
@@ -189,9 +270,21 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 			}
 
 			$grow_monitor_data = explode( '|', $grow_monitor_array );
+			$prev_size         = isset( $grow_monitor_data[0] ) ? intval( $grow_monitor_data[0] ) : 0;
+			$tracked_file      = $grow_monitor_data[2] ?? '';
+			$prev_processed    = isset( $grow_monitor_data[3] ) ? intval( $grow_monitor_data[3] ) : self::get_processed_products_counter();
+			$bonus_delay       = isset( $grow_monitor_data[4] ) ? intval( $grow_monitor_data[4] ) : 0;
 
-			// Reset the timer part of the monitor.
-			set_transient( 'wppfm_feed_file_size', $grow_monitor_data[0] . '|' . time() . '|' . $grow_monitor_data[2], WPPFM_TRANSIENT_LIVE );
+			// Reset the timer part of the monitor while keeping the other data intact.
+			self::persist_feed_growth_monitor_data(
+				array(
+					'size'        => $prev_size,
+					'timestamp'   => time(),
+					'file'        => $tracked_file,
+					'processed'   => $prev_processed,
+					'bonus_delay' => $bonus_delay,
+				)
+			);
 		}
 
 		/**
@@ -201,6 +294,86 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 		 */
 		protected static function get_feed_queue() {
 			return get_site_option( 'wppfm_feed_queue', array() );
+		}
+
+		/**
+		 * Returns the processed products counter from the transient store.
+		 *
+		 * @since 3.18.0
+		 * @return int
+		 */
+		private static function get_processed_products_counter() {
+			$processed_products = get_transient( 'wppfm_nr_of_processed_products' );
+
+			return false === $processed_products ? 0 : intval( $processed_products );
+		}
+
+		/**
+		 * Retrieves or initializes the feed growth monitor data.
+		 *
+		 * @since 3.18.0
+		 *
+		 * @param string $feed_file The feed file currently being processed.
+		 *
+		 * @return array
+		 */
+		private static function get_feed_growth_monitor_data( $feed_file ) {
+			$transient_value = get_transient( 'wppfm_feed_file_size' );
+
+			if ( false === $transient_value ) {
+				$data = array(
+					'size'        => 0,
+					'timestamp'   => time(),
+					'file'        => $feed_file,
+					'processed'   => self::get_processed_products_counter(),
+					'bonus_delay' => 0,
+				);
+				self::persist_feed_growth_monitor_data( $data );
+
+				return $data;
+			}
+
+			$stored = explode( '|', $transient_value );
+
+			// Prepare a normalized dataset (handles both legacy 3-part payloads and the new 5-part payloads).
+			$data = array(
+				'size'        => isset( $stored[0] ) ? intval( $stored[0] ) : 0,
+				'timestamp'   => isset( $stored[1] ) ? intval( $stored[1] ) : time(),
+				'file'        => $stored[2] ?? $feed_file,
+				'processed'   => isset( $stored[3] ) ? intval( $stored[3] ) : self::get_processed_products_counter(),
+				'bonus_delay' => isset( $stored[4] ) ? intval( $stored[4] ) : 0,
+			);
+
+			if ( $feed_file !== $data['file'] && '' !== $feed_file ) {
+				$data['size']        = 0;
+				$data['timestamp']   = time();
+				$data['file']        = $feed_file;
+				$data['processed']   = self::get_processed_products_counter();
+				$data['bonus_delay'] = 0;
+				self::persist_feed_growth_monitor_data( $data );
+			}
+
+			return $data;
+		}
+
+		/**
+		 * Persists the feed growth monitor data structure into the transient store.
+		 *
+		 * @since 3.18.0
+		 *
+		 * @param array $data Normalised data set.
+		 */
+		private static function persist_feed_growth_monitor_data( $data ) {
+			$payload = sprintf(
+				'%d|%d|%s|%d|%d',
+				max( 0, intval( $data['size'] ?? 0 ) ),
+				max( 0, intval( $data['timestamp'] ?? time() ) ),
+				$data['file'] ?? '',
+				max( 0, intval( $data['processed'] ?? 0 ) ),
+				max( 0, intval( $data['bonus_delay'] ?? 0 ) )
+			);
+
+			set_transient( 'wppfm_feed_file_size', $payload, WPPFM_TRANSIENT_LIVE );
 		}
 	}
 

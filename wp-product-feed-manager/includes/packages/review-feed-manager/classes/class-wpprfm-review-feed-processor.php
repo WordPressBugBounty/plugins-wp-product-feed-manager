@@ -222,8 +222,8 @@ if ( ! class_exists( 'WPPRFM_Review_Feed_Processor' ) ) :
 
 			foreach ( $this->_review_feed_elements as $element_key => $element_method_name ) {
 				if ( method_exists( $this, $element_method_name ) ) {
-					$review_text .= 'wpprfm_handle_simple_element' === $element_method_name ?
-						$this->wpprfm_handle_simple_element( $element_key, $review_placeholder ) :
+					$review_text .= 'wppfm_rf_handle_simple_element' === $element_method_name ?
+						$this->wppfm_rf_handle_simple_element( $element_key, $review_placeholder ) :
 						$this->$element_method_name( $review_placeholder );
 				}
 			}

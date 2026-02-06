@@ -9,6 +9,7 @@ function wppfm_changeValueIsFilled( rowId, sourceLevel, conditionLevel ) {
 
 	// @since 2.34.0.
 	// The "change nothing", "strip tags" and "html entity decode" selections have no value to check.
+	// @since 3.16.0. - Added "html entity encode".
 	if ( '0' === changeSelectorValue || '8' === changeSelectorValue || '9' === changeSelectorValue ) {
 		return true;
 	}
