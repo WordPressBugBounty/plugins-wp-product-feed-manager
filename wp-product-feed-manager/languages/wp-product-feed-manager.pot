@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WooCommerce Product Feed Manager\n"
-"POT-Creation-Date: 2026-01-31 12:41+0100\n"
+"POT-Creation-Date: 2026-02-25 08:43+0100\n"
 "PO-Revision-Date: 2018-08-20 20:39+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -34,13 +34,13 @@ msgid ""
 "folder."
 msgstr ""
 
-#: includes/application/class-feed-master.php:642
+#: includes/application/class-feed-master.php:679
 #: includes/user-interface/class-wppfm-i18n-scripts.php:94
 msgid "Fill with a static value"
 msgstr ""
 
-#: includes/application/class-feed-master.php:643
-#: includes/application/class-feed-master.php:648
+#: includes/application/class-feed-master.php:680
+#: includes/application/class-feed-master.php:685
 msgid "Use the settings in the Merchant Center"
 msgstr ""
 
@@ -57,7 +57,7 @@ msgid ""
 "this message, feed failure notifications should be delivered to this address."
 msgstr ""
 
-#: includes/application/wppfm-cron-functions.php:109
+#: includes/application/wppfm-cron-functions.php:113
 #, php-format
 msgid "Every %d minute (WPPFM Feed Watchdog)"
 msgid_plural "Every %d minutes (WPPFM Feed Watchdog)"
@@ -154,21 +154,21 @@ msgstr ""
 msgid "Could not remove file %s because it does not seem to exist."
 msgstr ""
 
-#: includes/data/class-wppfm-ajax-file.php:148
+#: includes/data/class-wppfm-ajax-file.php:149
 msgid ""
 "Could not update the feed file because the channel has not been installed"
 msgstr ""
 
-#: includes/data/class-wppfm-ajax-file.php:414
+#: includes/data/class-wppfm-ajax-file.php:418
 msgid "Failed to re-initialize the plugin. Please try again."
 msgstr ""
 
-#: includes/data/class-wppfm-ajax-file.php:434
+#: includes/data/class-wppfm-ajax-file.php:438
 msgid "Feed processing data cleared"
 msgstr ""
 
 #. translators: clearing the feed data failed
-#: includes/data/class-wppfm-ajax-file.php:437
+#: includes/data/class-wppfm-ajax-file.php:441
 msgid "Failed to clear the feed process. Please try again."
 msgstr ""
 
@@ -694,7 +694,7 @@ msgid "Channel Info"
 msgstr ""
 
 #. translators: %s: channel name
-#: includes/user-interface/class-wppfm-feed-editor-page.php:68
+#: includes/user-interface/class-wppfm-feed-editor-page.php:69
 #, php-format
 msgid ""
 "This feed requires the \"%s\" channel to be installed. Please open the "
@@ -1403,19 +1403,19 @@ msgid "Feed Editor"
 msgstr ""
 
 #: includes/user-interface/class-wppfm-main-header.php:82
-#: includes/user-interface/wppfm-admin-actions.php:66
+#: includes/user-interface/wppfm-admin-actions.php:67
 msgid "Channel Manager"
 msgstr ""
 
 #: includes/user-interface/class-wppfm-main-header.php:87
-#: includes/user-interface/wppfm-admin-actions.php:77
-#: includes/user-interface/wppfm-admin-actions.php:78
+#: includes/user-interface/wppfm-admin-actions.php:81
+#: includes/user-interface/wppfm-admin-actions.php:82
 msgid "Settings"
 msgstr ""
 
 #: includes/user-interface/class-wppfm-main-header.php:90
-#: includes/user-interface/wppfm-admin-actions.php:87
-#: includes/user-interface/wppfm-admin-actions.php:88
+#: includes/user-interface/wppfm-admin-actions.php:91
+#: includes/user-interface/wppfm-admin-actions.php:92
 msgid "Support"
 msgstr ""
 
@@ -1995,7 +1995,7 @@ msgstr ""
 msgid "Feed Manager"
 msgstr ""
 
-#: includes/user-interface/wppfm-admin-actions.php:46
+#: includes/user-interface/wppfm-admin-actions.php:47
 #, php-format
 msgid "%d channel update"
 msgid_plural "%d channel updates"
@@ -2003,12 +2003,12 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: Number of channel updates available
-#: includes/user-interface/wppfm-admin-actions.php:56
+#: includes/user-interface/wppfm-admin-actions.php:57
 #, php-format
 msgid "Channel Manager %s"
 msgstr ""
 
-#: includes/user-interface/wppfm-admin-actions.php:106
+#: includes/user-interface/wppfm-admin-actions.php:110
 msgid ""
 "Due to an update of your Feed Manager plugin, your feed backups are no "
 "longer valid! Please open the Feed Manager Settings page, remove all current "
@@ -2016,14 +2016,14 @@ msgid ""
 msgstr ""
 
 #. translators: %s: link to the support page
-#: includes/user-interface/wppfm-admin-actions.php:235
+#: includes/user-interface/wppfm-admin-actions.php:239
 #, php-format
 msgid ""
 "2121 - Activating your license failed. Please open a support ticket at %s "
 "for support on this issue."
 msgstr ""
 
-#: includes/user-interface/wppfm-admin-actions.php:262
+#: includes/user-interface/wppfm-admin-actions.php:266
 #, php-format
 msgid ""
 "An error has occurred. It is possible that the wpmarketingrobot website is "
@@ -2034,18 +2034,18 @@ msgid ""
 msgstr ""
 
 #. translators: 1: Name of the plugin, 2: url to the wpmarketingrobot store
-#: includes/user-interface/wppfm-admin-actions.php:313
+#: includes/user-interface/wppfm-admin-actions.php:317
 #, php-format
 msgid ""
 "You have an invalid or expired license key for your %1$s plugin. Please %2$s "
 "to keep the plugin working and your product feeds valid."
 msgstr ""
 
-#: includes/user-interface/wppfm-admin-actions.php:315
+#: includes/user-interface/wppfm-admin-actions.php:319
 msgid "click here to go to the Licenses renewal page"
 msgstr ""
 
-#: includes/user-interface/wppfm-admin-actions.php:325
+#: includes/user-interface/wppfm-admin-actions.php:329
 #, php-format
 msgid ""
 "The license key for your %1$s plugin is expiring soon. If you wish, you can "
@@ -2053,7 +2053,7 @@ msgid ""
 "feeds keep working."
 msgstr ""
 
-#: includes/user-interface/wppfm-admin-actions.php:329
+#: includes/user-interface/wppfm-admin-actions.php:333
 msgid "click here"
 msgstr ""
 
@@ -2069,7 +2069,7 @@ msgstr ""
 msgid "Get Support"
 msgstr ""
 
-#: includes/user-interface/wppfm-admin-menu-functions.php:295
+#: includes/user-interface/wppfm-admin-menu-functions.php:312
 #, php-format
 msgid ""
 "2122 - License verification failed. This may be due to a temporary issue "

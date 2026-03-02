@@ -116,8 +116,7 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 			}
 
 			// instantiate the correct channel class
-
-			$this->_channel_class = new WPPFM_Google_Feed_Class();
+			 $this->_channel_class = new WPPFM_Google_Feed_Class();
 
 			return $this->do_task( $item );
 		}

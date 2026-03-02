@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Checks if the user is on one of the plugin pages or not.
  * Also returns true when the current page cannot be defined

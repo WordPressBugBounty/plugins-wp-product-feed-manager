@@ -144,6 +144,7 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 				// @since: 2.40.0
 				do_action( 'wppfm_feed_generation_message', $feed_id, 'Received the wppfm-ajax-update-feed-file post request call from javascript to initiate the feed generation process.' );
 
+
 				/**
 				 * Send FluentCRM tag "First feed generated" (tag id=12) once per licensed user.
 				 *

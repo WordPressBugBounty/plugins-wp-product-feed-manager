@@ -138,7 +138,7 @@ function wppfm_backup() {
 							wppfm_showErrorMessage( wppfm_setting_form_vars.write_protected_file );
 							break;
 						default:
-							wppfm_showErrorMessage( wppfm_setting_form_vars.could_not_write_file.replace( '%backup_file_name%', fileName ) );
+							wppfm_showErrorMessage( wppfm_setting_form_vars.could_not_write_file.replace( '%backup_file_name%', newFileName ) );
 							break;
 					}
 				}

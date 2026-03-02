@@ -1,0 +1,1447 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: WooCommerce Product Feed Manager\n"
+"PO-Revision-Date: 2026-02-23 16:10+0100\n"
+"Language: pl_PL\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1?0:n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?1:2);\n"
+"X-Generator: ChatGPT\n"
+
+msgid "Project-Id-Version: WooCommerce Product Feed Manager
+POT-Creation-Date: 2026-01-31 12:41+0100
+PO-Revision-Date: 2018-08-20 20:39+0200
+Last-Translator: 
+Language-Team: 
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;
+X-Generator: Poedit 3.8
+X-Poedit-Basepath: ..
+X-Poedit-Flags-xgettext: --add-comments=translators:
+X-Poedit-WPHeader: wp-product-feed-manager.php
+X-Poedit-SourceCharset: UTF-8
+X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;_nx_noop:3c,1,2;__ngettext_noop:1,2
+X-Poedit-SearchPath-0: .
+X-Poedit-SearchPathExcluded-0: *.js
+"
+msgstr "Project-Id-Version: WooCommerce Feed produktów Manager
+POT-Creation-Date: 2026-01-31 12:41+0100
+PO-Revision-Date: 2018-08-20 20:39+0200
+Last-Translator: 
+Language-Team: 
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;
+X-Generator: Poedit 3.8
+X-Poedit-Basepath: ..
+X-Poedit-Flags-xgettext: --add-comments=translators:
+X-Poedit-WPHeader: wp-product-feed-manager.php
+X-Poedit-SourceCharset: UTF-8
+X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;_nx_noop:3c,1,2;__ngettext_noop:1,2
+X-Poedit-SearchPath-0: .
+X-Poedit-SearchPathExcluded-0: *.js
+"
+
+msgid "1428 - Failed to load the feed data, please try to generate a feed in the foreground mode (see Settings page) and then try the background mode again."
+msgstr "1428 - Failed to load the feed data, please try to generate a feed in the foreground mode (see Ustawienia page) and then try the background mode again."
+
+msgid "1430 - %s is not a writable folder. Make sure you have admin rights to this folder."
+msgstr "1430 - %s is not a writable folder. Make sure you have admin rights to this folder."
+
+msgid "Fill with a static value"
+msgstr "Wypełnij wartością stałą"
+
+msgid "Use the settings in the Merchant Center"
+msgstr "Użyj ustawień w Merchant Center"
+
+msgid "Test email from %s - Feed Manager Notice Recipient"
+msgstr "Test email od %s - Feed Manager Informacja Recipient"
+
+msgid "This is a test email from the %1$s plugin on your %2$s shop. If you receive this message, feed failure notifications should be delivered to this address."
+msgstr "This is a test email od the %1$s wtyczki on your %2$s shop. If you receive this message, feed failure notifications should be delivered to this address."
+
+msgid "Every %d minute (WPPFM Feed Watchdog)"
+msgid_plural "Every %d minutes (WPPFM Feed Watchdog)"
+msgstr[0] "Every %d minute (WPPFM Feed Watchdog)"
+msgstr[1] "Every %d minutes (WPPFM Feed Watchdog)"
+msgstr[2] "Every %d minutes (WPPFM Feed Watchdog)"
+
+msgid "(first affected feed ID: %s)"
+msgstr "(first affected feed ID: %s)"
+
+msgid "Automatic feed updates are running out of memory."
+msgstr "Automatic feed updates are running out of memory."
+
+msgid "We detected a cron run that failed %1$s ago because the PHP memory available to the cron job is too low (limit detected: %2$s). %3$s Automatic schedules will keep failing until the cron PHP memory limit is increased."
+msgstr "We detected a cron run that niepowodzenie %1$s ago because the PHP memory available to the cron job is too low (limit detected: %2$s). %3$s Automatic schedules will keep failing until the cron PHP limit pamięci is increased."
+
+msgid "unknown"
+msgstr "nieznane"
+
+msgid "How to fix it:"
+msgstr "Jak to naprawić:"
+
+msgid "Ask your hosting provider to raise the PHP memory limit for cron/CLI processes to at least 256 MB."
+msgstr "Ask your dostawcę hostingu to raise the PHP limit pamięci for cron/CLI processes to at least 256 MB."
+
+msgid "If you manage the cron command yourself, run it with an explicit limit (for example: %s)."
+msgstr "If you manage the cron command yourself, run it with an explicit limit (for example: %s)."
+
+msgid "Manual feed regenerations can still work because wp-admin uses a different (higher) memory limit; only the automated cron runs are affected."
+msgstr "Manual feed regenerations can still work because wp-admin uses a different (higher) limit pamięci; only the automated cron runs are affected."
+
+msgid "Hide this warning for now"
+msgstr "Ukryj to ostrzeżenie na razie"
+
+msgid "2131 - Please try to refresh the page and open a support ticket at %s if the issue persists."
+msgstr "2131 - Spróbuj odświeżyć stronę and otworzyć zgłoszenie wsparcia at %s if the issue persists."
+
+msgid "You are not allowed to do this! Please contact the web administrator."
+msgstr "Nie masz uprawnień do wykonania tej operacji! Skontaktuj się z administratorem strony."
+
+msgid "Could not add custom fields because I could not identify the channel.
+									If not already done add the correct channel in the Manage Channels page.
+									Also try to deactivate and then activate the plugin."
+msgstr "Could not add custom fields because I could not identify the channel.
+									If not already done add the correct channel in the Zarządzaj kanałami page.
+									Also try to deactivate and then activate the wtyczki."
+
+msgid "Could not identify the channel.
+								Try to deactivate and then activate the plugin.
+								If that does not work remove the plugin through the WordPress Plugins page and than reinstall and activate it again."
+msgstr "Could not identify the channel.
+								Try to deactivate and then activate the wtyczki.
+								If that does not work remove the wtyczki through the WordPress strony Wtyczki and than reinstall and activate it again."
+
+msgid "Feed"
+msgstr "Feed"
+
+msgid "Could not remove file %s because it does not seem to exist."
+msgstr "Nie udało się remove file %s because it does not seem to exist."
+
+msgid "Could not update the feed file because the channel has not been installed"
+msgstr "Could not update the feed file because the channel has not been installed"
+
+msgid "Failed to re-initialize the plugin. Please try again."
+msgstr "Nie udało się re-initialize the wtyczki. Proszę try again."
+
+msgid "Feed processing data cleared"
+msgstr "Feed processing data cleared"
+
+msgid "Failed to clear the feed process. Please try again."
+msgstr "Nie udało się clear the feed process. Proszę try again."
+
+msgid "You have no read/write permission to the %s folder. Please update the file permissions of this folder to make it writable and then try installing a channel again."
+msgstr "You have no read/write permission to the %s folder. Proszę update the file permissions of this folder to make it writable and then try installing a channel again."
+
+msgid "2832 - Failed to connect with the wp marketingrobot server. Please wait a few minutes and try again. If the issue persists, open a support ticket at %s."
+msgstr "2832 - Failed to connect with the wp marketingrobot server. Proszę wait a few minutes and try again. If the issue persists, otworzyć zgłoszenie wsparcia at %s."
+
+msgid "2141 - Your WooCommerce Product Feed Manager plugin is unable to check for channel updates. This could be due to a temporary problem with our server. If this message does not clear in 15 minutes, please open a support ticket at %s for support on this issue."
+msgstr "2141 - Your WooCommerce Feed produktów Manager wtyczki is unable to check for channel updates. This could be due to a temporary problem with our server. If this message does not clear in 15 minutes, please otworzyć zgłoszenie wsparcia at %s for support on this issue."
+
+msgid "Channel %s is not installed correctly. Please try to Deactivate and then Activate the Feed Manager Plugin in your Plugins page."
+msgstr "Kanał %s is not installed correctly. Spróbuj Deactivate and then Activate the Feed Manager Plugin in your strony Wtyczki."
+
+msgid "Channel %s is not supported by your current plugin version. Please update your plugin to the latest version and try uploading this channel again."
+msgstr "Kanał %s is not supported by your current wtyczki version. Proszę update your wtyczki to the latest version and try uploading this channel again."
+
+msgid "Could not add custom fields because I could not identify the channel.
+								If not already done add the correct channel in the Manage Channels page.
+							Also try to deactivate and then activate the plugin."
+msgstr "Could not add custom fields because I could not identify the channel.
+								If not already done add the correct channel in the Zarządzaj kanałami page.
+							Also try to deactivate and then activate the wtyczki."
+
+msgid "Feed needs to be generated first"
+msgstr "Feed needs to be generated first"
+
+msgid "The backup file is of an older version of the database and can not be restored as it is not compatible with the current database."
+msgstr "The backup file is of an older version of the database and can not be restored as it is not compatible with the current database."
+
+msgid "A backup file with the selected name does not exists."
+msgstr "A backup file with the selected name does not exists."
+
+msgid "Failed to make a copy of %s"
+msgstr "Failed to make a copy of %s"
+
+msgid "Unable to read the file containing the categories"
+msgstr "Nie można read the file containing the categories"
+
+msgid "WP_Filesystem could not be initialized"
+msgstr "WP_Filesystem could not be initialized"
+
+msgid "Unable to initialize WP_Filesystem!"
+msgstr "Nie można initialize WP_Filesystem!"
+
+msgid "There is a new version of %1$s available. %2$sView version %3$s details%4$s."
+msgstr "There is a new version of %1$s available. %2$sView version %3$s details%4$s."
+
+msgid "There is a new version of %1$s available. %2$sView version %3$s details%4$s or %5$supdate now%6$s."
+msgstr "There is a new version of %1$s available. %2$sView version %3$s details%4$s or %5$supdate now%6$s."
+
+msgid "You do not have permission to install plugin updates"
+msgstr "Nie masz uprawnień do install wtyczki updates"
+
+msgid "Error"
+msgstr "Błąd"
+
+msgid "Could not acquire process lock after %d attempts"
+msgstr "Could not acquire process lock after %d attempts"
+
+msgid "Failed to acquire process lock"
+msgstr "Failed to acquire process lock"
+
+msgid "Every %d minute"
+msgid_plural "Every %d minutes"
+msgstr[0] "Every %d minute"
+msgstr[1] "Every %d minutes"
+msgstr[2] "Every %d minutes"
+
+msgid "Could not schedule the cron event required to start the feed process. Please check if your wp cron is configured correctly and is running."
+msgstr "Nie udało się schedule the cron event required to start the feed process. Proszę check if your wp cron is configured correctly and is running."
+
+msgid "The logger code is now integrated in the Feed Manager plugin. To prevent conflicts please deactivate and remove the \"WooCommerce Product Feed Manager Logger\" plugin from your Plugins page."
+msgstr "The logger code is now integrated in the Feed Manager wtyczki. To prevent conflicts please deactivate and remove the \"WooCommerce Feed produktów Manager Logger\" wtyczki od your strony Wtyczki."
+
+msgid "-- Select the language of the feed --"
+msgstr "-- Select the language of the feed --"
+
+msgid "Local Inventory Ads"
+msgstr "Reklamy lokalnego asortymentu"
+
+msgid "Shopping Ads"
+msgstr "Reklamy Shopping"
+
+msgid "Buy on Google Listings"
+msgstr "Oferty Buy on Google"
+
+msgid "Free Listings"
+msgstr "Bezpłatne oferty"
+
+msgid "Simple"
+msgstr "Prosty"
+
+msgid "Grouped"
+msgstr "Grupowany"
+
+msgid "Virtual"
+msgstr "Wirtualny"
+
+msgid "Downloadable"
+msgstr "Do pobrania"
+
+msgid "External/affiliate"
+msgstr "Zewnętrzny/partnerski"
+
+msgid "Variable"
+msgstr "Wariantowy"
+
+msgid "Add"
+msgstr "Dodaj"
+
+msgid "Delete"
+msgstr "Usuń"
+
+msgid "Duplicate"
+msgstr "Duplikuj"
+
+msgid "Product Filter Selector"
+msgstr "Selektor filtrów produktów"
+
+msgid "Product Feed Editor"
+msgstr "Edytor feedów produktów"
+
+msgid "File Name"
+msgstr "Nazwa pliku"
+
+msgid "Promotion ID"
+msgstr "ID promocji"
+
+msgid "Products Eligible for Promotion"
+msgstr "Produkty objęte promocją"
+
+msgid "All Products"
+msgstr "Wszystkie produkty"
+
+msgid "Specific Products"
+msgstr "Wybrane produkty"
+
+msgid "Coupon Code Required"
+msgstr "Wymagany kod kuponu"
+
+msgid "No code"
+msgstr "Bez kodu"
+
+msgid "Generic code"
+msgstr "Kod ogólny"
+
+msgid "Generic Redemption Code"
+msgstr "Ogólny kod realizacji"
+
+msgid "Promotion Title"
+msgstr "Tytuł promocji"
+
+msgid "Promotion Effective Dates"
+msgstr "Daty obowiązywania promocji"
+
+msgid "from "
+msgstr "od "
+
+msgid " till "
+msgstr " do "
+
+msgid "Eligible Channel for Promotion"
+msgstr "Eligible Kanał for Promotion"
+
+msgid "Online"
+msgstr "Online"
+
+msgid "In store"
+msgstr "W sklepie"
+
+msgid "Promotion Destination"
+msgstr "Cel promocji"
+
+msgid "Promotion Details Selector"
+msgstr "Selektor szczegółów promocji"
+
+msgid "Preconditions"
+msgstr "Warunki wstępne"
+
+msgid "Promotion categories"
+msgstr "Promotion categories"
+
+msgid "Limits"
+msgstr "Limits"
+
+msgid "Additional attributes"
+msgstr "Additional attributes"
+
+msgid "Minimum purchase amount"
+msgstr "Minimum purchase amount"
+
+msgid "Minimum purchase quantity for promotion"
+msgstr "Minimum purchase quantity for promotion"
+
+msgid "Percentage discount amount"
+msgstr "Percentage discount amount"
+
+msgid "Monetary discount amount of a promotion"
+msgstr "Monetary discount amount of a promotion"
+
+msgid "Quantity eligible for promotion"
+msgstr "Quantity eligible for promotion"
+
+msgid "Free shipping"
+msgstr "Free shipping"
+
+msgid "-- optional --"
+msgstr "-- optional --"
+
+msgid "Free standard shipping"
+msgstr "Free standard shipping"
+
+msgid "Free overnight shipping"
+msgstr "Free overnight shipping"
+
+msgid "Free gift of monetary value"
+msgstr "Free gift of monetary value"
+
+msgid "Free gift description"
+msgstr "Free gift description"
+
+msgid "Free gift item ID"
+msgstr "Free gift item ID"
+
+msgid "Coupon value type"
+msgstr "Coupon value type"
+
+msgid "No structured data"
+msgstr "No structured data"
+
+msgid "Money off"
+msgstr "Money off"
+
+msgid "Percent off"
+msgstr "Percent off"
+
+msgid "Buy M get N money off"
+msgstr "Buy M get N money off"
+
+msgid "Buy M get N percent off"
+msgstr "Buy M get N percent off"
+
+msgid "Buy M get percent off"
+msgstr "Buy M get percent off"
+
+msgid "Buy M get money off"
+msgstr "Buy M get money off"
+
+msgid "Free gift"
+msgstr "Free gift"
+
+msgid "Free gift with value"
+msgstr "Free gift with value"
+
+msgid "Free gift with item ID"
+msgstr "Free gift with item ID"
+
+msgid "Free shipping standard"
+msgstr "Free shipping standard"
+
+msgid "Free shipping overnight"
+msgstr "Free shipping overnight"
+
+msgid "Free shipping two day"
+msgstr "Free shipping two day"
+
+msgid "Free shipping with shipping config"
+msgstr "Free shipping with shipping config"
+
+msgid "Maximum purchase quantity for promotion"
+msgstr "Maximum purchase quantity for promotion"
+
+msgid "Maximum product price for promotion"
+msgstr "Maximum product price for promotion"
+
+msgid "Display dates for promotion"
+msgstr "Display dates for promotion"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "Image link"
+msgstr "Image link"
+
+msgid "Fine print for promotion"
+msgstr "Fine print for promotion"
+
+msgid "Price for promotion"
+msgstr "Price for promotion"
+
+msgid "You need at least version 2.39.0 of the WooCommerce Product Feed Manager plugin to use the WooCommerce Google Review Feed Manager add-on"
+msgstr "You need at least version 2.39.0 of the WooCommerce Feed produktów Manager wtyczki to use the WooCommerce Google Review Feed Manager add-on"
+
+msgid "Category Selector"
+msgstr "Category Selector"
+
+msgid "Aggregator Name"
+msgstr "Aggregator Name"
+
+msgid "Publisher Name"
+msgstr "Publisher Name"
+
+msgid "Publisher Icon (url)"
+msgstr "Publisher Icon (url)"
+
+msgid "You need to update your Feed Manager plugin to the latest version in order to use the Google Review Feed add-on."
+msgstr "You need to update your Feed Manager wtyczki to the latest version in order to use the Google Review Feed add-on."
+
+msgid "-- Select the WOOCS currency for the feed --"
+msgstr "-- Select the WOOCS currency for the feed --"
+
+msgid "Attribute Mapping"
+msgstr "Attribute Mapping"
+
+msgid "No shop categories found."
+msgstr "No shop categories found."
+
+msgid "Feed Manager - Channel Manager"
+msgstr "Feed Manager - Kanał Manager"
+
+msgid "Installed Channels:"
+msgstr "Installed Kanały:"
+
+msgid "Available Channels:"
+msgstr "Available Kanały:"
+
+msgid "2965 - Could not connect to the channel download server. Please try to refresh the page in a few minutes again. You can open a support ticket at %s if the issue persists."
+msgstr "2965 - Could not connect to the channel download server. Spróbuj odświeżyć stronę in a few minutes again. You can otworzyć zgłoszenie wsparcia at %s if the issue persists."
+
+msgid "Please confirm you want to remove this channel! Removing this channel will also remove all its feed files."
+msgstr "Proszę confirm you want to remove this channel! Removing this channel will also remove all its feed files."
+
+msgid "Remove"
+msgstr "Remove"
+
+msgid "Update Available"
+msgstr "Update Available"
+
+msgid "Install"
+msgstr "Install"
+
+msgid "Channel Info"
+msgstr "Kanał Info"
+
+msgid "This feed requires the \"%s\" channel to be installed. Please open the Manage Channels page and install this channel before opening this feed."
+msgstr "This feed requires the \"%s\" channel to be installed. Proszę open the Zarządzaj kanałami page and install this channel before opening this feed."
+
+msgid "Select your product source"
+msgstr "Select your product source"
+
+msgid "-- Select your merchant --"
+msgstr "-- Select your merchant --"
+
+msgid "You first need to install a channel before you can add a feed. Open the Manage Channels page and install at least one channel."
+msgstr "You first need to install a channel before you can add a feed. Open the Zarządzaj kanałami page and install at least one channel."
+
+msgid "-- Select your business type --"
+msgstr "-- Select your business type --"
+
+msgid "-- Select your target country --"
+msgstr "-- Select your target country --"
+
+msgid "Every"
+msgstr "Every"
+
+msgid "day(s) at"
+msgstr "day(s) at"
+
+msgid "Every day at"
+msgstr "Every day at"
+
+msgid "for"
+msgstr "for"
+
+msgid "time(s) a day"
+msgstr "time(s) a day"
+
+msgid "Product Feed List"
+msgstr "Feed produktów List"
+
+msgid "Add New Feed"
+msgstr "Add New Feed"
+
+msgid "Name"
+msgstr "Name"
+
+msgid "Url"
+msgstr "Url"
+
+msgid "Updated"
+msgstr "Updated"
+
+msgid "Items"
+msgstr "Items"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Actions"
+msgstr "Actions"
+
+msgid "New blog post! Discover pro tips to get more out of your web shop!"
+msgstr "New blog post! Discover pro tips to get more out of your web shop!"
+
+msgid "You are using characters in your file name that are not allowed!"
+msgstr "You are using characters in your file name that are not allowed!"
+
+msgid "The promotion id you entered is invalid. It should not include spaces or special characters and the max length is 50 characters. Please try again"
+msgstr "The promotion id you entered is invalid. It should not include spaces or special characters and the max length is 50 characters. Proszę try again"
+
+msgid "The generic redemption code you entered is invalid. Its max length is 20 characters. Please try again"
+msgstr "The generic redemption code you entered is invalid. Its max length is 20 characters. Proszę try again"
+
+msgid "The generic redemption code you entered is invalid. Its max length is 0 characters. Please try again"
+msgstr "The generic redemption code you entered is invalid. Its max length is 0 characters. Proszę try again"
+
+msgid "You already have a feed with this name! Please use another name."
+msgstr "You already have a feed with this name! Proszę use another name."
+
+msgid "The url you entered is invalid. Please try again"
+msgstr "The url you entered is invalid. Proszę try again"
+
+msgid "Saving the data to the database has failed! Please try again."
+msgstr "Saving the data to the database has niepowodzenie! Proszę try again."
+
+msgid "no category required"
+msgstr "no category required"
+
+msgid "no feed generated"
+msgstr "no feed generated"
+
+msgid "Preparing and initializing your feed for processing"
+msgstr "Preparing and initializing your feed for processing"
+
+msgid "Started processing your feed in the background"
+msgstr "Started processing your feed in the background"
+
+msgid "Pushed the feed into the background queue. Processing starts after all other feeds are processed."
+msgstr "Pushed the feed into the background queue. Processing starts after all other feeds are processed."
+
+msgid "Error writing the feed. You do not have the correct authorities to write the file."
+msgstr "Błąd writing the feed. You do not have the correct authorities to write the file."
+
+msgid "Error generating the feed. Feed generation initialization failed. Please check your error logs for more information about the issue."
+msgstr "Błąd generating the feed. Feed generation initialization niepowodzenie. Proszę check your error logs for more information about the issue."
+
+msgid "Generating the feed has failed! Error return code = %xmlResult%"
+msgstr "Generating the feed has niepowodzenie! Błąd return code = %xmlResult%"
+
+msgid "The status of feed %feedname% is unknown."
+msgstr "The status of feed %feedname% is nieznane."
+
+msgid "Product feed %1$s is now ready. It contains %2$s %3$s."
+msgstr "Product feed %1$s is now ready. It contains %2$s %3$s."
+
+msgid "Still processing the feed in the background. You can wait for it to finish, but you can also close this form if you want."
+msgstr "Still processing the feed in the background. You can wait for it to finish, but you can also close this form if you want."
+
+msgid "This feed has been added to the feed queue and will be processed when it is next."
+msgstr "This feed has been added to the feed queue and will be processed when it is next."
+
+msgid "Product feed %feedname% has some errors!"
+msgstr "Product feed %feedname% has some errors!"
+
+msgid "Product feed %feedname% has failed!"
+msgstr "Product feed %feedname% has niepowodzenie!"
+
+msgid "The option to add product variations to the feed is not available in the free version. Unlock this option by upgrading to the Premium plugin. For more information goto %s."
+msgstr "The option to add product variations to the feed is not available in the free version. Unlock this option by upgrading to the Premium wtyczki. For more information goto %s."
+
+msgid "Select a sub-category"
+msgstr "Select a sub-category"
+
+msgid "Select by category number"
+msgstr "Select by category number"
+
+msgid "You already have a field %fieldname% defined!"
+msgstr "You already have a field %fieldname% defined!"
+
+msgid "Make sure to select all source fields before adding a new one!"
+msgstr "Make sure to select all source fields before adding a new one!"
+
+msgid "Please fill in the current condition before adding a new one!"
+msgstr "Proszę fill in the current condition before adding a new one!"
+
+msgid "Please select a source field first before you select the conditions."
+msgstr "Proszę select a source field first before you select the conditions."
+
+msgid "Please select a valid source before adding a condition to that source."
+msgstr "Proszę select a valid source before adding a condition to that source."
+
+msgid "The Advanced Filter option is not available in the free version. Unlock the Advanced Filter option by upgrading to the Premium plugin. For more information goto %s."
+msgstr "The Advanced Filter option is not available in the free version. Unlock the Advanced Filter option by upgrading to the Premium wtyczki. For more information goto %s."
+
+msgid "except the ones where"
+msgstr "except the ones where"
+
+msgid "Please fill in the filter values before adding a new one"
+msgstr "Proszę fill in the filter values before adding a new one"
+
+msgid "No separator"
+msgstr "No separator"
+
+msgid "space"
+msgstr "space"
+
+msgid "comma"
+msgstr "comma"
+
+msgid "point"
+msgstr "point"
+
+msgid "semicolon"
+msgstr "semicolon"
+
+msgid "colon"
+msgstr "colon"
+
+msgid "dash"
+msgstr "dash"
+
+msgid "slash"
+msgstr "slash"
+
+msgid "backslash"
+msgstr "backslash"
+
+msgid "double pipe"
+msgstr "double pipe"
+
+msgid "underscore"
+msgstr "underscore"
+
+msgid "greater than"
+msgstr "greater than"
+
+msgid "other"
+msgstr "other"
+
+msgid "for all %other% products"
+msgstr "for all %other% products"
+
+msgid "edit values"
+msgstr "edit values"
+
+msgid "and change values"
+msgstr "and change values"
+
+msgid "remove value editor"
+msgstr "remove value editor"
+
+msgid "to"
+msgstr "to"
+
+msgid "with element name"
+msgstr "with element name"
+
+msgid "Defined by the Category Mapping Table."
+msgstr "Defined by the Category Mapping Table."
+
+msgid "Use advised source"
+msgstr "Use advised source"
+
+msgid "Combine source fields"
+msgstr "Combine source fields"
+
+msgid "Category Mapping"
+msgstr "Category Mapping"
+
+msgid "Select a source field"
+msgstr "Select a source field"
+
+msgid "Map to Default Category"
+msgstr "Map to Default Category"
+
+msgid "Use Shop Category"
+msgstr "Use Shop Category"
+
+msgid "an empty field"
+msgstr "an empty field"
+
+msgid "Add recommended output"
+msgstr "Add recommended output"
+
+msgid "Add optional output"
+msgstr "Add optional output"
+
+msgid "You've not selected a Shop Category in the Category Mapping Table. With no Shop Category selected, your feed will be empty. Are you sure you still want to save this feed?"
+msgstr "You've not selected a Shop Category in the Category Mapping Table. With no Shop Category selected, your feed will be empty. Are you sure you still want to save this feed?"
+
+msgid "A file name is required!"
+msgstr "A file name is required!"
+
+msgid "A required field is not yet filled! All fields on the left column are required."
+msgstr "A required field is not yet filled! All fields on the left column are required."
+
+msgid "The feed settings are saved."
+msgstr "The feed settings are saved."
+
+msgid "Add at least one query in the previous change value row before adding a new row."
+msgstr "Add at least one query in the previous change value row before adding a new row."
+
+msgid "Please first fill in a change value option before adding a query to it."
+msgstr "Proszę first fill in a change value option before adding a query to it."
+
+msgid "The Google Supplemental Feeds are not available in the free version. Unlock this option by upgrading to the Premium plugin. For more information goto %s."
+msgstr "The Google Supplemental Feeds are not available in the free version. Unlock this option by upgrading to the Premium wtyczki. For more information goto %s."
+
+msgid "Processing the feed, please wait..."
+msgstr "Processing the feed, please wait..."
+
+msgid "Processing failed, please try again"
+msgstr "Processing niepowodzenie, please try again"
+
+msgid "In processing queue"
+msgstr "In processing queue"
+
+msgid "No data found"
+msgstr "No data found"
+
+msgid "Auto-off"
+msgstr "Auto-off"
+
+msgid "Auto-on"
+msgstr "Auto-on"
+
+msgid "Edit"
+msgstr "Edytuj"
+
+msgid "View"
+msgstr "View"
+
+msgid "Other"
+msgstr "Other"
+
+msgid "Unknown"
+msgstr "Nieznane"
+
+msgid "Ready (manual)"
+msgstr "Ready (manual)"
+
+msgid "Processing"
+msgstr "Processing"
+
+msgid "Has errors"
+msgstr "Has errors"
+
+msgid "Failed processing"
+msgstr "Failed processing"
+
+msgid "Ready (auto)"
+msgstr "Ready (auto)"
+
+msgid "Added a copy of feed %feedname% to the list."
+msgstr "Added a copy of feed %feedname% to the list."
+
+msgid "Please confirm you want to delete feed %feedname%."
+msgstr "Proszę confirm you want to delete feed %feedname%."
+
+msgid "Feed %feedname% removed from the server."
+msgstr "Feed %feedname% removed od the server."
+
+msgid "This feed does not yet exists, please (re)generate this feed first."
+msgstr "This feed does not yet exists, please (re)generate this feed first."
+
+msgid "This feed requires the \"%1$channel%\" Channel to be installed. Please open the Manage Channels page and install the \"%2$channel%\" before regenerating this feed."
+msgstr "This feed requires the \"%1$channel%\" Kanał to be installed. Proszę open the Zarządzaj kanałami page and install the \"%2$channel%\" before regenerating this feed."
+
+msgid "Channel not installed"
+msgstr "Kanał not installed"
+
+msgid "Installed version: %installed_version%"
+msgstr "Installed version: %installed_version%"
+
+msgid "First enter a file name for the backup file."
+msgstr "First enter a file name for the backup file."
+
+msgid "Please confirm you want to delete backup %backup_file_name%."
+msgstr "Proszę confirm you want to delete backup %backup_file_name%."
+
+msgid "%backup_file_name% deleted."
+msgstr "%backup_file_name% deleted."
+
+msgid "Are you sure you want to restore backup %backup_file_name%? This will overwrite your current settings and feed data!"
+msgstr "Are you sure you want to restore backup %backup_file_name%? This will overwrite your current settings and feed data!"
+
+msgid "%backup_file_name% restored"
+msgstr "%backup_file_name% restored"
+
+msgid "%backup_file_name% duplicated"
+msgstr "%backup_file_name% duplicated"
+
+msgid "Restore"
+msgstr "Restore"
+
+msgid "A backup file with the selected name already exists. Please choose an other name or delete the existing file first."
+msgstr "A backup file with the selected name already exists. Proszę choose an other name or delete the existing file first."
+
+msgid "1432 - %s is not a writable folder. Make sure you have admin rights to this folder."
+msgstr "1432 - %s is not a writable folder. Make sure you have admin rights to this folder."
+
+msgid "1433 - Could not write the %backup_file_name% file."
+msgstr "1433 - Could not write the %backup_file_name% file."
+
+msgid "No backup found"
+msgstr "No backup found"
+
+msgid "To restore the exported backup file, please upload it to the \"wp-content/uploads/wppfm-backups\" folder of the server where you want to restore it on."
+msgstr "To restore the exported backup file, please upload it to the \"wp-content/uploads/wppfm-backups\" folder of the server where you want to restore it on."
+
+msgid "The input is not a valid email address. Please try again."
+msgstr "The input is not a valid email address. Proszę try again."
+
+msgid "Notice recipient saved. A test email has been sent â check your inbox and spam folder. If you do not receive it within a few minutes, consider using an SMTP plugin as your server may not be configured for reliable email delivery."
+msgstr "Informacja recipient saved. A test email has been sent â check your inbox and spam folder. If you do not receive it within a few minutes, consider using an SMTP wtyczki as your server may not be configured for reliable email delivery."
+
+msgid "Notice recipient saved, but the test email could not be delivered. Consider using an SMTP plugin to improve email delivery."
+msgstr "Informacja recipient saved, but the test email could not be delivered. Consider using an SMTP wtyczki to improve email delivery."
+
+msgid "Notice recipient saved."
+msgstr "Informacja recipient saved."
+
+msgid "There was an unknown error with the sign up process, please contact us at %s!"
+msgstr "There was an nieznane error with the sign up process, please contact us at %s!"
+
+msgid "The email you entered is not a valid email address. Please check the address again."
+msgstr "The email you entered is not a valid email address. Proszę check the address again."
+
+msgid "edit"
+msgstr "edit"
+
+msgid "select"
+msgstr "select"
+
+msgid "selected"
+msgstr "selected"
+
+msgid "delete"
+msgstr "delete"
+
+msgid "remove"
+msgstr "remove"
+
+msgid "add"
+msgstr "add"
+
+msgid "if"
+msgstr "if"
+
+msgid "or"
+msgstr "or"
+
+msgid "and"
+msgstr "and"
+
+msgid "All products from the selected Shop Categories will be included in the feed"
+msgstr "All products od the selected Shop Categories will be included in the feed"
+
+msgid "Export"
+msgstr "Export"
+
+msgid "Regenerate"
+msgstr "Regenerate"
+
+msgid "Your key seems to be expired. If you are sure you have a valid key, please open a ticket at wpmarketingrobot.com/support/"
+msgstr "Your key seems to be expired. If you are sure you have a valid key, please open a ticket at wpmarketingrobot.com/support/"
+
+msgid "Plugin License Options"
+msgstr "Plugin License Options"
+
+msgid "License Key"
+msgstr "License Key"
+
+msgid "I accept your Terms and Conditions"
+msgstr "I accept your Terms and Conditions"
+
+msgid "Activate License"
+msgstr "Activate License"
+
+msgid "Feed List"
+msgstr "Feed List"
+
+msgid "Feed Editor"
+msgstr "Feed Edytujor"
+
+msgid "Channel Manager"
+msgstr "Kanał Manager"
+
+msgid "Settings"
+msgstr "Ustawienia"
+
+msgid "Support"
+msgstr "Support"
+
+msgid "50% Black Friday SALE!!"
+msgstr "50% Black Friday SALE!!"
+
+msgid "Black Friday Sale: 50% Off"
+msgstr "Black Friday Sale: 50% Off"
+
+msgid "From November 29 to December 2, 2024."
+msgstr "From November 29 to December 2, 2024."
+
+msgid "Optimize your WooCommerce feed management with this limited-time offer!"
+msgstr "Optimize your WooCommerce feed management with this limited-time offer!"
+
+msgid "Get Your Deal Now!"
+msgstr "Get Your Deal Now!"
+
+msgid "Nope, I don't like deals!"
+msgstr "Nope, I don't like deals!"
+
+msgid "don't show this Black Friday offer anymore"
+msgstr "don't show this Black Friday offer anymore"
+
+msgid "Google Campaign URL Builder"
+msgstr "Google Campaign URL Builder"
+
+msgid "Feed Manager - Settings"
+msgstr "Feed Manager - Ustawienia"
+
+msgid "Auto feed fix"
+msgstr "Auto feed fix"
+
+msgid "Automatically try regenerating feeds that are failed (default off)."
+msgstr "Automatically try regenerating feeds that are niepowodzenie (default off)."
+
+msgid "Leaving this option on can put extra strain on your server when feeds keep failing."
+msgstr "Leaving this option on can put extra strain on your server when feeds keep failing."
+
+msgid "Disable background processing"
+msgstr "Disable background processing"
+
+msgid "Process feeds directly instead of in the background (default off). Try this option when feeds keep getting stuck in processing. "
+msgstr "Process feeds directly instead of in the background (default off). Try this option when feeds keep getting stuck in processing. "
+
+msgid "WARNING: When this option is selected the system can only update one feed at a time. Make sure to de-conflict your feeds auto-update schedules to prevent more than one feed auto-updates at a time."
+msgstr "WARNING: When this option is selected the system can only update one feed at a time. Make sure to de-conflict your feeds auto-update schedules to prevent more than one feed auto-updates at a time."
+
+msgid "Feed process logger"
+msgstr "Feed process logger"
+
+msgid "When switched on, generates an extensive log of the feed process (default off)."
+msgstr "When switched on, generates an extensive log of the feed process (default off)."
+
+msgid "Switch this option only on request of the help desk. "
+msgstr "Switch this option only on request of the help desk. "
+
+msgid "Show product identifiers"
+msgstr "Show product identifiers"
+
+msgid "When switched on, adds Brand, GTIN and MPN product identifiers to the products (default off)."
+msgstr "When switched on, adds Brand, GTIN and MPN product identifiers to the products (default off)."
+
+msgid "This option will add product identifier input fields to the Inventory card of your products. The MPN identifier is also added to the product variations."
+msgstr "This option will add product identifier input fields to the Inventory card of your products. The MPN identifier is also added to the product variations."
+
+msgid "WPML: Use full resolution URLs"
+msgstr "WPML: Use full resolution URLs"
+
+msgid "Enables full conversion of hard-coded URLs (default off)."
+msgstr "Enables full conversion of hard-coded URLs (default off)."
+
+msgid "Use this option if you're using WPML and are getting incorrect URLs in your feed. This option will slightly increase the load on the database when processing a feed."
+msgstr "Use this option if you're using WPML and are getting incorrect URLs in your feed. This option will slightly increase the load on the database when processing a feed."
+
+msgid "Omit price filters"
+msgstr "Omit price filters"
+
+msgid "Omits filters that are used on the prices in your feeds (default off)."
+msgstr "Omits filters that are used on the prices in your feeds (default off)."
+
+msgid "Enable this option to prevent third-party plugins or custom filters from altering the prices in your product feeds. Use this if you notice incorrect prices in your feed."
+msgstr "Enable this option to prevent third-party wtyczkis or custom filters od altering the prices in your product feeds. Use this if you notice incorrect prices in your feed."
+
+msgid "Manual channel update"
+msgstr "Manual channel update"
+
+msgid "When switched on, you need to manually update channels (default off)."
+msgstr "When switched on, you need to manually update channels (default off)."
+
+msgid "By default your channels are updated automatically as soon as an update is available. This option allows your to switch off the automatic channel updates and keep your channels manually up to date."
+msgstr "By default your channels are updated automatically as soon as an update is available. This option allows your to switch off the automatic channel updates and keep your channels manually up to date."
+
+msgid "Clear feed process"
+msgstr "Clear feed process"
+
+msgid "Clear Feed Process"
+msgstr "Clear Feed Process"
+
+msgid "Use this option when feeds get stuck processing - does not delete your current feeds or settings."
+msgstr "Use this option when feeds get stuck processing - does not delete your current feeds or settings."
+
+msgid "Third party attributes"
+msgstr "Third party attributes"
+
+msgid "Enter comma separated keywords and wildcards to use third party attributes."
+msgstr "Enter comma separated keywords and wildcards to use third party attributes."
+
+msgid "Use specific wildcards. Do not use to broad wildcards like %_% because that will include default WooCommerce attributes and can sometimes result in incorrect feed outputs."
+msgstr "Use specific wildcards. Do not use to broad wildcards like %_% because that will include default WooCommerce attributes and can sometimes result in incorrect feed outputs."
+
+msgid "Notice recipient"
+msgstr "Informacja recipient"
+
+msgid "Email address of the feed manager."
+msgstr "Email address of the feed manager."
+
+msgid "Enter the email address of the person you want to be notified when a feed fails during an automatic feed update. This option requires an SMTP server for WordPress to be installed on your server. If no emails are received, consider using an SMTP plugin to improve email delivery."
+msgstr "Enter the email address of the person you want to be notified when a feed fails during an automatic feed update. This option requires an SMTP server for WordPress to be installed on your server. If no emails are received, consider using an SMTP wtyczki to improve email delivery."
+
+msgid "Re-initialize"
+msgstr "Re-initialize"
+
+msgid "Re-initiate Plugin"
+msgstr "Re-initiate Plugin"
+
+msgid "Resets and updates the plugin."
+msgstr "Resets and updates the wtyczki."
+
+msgid "Updates and cleans the tables if required, re-initiates the cron events and resets the stored license - does not delete your current feeds or settings. You need to re-enter your license after this action."
+msgstr "Updates and cleans the tables if required, re-initiates the cron events and resets the stored license - does not delete your current feeds or settings. You need to re-enter your license after this action."
+
+msgid "Backups"
+msgstr "Wsteczups"
+
+msgid "Backup Date"
+msgstr "Wsteczup Date"
+
+msgid "Add New Backup"
+msgstr "Add New Wsteczup"
+
+msgid "Backup current feeds"
+msgstr "Wsteczup current feeds"
+
+msgid "Cancel backup"
+msgstr "Anuluj backup"
+
+msgid "Feed Manager - Support"
+msgstr "Feed Manager - Support"
+
+msgid "Getting started with your WooCommerce Product Feed Manager is easier than you could imagine. All our customers are not feed marketeers and we want to make your life easier."
+msgstr "Getting started with your WooCommerce Feed produktów Manager is easier than you could imagine. All our customers are not feed marketeers and we want to make your life easier."
+
+msgid "Getting Started With Product Feed Manager"
+msgstr "Getting Started With Feed produktów Manager"
+
+msgid "Please check the following articles to get started with your WooCommerce Product Feed Manager."
+msgstr "Proszę check the following articles to get started with your WooCommerce Feed produktów Manager."
+
+msgid "Create a basic product feed"
+msgstr "Create a basic product feed"
+
+msgid "Navigating your plugin settings dashboard"
+msgstr "Navigating your wtyczki settings dashboard"
+
+msgid "Category mapping"
+msgstr "Category mapping"
+
+msgid "Adding data to a product feed attribute"
+msgstr "Adding data to a product feed attribute"
+
+msgid "Using the unique product identifier function"
+msgstr "Using the unique product identifier function"
+
+msgid "How to set automatic feed updates"
+msgstr "How to set automatic feed updates"
+
+msgid "How to use data from unsupported plugins in the feed"
+msgstr "How to use data od unsupported wtyczkis in the feed"
+
+msgid "How to create repeating fields in sub-attributes"
+msgstr "How to create repeating fields in sub-attributes"
+
+msgid "How to use the advanced product filter"
+msgstr "How to use the advanced product filter"
+
+msgid "The Channel Manager explained"
+msgstr "The Kanał Manager explained"
+
+msgid "Frequently asked questions"
+msgstr "Frequently asked questions"
+
+msgid "User Guide"
+msgstr "User Guide"
+
+msgid "Our Experts would like to assist you with your query and any help you need."
+msgstr "Our Experts would like to assist you with your query and any help you need."
+
+msgid "Need Expert Support?"
+msgstr "Need Expert Support?"
+
+msgid "Contact Support"
+msgstr "Contact Support"
+
+msgid "Download"
+msgstr "Download"
+
+msgid "Improve your Google shopping campaigns with proven, actionable steps from our detailed Google Product Feed checklist."
+msgstr "Improve your Google shopping campaigns with proven, actionable steps od our detailed Google Feed produktów checklist."
+
+msgid "Free Google Shopping Checklist"
+msgstr "Free Google Shopping Checklist"
+
+msgid "Thank you for requesting the Google Shopping Checklist: The Complete Guide. Please check your email for the download link."
+msgstr "Thank you for requesting the Google Shopping Checklist: The Complete Guide. Proszę check your email for the download link."
+
+msgid "If you don't see it in your inbox, kindly check your spam or junk folder."
+msgstr "If you don't see it in your inbox, kindly check your spam or junk folder."
+
+msgid "Google Shopping Checklist"
+msgstr "Google Shopping Checklist"
+
+msgid "We need your help to keep developing the plugin. Please review it and spread the love to keep us motivated."
+msgstr "We need your help to keep developing the wtyczki. Proszę review it and spread the love to keep us motivated."
+
+msgid "Show Your Love"
+msgstr "Show Your Love"
+
+msgid "Leave a Review"
+msgstr "Leave a Review"
+
+msgid "Get detailed and guided instructions to level up your feeds with the necessary setup."
+msgstr "Get detailed and guided instructions to level up your feeds with the necessary setup."
+
+msgid "Documentation"
+msgstr "Documentation"
+
+msgid "Visit Documentation"
+msgstr "Visit Documentation"
+
+msgid "Join our Facebook page for free expert marketing tips and strategies to boost your web shop sales!"
+msgstr "Join our Facebook page for free expert marketing tips and strategies to boost your web shop sales!"
+
+msgid "Join Our Facebook Page"
+msgstr "Join Our Facebook Page"
+
+msgid "Join Facebook Page"
+msgstr "Join Facebook Page"
+
+msgid "If you need any feature on your WooCommerce Product Feed Manager that we currently do not have, please send us a request with your wishes and requirements."
+msgstr "If you need any feature on your WooCommerce Feed produktów Manager that we currently do not have, please send us a request with your wishes and requirements."
+
+msgid "Request a Feature"
+msgstr "Request a Feature"
+
+msgid "Required attributes"
+msgstr "Required attributes"
+
+msgid "Highly recommended attributes"
+msgstr "Highly recommended attributes"
+
+msgid "Recommended attributes"
+msgstr "Recommended attributes"
+
+msgid "Optional attributes"
+msgstr "Optional attributes"
+
+msgid "Custom attributes"
+msgstr "Custom attributes"
+
+msgid "Attributes"
+msgstr "Attributes"
+
+msgid "From WooCommerce source"
+msgstr "From WooCommerce source"
+
+msgid "Condition"
+msgstr "Condition"
+
+msgid "Feed Category"
+msgstr "Feed Category"
+
+msgid "Shop Category"
+msgstr "Shop Category"
+
+msgid "Products"
+msgstr "Products"
+
+msgid "Product Filter"
+msgstr "Product Filter"
+
+msgid "Save & Generate Feed"
+msgstr "Zapisz & Generate Feed"
+
+msgid "Save Feed"
+msgstr "Zapisz Feed"
+
+msgid "View Feed"
+msgstr "View Feed"
+
+msgid "Use the campaign url builder to track clicks in Google Analytics and see which campaigns and products refer traffic."
+msgstr "Use the campaign url builder to track clicks in Google Analytics and see which campaigns and products refer traffic."
+
+msgid "Fill out the required fields (market with *). Empty fields will not be added to the url."
+msgstr "Fill out the required fields (market with *). Empty fields will not be added to the url."
+
+msgid "Click here for more info about Google Analytics"
+msgstr "Click here for more info about Google Analytics"
+
+msgid "Google Analytics Tracking"
+msgstr "Google Analytics Tracking"
+
+msgid "settings at the bottom of this page"
+msgstr "settings at the bottom of this page"
+
+msgid "Campaign Source"
+msgstr "Campaign Source"
+
+msgid "e.g. google shopping, newsletter"
+msgstr "e.g. google shopping, newsletter"
+
+msgid "Campaign Medium"
+msgstr "Campaign Medium"
+
+msgid "e.g. cpc, banner, email"
+msgstr "e.g. cpc, banner, email"
+
+msgid "Campaign Name"
+msgstr "Campaign Name"
+
+msgid "e.g. feed title, spring sale"
+msgstr "e.g. feed title, spring sale"
+
+msgid "Campaign Term"
+msgstr "Campaign Term"
+
+msgid "identify the paid keywords"
+msgstr "identify the paid keywords"
+
+msgid "Campaign Content"
+msgstr "Campaign Content"
+
+msgid "use to differentiate ads"
+msgstr "use to differentiate ads"
+
+msgid "Products source"
+msgstr "Products source"
+
+msgid "Channel"
+msgstr "Kanał"
+
+msgid "Google Feed Type"
+msgstr "Google Feed Type"
+
+msgid "Business Type"
+msgstr "Business Type"
+
+msgid "Target Country"
+msgstr "Target Country"
+
+msgid "Default Category"
+msgstr "Default Category"
+
+msgid "Aggregator Shop"
+msgstr "Aggregator Shop"
+
+msgid "Include Product Variations"
+msgstr "Include Product Variations"
+
+msgid "Feed Title"
+msgstr "Feed Title"
+
+msgid "Feed Description"
+msgstr "Feed Description"
+
+msgid "Update Schedule"
+msgstr "Update Schedule"
+
+msgid "Include"
+msgstr "Include"
+
+msgid "Exclude"
+msgstr "Exclude"
+
+msgid "WP Feed Manager"
+msgstr "WP Feed Manager"
+
+msgid "Feed Manager"
+msgstr "Feed Manager"
+
+msgid "%d channel update"
+msgid_plural "%d channel updates"
+msgstr[0] "%d channel update"
+msgstr[1] "%d channel updates"
+msgstr[2] "%d channel updates"
+
+msgid "Channel Manager %s"
+msgstr "Kanał Manager %s"
+
+msgid "Due to an update of your Feed Manager plugin, your feed backups are no longer valid! Please open the Feed Manager Settings page, remove all current backups, and make a new one."
+msgstr "Due to an update of your Feed Manager wtyczki, your feed backups are no longer valid! Proszę open the Feed Manager Ustawienia page, remove all current backups, and make a new one."
+
+msgid "2121 - Activating your license failed. Please open a support ticket at %s for support on this issue."
+msgstr "2121 - Activating your license niepowodzenie. Proszę otworzyć zgłoszenie wsparcia at %s for support on this issue."
+
+msgid "An error has occurred. It is possible that the wpmarketingrobot website is down.
+						Please check if wpmarketingrobot.com is still active. If not, or if this error consist, please contact
+						auke@wpmarketingrobot.com. Error Message: %s"
+msgstr "An error has occurred. It is possible that the wpmarketingrobot website is down.
+						Proszę check if wpmarketingrobot.com is still active. If not, or if this error consist, please contact
+						auke@wpmarketingrobot.com. Błąd Message: %s"
+
+msgid "You have an invalid or expired license key for your %1$s plugin. Please %2$s to keep the plugin working and your product feeds valid."
+msgstr "You have an invalid or expired license key for your %1$s wtyczki. Proszę %2$s to keep the wtyczki working and your product feeds valid."
+
+msgid "click here to go to the Licenses renewal page"
+msgstr "click here to go to the Licenses renewal page"
+
+msgid "The license key for your %1$s plugin is expiring soon. If you wish, you can %2$s to renew your license key directly so that you can be sure your product feeds keep working."
+msgstr "The license key for your %1$s wtyczki is expiring soon. If you wish, you can %2$s to renew your license key directly so that you can be sure your product feeds keep working."
+
+msgid "click here"
+msgstr "click here"
+
+msgid "Starter Guide"
+msgstr "Starter Guide"
+
+msgid "Go Premium"
+msgstr "Go Premium"
+
+msgid "Get Support"
+msgstr "Get Support"
+
+msgid "2122 - License verification failed. This may be due to a temporary issue with our server. Please wait a few minutes and try again. If the problem continues, feel free to open a support ticket at %s for further assistance."
+msgstr "2122 - License verification niepowodzenie. This may be due to a temporary issue with our server. Proszę wait a few minutes and try again. If the problem continues, feel free to otworzyć zgłoszenie wsparcia at %s for further assistance."
+
+msgid " Select the products you want in the feed by selecting the correct Shop Category and make sure the required attributes are set correctly"
+msgstr " Select the products you want in the feed by selecting the correct Shop Category and make sure the required attributes are set correctly"
+
+msgid "Click here to view the specifications for this feed."
+msgstr "Click here to view the specifications for this feed."
+
+msgid "Here you can edit the parameters of your new %1$s.%2$s%3$s"
+msgstr "Here you can edit the parameters of your new %1$s.%2$s%3$s"
+
+msgid "Here you can set up your new feed. Start by entering a name for your feed and selecting a channel."
+msgstr "Here you can set up your new feed. Start by entering a name for your feed and selecting a channel."
+
+msgid "There was an error but I was unable to store the error message in the log file. The message was %s"
+msgstr "There was an error but I was unable to store the error message in the log file. The message was %s"
+
+msgid "This plugin requires WooCommerce version %1$s as a minimum!
+			It seems you have installed WooCommerce version %2$s which is a version that is not supported.
+			Please update to the latest version ***"
+msgstr "This wtyczki requires WooCommerce version %1$s as a minimum!
+			It seems you have installed WooCommerce version %2$s which is a version that is not supported.
+			Proszę update to the latest version ***"
+
+msgid "This plugin only works in conjunction with the WooCommerce Plugin!
+				It seems you have not installed and activated the WooCommerce Plugin yet, so please do so before using this Plugin."
+msgstr "This wtyczki only works in conjunction with the WooCommerce Plugin!
+				It seems you have not installed and activated the WooCommerce Plugin yet, so please do so before using this Plugin."
+
+msgid "You can find more information about the Woocommerce Plugin %sby clicking here</a>."
+msgstr "You can find more information about the Woocommerce Plugin %sby clicking here</a>."
+
+msgid "Brand name of the product. If the product has no brand name you can use the manufacturer or supplier name."
+msgstr "Brand name of the product. If the product has no brand name you can use the manufacturer or supplier name."
+
+msgid "GTIN refers to a products Global Trade Item Number. You can also use a UPC, EAN, JAN, ISBN or ITF-14 number here."
+msgstr "GTIN refers to a products Global Trade Item Number. You can also use a UPC, EAN, JAN, ISBN or ITF-14 number here."
+
+msgid "Add your product's Manufacturer Part Number (MPN)."
+msgstr "Add your product's Manufacturer Part Number (MPN)."
+
+msgid "Product MPN"
+msgstr "Product MPN"
+
+msgid "Brand"
+msgstr "Brand"
+
+msgid "GTIN"
+msgstr "GTIN"
+
+msgid "MPN"
+msgstr "MPN"
+
+msgid "Product Feed"
+msgstr "Feed produktów"
+
+msgid "Exclude from Feed"
+msgstr "Exclude od Feed"
+
+msgid "Activate this option to mark this product for exclusion. Use the Feed Manager Product Filter to remove marked products from feeds"
+msgstr "Activate this option to mark this product for exclusion. Use the Feed Manager Product Filter to remove marked products od feeds"
+
+msgid "Activate this option to mark this product variation for exclusion. Use the Feed Manager Product Filter to remove marked products from feeds"
+msgstr "Activate this option to mark this product variation for exclusion. Use the Feed Manager Product Filter to remove marked products od feeds"
+
+msgid "Cloning is not allowed"
+msgstr "Cloning is not allowed"
+
+msgid "Unserializing instances of this class is not allowed"
+msgstr "Unserializing instances of this class is not allowed"
+
+msgid "WooCommerce Product Feed Manager"
+msgstr "WooCommerce Feed produktów Manager"
+
+msgid "https://www.wpmarketingrobot.com"
+msgstr "https://www.wpmarketingrobot.com"
+
+msgid "An easy-to-use WordPress plugin that generates and submits your product feeds to merchant centres."
+msgstr "An easy-to-use WordPress wtyczki that generates and submits your product feeds to merchant centres."
+
+msgid "WP Marketing Robot"
+msgstr "WP Marketing Robot"
+

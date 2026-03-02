@@ -332,12 +332,6 @@ function wppfm_finishOrUpdateSpecialFeedPage( specialFeedFeedHolder ) {
 	jQuery( '#page-bottom-buttons' ).show();
 }
 
-
-// function wppfm_handleSupportFeedSelection( supportFeedId ) {
-// 	alert( wppfm_feed_settings_form_vars.support_feeds_only_for_premium );
-// 	var googleFeedType   = jQuery( '#wppfm-feed-types-selector' );
-// 	googleFeedType.val( '1' );
-
 /**
  * Handles the selection of a Google Support Feed from an Edit Feed form.
  *
@@ -1109,11 +1103,11 @@ function wppfm_getCategoryChildren( parentCategoryId ) {
 	return feedSelectorElement.attr( 'data-children' ) ? JSON.parse( feedSelectorElement.attr( 'data-children' ) ) : [];
 }
 
-function wppfm_variationSelectionChanged() {
-	alert( wppfm_feed_settings_form_vars.variation_only_for_premium );
-	_feedHolder.changeIncludeVariations( false );
-	jQuery( '#variations' ).prop( 'checked', false );
-}
+ function wppfm_variationSelectionChanged() {
+ 	alert( wppfm_feed_settings_form_vars.variation_only_for_premium );
+ 	_feedHolder.changeIncludeVariations( false );
+ 	jQuery( '#variations' ).prop( 'checked', false );
+ }
 
 function wppfm_aggregatorChanged() {
 	if ( jQuery( '#aggregator' ).is( ':checked' ) ) {
@@ -2947,18 +2941,17 @@ function wppfm_hideFeedFormMainInputs() {
 	jQuery( '#add-product-variations-row' ).hide();
 }
 
+ function wppfm_editFeedFilter( feedId ) {
+ 	alert( wppfm_feed_settings_form_vars.advanced_filter_only_for_premium );
+ }
 
-function wppfm_editFeedFilter() {
-	alert( wppfm_feed_settings_form_vars.advanced_filter_only_for_premium );
-}
-
-function wppfm_makeFeedFilterWrapper( feedId, filter ) {
-	var	htmlCode = wppfm_feed_settings_form_vars.all_products_included;
-	htmlCode += '<span id="filter-edit-text" style="display:initial;"> (<a class="edit-feed-filter wppfm-btn wppfm-btn-small" href="javascript:void(0)" id="wppfm-edit-feed-filters';
-	htmlCode += '" onclick="wppfm_editFeedFilter()">' + wppfm_feed_settings_form_vars.edit + '</a>)</span>';
-	jQuery( '#wppfm-main-product-filter-section-body' ).html( htmlCode );
-	jQuery( '#wppfm-main-product-filter-wrapper' ).show();
-}
+ function wppfm_makeFeedFilterWrapper( feedId, filter ) {
+ 	var	htmlCode = wppfm_feed_settings_form_vars.all_products_included;
+ 	htmlCode += '<span id="wppfm-filter-edit-text" style="display:initial;"> (<a class="edit-feed-filter wppfm-btn wppfm-btn-small" href="javascript:void(0)" id="wppfm-edit-feed-filters';
+ 	htmlCode += '" onclick="wppfm_editFeedFilter(' + feedId + ')">' + wppfm_feed_settings_form_vars.edit + '</a>)</span>';
+ 	jQuery( '#wppfm-main-product-filter-section-body' ).html( htmlCode );
+ 	jQuery( '#wppfm-main-product-filter-wrapper' ).show();
+ }
 
 function wppfm_getCombinedSeparatorList( selectedValue ) {
 

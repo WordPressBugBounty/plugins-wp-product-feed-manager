@@ -103,30 +103,24 @@ function include_classes() {
 	if ( ! class_exists( 'WPPFM_Add_Feed_Editor_Page' ) ) {
 		require_once __DIR__ . '/user-interface/class-wppfm-add-feed-editor-page.php';
 	}
-	if ( ! class_exists( 'WPPFM_Add_Channel_Manager_Page' ) ) {
-		require_once __DIR__ . '/user-interface/class-wppfm-add-channel-manager-page.php';
-	}
 	if ( ! class_exists( 'WPPFM_Add_Settings_Page' ) ) {
 		require_once __DIR__ . '/user-interface/class-wppfm-add-settings-page.php';
 	}
 	if ( ! class_exists( 'WPPFM_Add_Support_Page' ) ) {
 		require_once __DIR__ . '/user-interface/class-wppfm-add-support-page.php';
-	} // ref KWYBBVTR
+	}
 	if ( ! class_exists( 'WPPFM_Feed_List_Page' ) ) {
 		require_once __DIR__ . '/user-interface/class-wppfm-feed-list-page.php';
 	}
 	if ( ! class_exists( 'WPPFM_Feed_Editor_Page' ) ) {
 		require_once __DIR__ . '/user-interface/class-wppfm-feed-editor-page.php';
 	}
-	if ( ! class_exists( 'WPPFM_Channel_Manager_Page' ) ) {
-		require_once __DIR__ . '/user-interface/class-wppfm-channel-manager-page.php';
-	} // ref MKFRPLGN
 	if ( ! class_exists( 'WPPFM_Settings_Page' ) ) {
 		require_once __DIR__ . '/user-interface/class-wppfm-settings-page.php';
 	}
 	if ( ! class_exists( 'WPPFM_Support_Page' ) ) {
 		require_once __DIR__ . '/user-interface/class-wppfm-support-page.php';
-	} // ref KWYBBVTR
+	}
 	if ( ! class_exists( 'WPPFM_Feed_Form_Control' ) ) {
 		require_once __DIR__ . '/user-interface/class-wppfm-feed-form-control.php';
 	}
@@ -210,8 +204,7 @@ function include_classes() {
  * @since 1.0.0
  */
 function include_channels() {
-
-	if ( ! class_exists( 'WPPFM_Google_Feed_Class' ) ) {
-		require_once __DIR__ . '/application/google/class-feed.php';
-	}
+	 if ( ! class_exists( 'WPPFM_Google_Feed_Class' ) ) {
+	 	require_once __DIR__ . '/application/google/class-feed.php';
+	 }
 }

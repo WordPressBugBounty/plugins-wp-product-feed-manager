@@ -60,6 +60,7 @@ if ( ! class_exists( 'WPPFM_Feed_Editor_Page' ) ) :
 			$this->sub_title();
 			echo '</div>';
 
+
 			echo '<div class="wppfm-feed-editor-wrapper">';
 
 			$this->main_input_table_wrapper();

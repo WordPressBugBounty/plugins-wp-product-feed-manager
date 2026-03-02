@@ -83,6 +83,9 @@ function wppfm_remove_custom_capabilities() {
  * Removes the registration info from the database.
  */
 function wppfm_unregister_plugin() {
+	// Retrieve the license from the database.
+	$license = get_option( 'wppfm_lic_key' );
+
 	foreach( wp_load_alloptions() as $option => $value ) {
 		if( false !== strpos( $option, 'wppfm_' ) ) { delete_option( $option );	}
 	}

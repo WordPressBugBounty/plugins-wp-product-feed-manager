@@ -82,8 +82,8 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 		}
 
 		public function read_installed_channels() {
-			$google = array( 'channel_id' => '1', 'name' => 'Google Merchant Centre', 'short' => 'google' );
-			return array( $google );
+			 $google = array( 'channel_id' => '1', 'name' => 'Google Merchant Centre', 'short' => 'google' );
+			 return array( $google );
 		}
 
 		public function register_a_channel( $channel_short_name, $channel_id, $channel_name ) {

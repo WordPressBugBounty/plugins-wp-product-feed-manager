@@ -42,7 +42,7 @@ function wppfm_change_query_filter() {
 	return 100;
 }
 
-add_filter( 'wppfm_product_query_limit', 'wppfm_change_query_filter' );
+ add_filter( 'wppfm_product_query_limit', 'wppfm_change_query_filter' );
 
 /**
  * Removes the Visit plugin site item at the plugin description on the Plugins page if this is a WooCommerce plugin version.

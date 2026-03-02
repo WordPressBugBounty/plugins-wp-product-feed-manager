@@ -35,6 +35,7 @@ function wppfm_add_feed_manager_menu( $channel_updated = false ) {
 		'wppfm_feed_editor_page'
 	);
 
+
 	// add the settings page
 	add_submenu_page(
 		'wp-product-feed-manager',
@@ -151,6 +152,7 @@ function wppfm_verify_feed_update_schedule_registration() {
 }
 
 add_action( 'admin_menu', 'wppfm_verify_feed_update_schedule_registration' );
+
 
 /**
  * Generates a Sales Promotion notice for the free version of the plugin. Gets triggered by the admin_notices action.

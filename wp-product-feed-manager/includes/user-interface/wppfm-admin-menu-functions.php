@@ -13,8 +13,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 /** @noinspection PhpUnused */
 function wppfm_open_product_feed_page() {
-	$add_new_feed_page = new WPPFM_Add_Feed_Editor_Page;
-	$add_new_feed_page->show();
+	 $add_new_feed_page = new WPPFM_Add_Feed_Editor_Page();
+	 $add_new_feed_page->show();
 }
 
 /**
@@ -23,8 +23,8 @@ function wppfm_open_product_feed_page() {
 function wppfm_feed_list_page() {
 	wppfm_check_prerequisites();
 
-	$add_feed_list_page = new WPPFM_Add_Feed_List_Page();
-	$add_feed_list_page->show();
+	 $add_feed_list_page = new WPPFM_Add_Feed_List_Page();
+	 $add_feed_list_page->show();
 }
 
 /**
@@ -54,8 +54,8 @@ function wppfm_feed_editor_page() {
 function wppfm_settings_page() {
 	wppfm_check_prerequisites();
 
-	$add_settings_page = new WPPFM_Add_Settings_Page();
-	$add_settings_page->show();
+	 $add_settings_page = new WPPFM_Add_Settings_Page();
+	 $add_settings_page->show();
 }
 
 /**
@@ -112,6 +112,148 @@ function wppfm_check_prerequisites() {
 	if ( ! wppfm_wc_min_version_required() ) {
 		wppfm_update_your_woocommerce_version_message();
 		exit;
+	}
+}
+
+/**
+ *
+ * @return false|string
+ */
+function wppfm_generate_current_main_address() {
+	// Do not validate on other wp-admin pages than the own plugins pages.
+	if ( ! wppfm_on_any_own_plugin_page() ) {
+		return false;
+	}
+
+	$tab                  = filter_input( INPUT_GET, 'tab', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) ?? '';
+	$edd_sl_plugin_prefix = apply_filters( 'wppfm_edd_plugin_prefix', 'wppfm', $tab );
+
+	if ( 'valid' === get_option( $edd_sl_plugin_prefix . '_lic_status' ) && get_option( $edd_sl_plugin_prefix . '_lic_key' ) ) {
+		if ( gmdate( 'Ymd' ) === get_option( $edd_sl_plugin_prefix . '_lic_status_date' ) ) {
+			return 'valid';
+		} else {
+			return wppfm_edd_status();
+		}
+	} else {
+		return wppfm_edd_status();
+	}
+}
+
+function wppfm_edd_status() {
+	$tab                  = filter_input( INPUT_GET, 'tab', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) ?? '';
+	$edd_sl_plugin_prefix = apply_filters( 'wppfm_edd_plugin_prefix', 'wppfm', $tab );
+	$edd_status           = wppfm_check_license( get_option( $edd_sl_plugin_prefix . '_lic_key' ) );
+
+	update_option( $edd_sl_plugin_prefix . '_lic_status', $edd_status );
+
+	if ( 'valid' === $edd_status ) {
+		update_option( $edd_sl_plugin_prefix . '_lic_status_date', gmdate( 'Ymd' ) );
+
+		return 'valid';
+	} else {
+		return $edd_status;
+	}
+}
+
+/** @noinspection PhpUnused */
+function wppfm_sanitize_license( $new ) {
+	$old = get_option( 'wppfm_lic_key' );
+
+	if ( $old && $old !== $new ) {
+		delete_option( 'wppfm_lic_status' ); // new license has been entered, so must reactivate
+	}
+
+	return $new;
+}
+
+function wppfm_check_license( $license ) {
+	// return false if no license is given
+	if ( ! $license ) {
+		return false;
+	}
+
+	$tab                  = filter_input( INPUT_GET, 'tab', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) ?? '';
+	$edd_sl_plugin_name   = apply_filters( 'wppfm_edd_plugin_item_name', urlencode( WPPFM_EDD_SL_ITEM_NAME ), $tab );
+	$edd_sl_plugin_prefix = apply_filters( 'wppfm_edd_plugin_prefix', 'wppfm', $tab );
+
+	// @since 3.11.0 - Check for a cached response
+	$cached_license_data = get_transient( $edd_sl_plugin_prefix . '_license_check_cache' );
+	if ( $cached_license_data ) {
+		return $cached_license_data;
+	}
+
+	$api_params = array(
+		'edd_action' => 'check_license',
+		'license'    => $license,
+		'item_name'  => $edd_sl_plugin_name,
+	);
+
+	$response = wp_remote_get(
+		add_query_arg(
+			$api_params,
+			WPPFM_EDD_SL_STORE_URL
+		),
+		array(
+			'timeout' => 5,
+		)
+	);
+
+	// @since 3.11.0 - Added a wp_remote_retrieve_response_code check.
+	if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+		// If the server is down, and it's only the first time, just return valid to prevent the user from being locked out.
+		if ( '0' === get_option( $edd_sl_plugin_prefix . '_lic_failed_server_response', '0' ) ) {
+			update_option( $edd_sl_plugin_prefix . '_lic_failed_server_response', '1' );
+			return 'valid';
+		}
+
+		// If the server is still down during a second check, show an error message.
+		wppfm_handle_wp_errors_response(
+			$response,
+			sprintf(
+				/* translators: %s: link to the support page */
+				__(
+					'2122 - License verification failed. This may be due to a temporary issue with our server. Please wait a few minutes and try again. If the problem continues, feel free to open a support ticket at %s for further assistance.',
+					'wp-product-feed-manager'
+				),
+				WPPFM_SUPPORT_PAGE_URL
+			)
+		);
+
+		return false;
+	}
+
+	update_option( $edd_sl_plugin_prefix . '_lic_failed_server_response', '0' );
+
+	$license_data = json_decode( wp_remote_retrieve_body( $response ) );
+
+	/**
+	 * Best-effort: persist the license owner's email when the EDD SL API provides it.
+	 *
+	 * Why:
+	 * - This plugin runs on the customer's site, not on the EDD store site.
+	 * - So we can only learn the "purchase email" if the remote EDD SL API includes it.
+	 * - Storing it here avoids extra remote calls later (e.g. for FluentCRM tagging).
+	 *
+	 * @since 3.19.1
+	 *
+	 * @see wppfm_extract_edd_sl_customer_email_from_license_data()
+	 */
+	if ( function_exists( 'wppfm_extract_edd_sl_customer_email_from_license_data' ) ) {
+		$customer_email = wppfm_extract_edd_sl_customer_email_from_license_data( $license_data );
+		if ( $customer_email ) {
+			update_option( $edd_sl_plugin_prefix . '_lic_customer_email', $customer_email );
+		}
+	}
+
+	update_option( $edd_sl_plugin_prefix . '_lic_expires', property_exists( $license_data, 'expires' ) ? $license_data->expires : '' );
+
+	if ( $license_data && 'valid' === $license_data->license ) {
+		set_transient( $edd_sl_plugin_prefix . '_license_check_cache', 'valid', 5 * MINUTE_IN_SECONDS );
+		return 'valid'; // this license is still valid
+	} else {
+		delete_option( $edd_sl_plugin_prefix . '_check_license_expiration' ); // reset the expiration messages
+		set_transient( $edd_sl_plugin_prefix . '_license_check_cache', $license_data->license, 5 * MINUTE_IN_SECONDS );
+		return $license_data->license; // this license is no longer valid
 	}
 }
 

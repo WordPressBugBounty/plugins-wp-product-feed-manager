@@ -65,7 +65,7 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		 */
 		public function __construct( $feed_id = '0' ) {
 			// Get the correct feed type class. Possible outcomes are WPPFM_Feed_Processor, WPPPFM_Promotions_Feed_Processor or WPPRFM_Review_Feed_Processor.
-			$background_process_class = $this->get_background_process_class_name( $feed_id ); // HWOTBERH
+			$background_process_class = $this->get_background_process_class_name( $feed_id );
 
 			if ( class_exists( $background_process_class ) ) {
 				$this->_background_process = new $background_process_class();
@@ -289,33 +289,27 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		private function fill_the_background_queue() {
 			// Start with an empty queue.
 			$this->_background_process->clear_the_queue();
-			$sw_status_control = 30 * 3.3;
-			$product_counter = 0;
-
-			// if this is a Google Merchant Promotions Feed, we need to fill the queue only with one dummy product id.
-			if ( '3' === $this->_feed->feedTypeId ) {
-				$this->_background_process->push_to_queue( array( 'product_id' => '0' ) );
-				return;
-			}
-
-			// Add the header to the queue.
-			$header_string = $this->get_feed_start_line();
-			$this->_background_process->push_to_queue( array( 'file_format_line' => $header_string ) );
-
-			do {
-				$product_ids = $this->get_product_ids_for_feed();
-
-				// Add the product ids to the queue.
-				foreach ( $product_ids as $product_id ) {
-					$this->_background_process->push_to_queue( $product_id );
-
-					$product_counter++;
-
-					if ( $product_counter > $sw_status_control ) {
-						break;
-					}
-				}
-			} while ( ! empty( $product_ids ) && $sw_status_control > $product_counter );
+			 $sw_status_control = 30 * 3.3;
+			 $product_counter   = 0;
+			
+			 // Add the header to the queue.
+			 $header_string = $this->get_feed_start_line();
+			 $this->_background_process->push_to_queue( array( 'file_format_line' => $header_string ) );
+			
+			 do {
+			 	$product_ids = $this->get_product_ids_for_feed();
+			
+			 	// Add the product ids to the queue.
+			 	foreach ( $product_ids as $product_id ) {
+			 		$this->_background_process->push_to_queue( $product_id );
+			
+			 		$product_counter++;
+			
+			 		if ( $product_counter > $sw_status_control ) {
+			 			break;
+			 		}
+			 	}
+			 } while ( ! empty( $product_ids ) && $sw_status_control > $product_counter );
 
 			delete_transient( 'wppfm_start_product_id' );
 			set_transient( 'wppfm_nr_of_processed_products', 0 ); // (Re)set the processed product counter for the progress bar.
@@ -373,8 +367,14 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 			}
 
 			// instantiate the correct channel class.
-			$this->_channel_class = new WPPFM_Google_Feed_Class();
-			return true;
+			 $this->_channel_class = new WPPFM_Google_Feed_Class();
+			
+			 // Reset the feed status in case the previous status was stuck in processing.
+			 if ( '5' === $this->_feed->status || '6' === $this->_feed->status ) {
+			 	$this->_feed->status = '2';
+			 }
+			
+			 return true;
 		}
 
 		/**
@@ -509,7 +509,7 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		 *
 		 * @return string containing the correct background feed processor class.
 		 */
-		protected function get_background_process_class_name( $feed_id ) { // HWOTBERH
+		protected function get_background_process_class_name( $feed_id ) {
 			$query_class = new WPPFM_Queries();
 
 			if ( intval( $feed_id ) > 0 ) {
@@ -644,6 +644,7 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		 */
 		private function get_active_fields() {
 			$active_fields = array();
+
 
 			foreach ( $this->_feed->attributes as $attribute ) {
 				if ( $attribute->isActive && 'category_mapping' !== $attribute->fieldName ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase

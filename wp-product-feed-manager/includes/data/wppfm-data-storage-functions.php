@@ -1,5 +1,8 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 /**
  * Returns a conversion table between the ajax data items from a feed generation process to the corresponding database items.

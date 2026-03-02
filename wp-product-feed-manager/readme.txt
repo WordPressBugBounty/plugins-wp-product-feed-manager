@@ -3,9 +3,9 @@ Contributors: wpmarketingrobot, michel-jongbloed, aukejomm
 Tags: Tags: Google product feed, google merchant center, google shopping, product feed manager, woocommerce google shopping
 Donate link: https://wpmarketingrobot.com/
 Requires at least: 6.5
-Tested up to: 6.10
+Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 2.20.0
+Stable tag: 2.20.1
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -246,6 +246,11 @@ Notes: These calls occur only in wp-admin for the features above. If you don’t
 3. Save and generate your feed
 
 == Changelog ==
+= 2.20.1 2026-02-24 =
+Tested - Tested up to WooCommerce 10.5.2.
+Fix - Re-minified the JavaScript files to fix an issue with the Settings page.
+Fix - Fixed an issue where batches could mix together when updating multiple feeds at once.
+
 = 2.20.0 2026-02-02 =
 Tested - Tested up to WooCommerce 10.4.3.
 Tweak - Improved the reliability of sending an email to the user after an automatic feed update fails.
@@ -452,5 +457,5 @@ Fixed an issue with a folder name with a capital letter that would cause error m
 * Added a > symbol to the selectable separator options
 
 === Upgrade Notice ===
-= 2.19.0 2026-02-02 =
+= 2.20.1 2026-02-24 =
 * Important: This update introduces additional tweaks and some bug fixes. We strongly recommend backing up your existing feeds before upgrading.

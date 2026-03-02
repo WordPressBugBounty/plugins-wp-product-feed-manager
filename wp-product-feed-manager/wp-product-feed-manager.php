@@ -7,10 +7,10 @@
  * Author URI: https://www.wpmarketingrobot.com
  * Developer: Michel Jongbloed
  * Developer URI: https://www.wpmarketingrobot.com
- * Version: 2.20.0
- * Modified: 31-01-2026
+ * Version: 2.20.1
+ * Modified: 25-02-2026
  * WC requires at least: 8.4
- * WC tested up to: 10.4.3
+ * WC tested up to: 10.5.2
  * License: GPL-3.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  *
@@ -54,7 +54,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		 *
 		 * @var string  Containing the version number of the plugin.
 		 */
-		public $version = '2.20.0';
+		public $version = '2.20.1';
 
 		/**
 		 * Author Name.
@@ -122,10 +122,15 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 			// Includes.
 			$this->includes();
 
+
 			// Register my schedule.
 			add_action( 'wppfm_feed_update_schedule', array( $this, 'activate_feed_update_schedules' ) );
 			add_action( 'wp_ajax_wppfm_dismiss_admin_notice', array( $this, 'wppfm_dismiss_admin_notice' ) );
 
+			// Set up localisation.
+			// @since 3.11.0.- Changed from the plugins_loaded to the  after_setup_theme action to prevent a "Translation loading was triggered too early" error message.
+			add_action( 'after_setup_theme', array( $this, 'load_text_domain' ) );
+			// @since 3.18.0 Force premium builds to use bundled translations.
 			add_filter( 'load_textdomain_mofile', array( $this, 'prefer_bundled_translations' ), 10, 2 );
 
 			// Declare compatibility with custom order tables.
@@ -237,7 +242,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 
 			// Store the folder that contains the channels' data.
 			if ( ! defined( 'WPPFM_CHANNEL_DATA_DIR' ) ) {
-				define( 'WPPFM_CHANNEL_DATA_DIR', WPPFM_PLUGIN_DIR . 'includes/application' );
+				 define( 'WPPFM_CHANNEL_DATA_DIR', WPPFM_PLUGIN_DIR . 'includes/application' );
 			}
 
 			// Store the folder that contains the backup files.
@@ -313,6 +318,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 			include_classes();
 			include_channels();
 
+
 			// Include the integrated Product Review Feed Manager package.
 			// @since 2.37.0
 			require_once __DIR__ . '/includes/packages/review-feed-manager/wp-product-review-feed-manager.php';
@@ -321,6 +327,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 			// @since 3.0.0
 			require_once __DIR__ . '/includes/packages/promotions-feed-manager/wp-merchant-promotions-feed-manager.php';
 		}
+
 
 		/**
 		 * Activate the feed update schedules.
@@ -367,6 +374,15 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 			if ( apply_filters( 'wppfm_enable_feed_watchdog', true ) && ! wp_next_scheduled( 'wppfm_feed_watchdog_cron' ) ) {
 				wp_schedule_event( time(), 'wppfm_feed_watchdog_interval', 'wppfm_feed_watchdog_cron' );
 			}
+		}
+
+		/**
+		 * Registers the text domain.
+		 *
+		 * @since 2.1.6
+		 */
+		public function load_text_domain() {
+			load_plugin_textdomain( 'wp-product-feed-manager', false, WPPFM_PLUGIN_NAME . '/languages' );
 		}
 
 		/**

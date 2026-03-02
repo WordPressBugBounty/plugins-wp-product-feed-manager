@@ -935,7 +935,21 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 				return false;
 			}
 
-			$properties_key         = get_site_option( 'wppfm_background_process_key' );
+			// Single source of truth:
+			// Always use the batch key we actually selected as the authoritative key for BOTH:
+			// - batch queue data
+			// - consolidated batch metadata (feed data, file path, etc.)
+			//
+			// Using the global `wppfm_background_process_key` here can lead to cross-feed contamination
+			// when multiple feeds are queued and that pointer is updated by another request between reads.
+			$properties_key = ( isset( $batch->key ) && is_string( $batch->key ) ) ? $batch->key : '';
+
+			// Keep the global pointer aligned for legacy helpers that still consult it (best effort).
+			$active_key = get_site_option( 'wppfm_background_process_key' );
+			if ( $properties_key && $active_key !== $properties_key ) {
+				update_site_option( 'wppfm_background_process_key', $properties_key );
+			}
+
 			$total_handled_products = get_transient( 'wppfm_nr_of_processed_products' );
 
 			if ( false === $total_handled_products ) {
@@ -946,7 +960,7 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 			// @since 2.10.0
 			if ( ! $properties_key ) {
 				$feed_id = filter_input( INPUT_GET, 'feed_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-				$message = 'Tried to get the next batch but the wppfm_background_process_key is empty.';
+				$message = 'Tried to get the next batch but the batch key is empty.';
 				do_action( 'wppfm_feed_generation_message', $feed_id, $message, 'ERROR' );
 				$this->end_batch( 'unknown', 'failed' );
 				return false;

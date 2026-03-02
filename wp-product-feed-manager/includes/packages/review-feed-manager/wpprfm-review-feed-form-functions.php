@@ -64,7 +64,6 @@ add_filter( 'wppfm_footer_string', 'wppfm_rf_footer_string', 10, 3 );
  * Starts the Google Product Review Feed page when clicked on the tab
  */
 function wppfm_rf_open_review_feed_page() {
-
-	$review_page = new WPPRFM_Add_Review_Feed_Editor_Page();
-	$review_page->show();
+	 $review_page = new WPPRFM_Add_Review_Feed_Editor_Page();
+	 $review_page->show();
 }
