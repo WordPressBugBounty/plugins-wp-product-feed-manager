@@ -140,9 +140,22 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 				// Fetch the data from $_POST.
 				$feed_id                  = filter_input( INPUT_POST, 'feedId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 				$background_mode_disabled = get_option( 'wppfm_disabled_background_mode', 'false' );
+				$client_request_id        = filter_input( INPUT_POST, 'client_request_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+
+				// Store the client request id so all subsequent feed process log entries can be correlated.
+				if ( is_string( $client_request_id ) && '' !== $client_request_id ) {
+					set_transient( 'wppfm_client_request_id_' . $feed_id, $client_request_id, HOUR_IN_SECONDS );
+				}
 
 				// @since: 2.40.0
-				do_action( 'wppfm_feed_generation_message', $feed_id, 'Received the wppfm-ajax-update-feed-file post request call from javascript to initiate the feed generation process.' );
+				do_action(
+					'wppfm_feed_generation_message',
+					$feed_id,
+					sprintf(
+						'Received the wppfm-ajax-update-feed-file post request call from javascript to initiate the feed generation process (client_request_id=%s).',
+						is_string( $client_request_id ) && '' !== $client_request_id ? $client_request_id : '(none)'
+					)
+				);
 
 
 				/**

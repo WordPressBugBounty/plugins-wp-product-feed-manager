@@ -96,6 +96,15 @@ function wppfm_clearMainChannelSelectors() {
 	// standard for all channels
 	jQuery( '#update-schedule-row' ).show();
 	jQuery( '#add-product-variations-row' ).show();
+	// Performance prioritizing: checkbox always visible; period and high-percentage only when enabled.
+	jQuery( '#wppfm-performance-enabled-row' ).show();
+	if ( typeof wppfm_togglePerformanceDependentRows === 'function' ) {
+		wppfm_togglePerformanceDependentRows();
+	} else {
+		jQuery( '#wppfm-performance-period-row' ).hide();
+		jQuery( '#wppfm-performance-high-percentage-row' ).hide();
+	}
+	jQuery( '#wppfm-performance-update-row' ).show();
 }
 
 function wppfm_refreshAttributes( channel ) {

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WooCommerce Product Feed Manager\n"
-"POT-Creation-Date: 2026-01-31 12:47+0100\n"
-"PO-Revision-Date: 2026-01-31 12:51+0100\n"
+"POT-Creation-Date: 2026-03-16 08:50+0100\n"
+"PO-Revision-Date: 2026-03-16 08:54+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 3.8\n"
+"X-Generator: Poedit 3.9\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-Flags-xgettext: --add-comments=translators:\n"
 "X-Poedit-WPHeader: wp-product-feed-manager.php\n"
@@ -30,7 +30,7 @@ msgstr ""
 "réessayez le mode arrière-plan."
 
 #. translators: %s: Folder where the feeds are stored
-#: includes/application/class-feed-master.php:235
+#: includes/application/class-feed-master.php:239
 #, php-format
 msgid ""
 "1430 - %s is not a writable folder. Make sure you have admin rights to this "
@@ -39,13 +39,13 @@ msgstr ""
 "1430 - %s n'est pas un dossier inscriptible. Assurez-vous d'avoir les droits "
 "d'administrateur pour ce répertoire."
 
-#: includes/application/class-feed-master.php:642
+#: includes/application/class-feed-master.php:682
 #: includes/user-interface/class-wppfm-i18n-scripts.php:94
 msgid "Fill with a static value"
 msgstr "Remplir avec une valeur statique"
 
-#: includes/application/class-feed-master.php:643
-#: includes/application/class-feed-master.php:648
+#: includes/application/class-feed-master.php:683
+#: includes/application/class-feed-master.php:688
 msgid "Use the settings in the Merchant Center"
 msgstr "Utilisez les paramètres du Merchant Center"
 
@@ -67,7 +67,30 @@ msgstr ""
 "recevez ce message, les notifications d’échec du flux devraient être "
 "envoyées à cette adresse."
 
-#: includes/application/wppfm-cron-functions.php:109
+#: includes/application/class-wppfm-performance-prioritizer.php:54
+msgid "Invalid feed ID."
+msgstr "ID de flux non valide."
+
+#: includes/application/class-wppfm-performance-prioritizer.php:59
+msgid "Could not load feed data."
+msgstr "Impossible de trouver des fichiers."
+
+#: includes/application/class-wppfm-performance-prioritizer.php:94
+msgid ""
+"WooCommerce Analytics lookup tables are missing. Performance data cannot be "
+"computed."
+msgstr ""
+"Les tables de correspondance WooCommerce Analytics sont manquantes. Les "
+"données de performance ne peuvent pas être calculées."
+
+#: includes/application/wppfm-cron-functions.php:114
+#, php-format
+msgid "Every %d minute (WPPFM Feed Updates)"
+msgid_plural "Every %d minutes (WPPFM Feed Updates)"
+msgstr[0] "Toutes les %d minute (mises à jour du flux WPPFM)"
+msgstr[1] "Toutes les %d minutes (mises à jour du flux WPPFM)"
+
+#: includes/application/wppfm-cron-functions.php:169
 #, php-format
 msgid "Every %d minute (WPPFM Feed Watchdog)"
 msgid_plural "Every %d minutes (WPPFM Feed Watchdog)"
@@ -136,7 +159,7 @@ msgstr ""
 msgid "Hide this warning for now"
 msgstr "Masquer cet avertissement pour le moment"
 
-#: includes/application/wppfm-feed-processing-support.php:78
+#: includes/application/wppfm-feed-processing-support.php:94
 #, php-format
 msgid ""
 "2131 - Please try to refresh the page and open a support ticket at %s if the "
@@ -188,23 +211,23 @@ msgstr "Flux"
 msgid "Could not remove file %s because it does not seem to exist."
 msgstr "Impossible de supprimer le fichier %s car il ne semble pas exister."
 
-#: includes/data/class-wppfm-ajax-file.php:148
+#: includes/data/class-wppfm-ajax-file.php:162
 msgid ""
 "Could not update the feed file because the channel has not been installed"
 msgstr ""
 "Impossible de mettre à jour le fichier de flux car le canal n'a pas été "
 "installé"
 
-#: includes/data/class-wppfm-ajax-file.php:414
+#: includes/data/class-wppfm-ajax-file.php:431
 msgid "Failed to re-initialize the plugin. Please try again."
 msgstr "Échec de la réinitialisation du plugin. Veuillez réessayer."
 
-#: includes/data/class-wppfm-ajax-file.php:434
+#: includes/data/class-wppfm-ajax-file.php:451
 msgid "Feed processing data cleared"
 msgstr "Données de traitement des aliments pour animaux effacées"
 
 #. translators: clearing the feed data failed
-#: includes/data/class-wppfm-ajax-file.php:437
+#: includes/data/class-wppfm-ajax-file.php:454
 msgid "Failed to clear the feed process. Please try again."
 msgstr "Échec de la suppression du processus de flux. Veuillez réessayer."
 
@@ -313,6 +336,24 @@ msgstr "WP_Filesystem n’a pas pu être initialisé"
 msgid "Unable to initialize WP_Filesystem!"
 msgstr "Impossible d’initialiser WP_Filesystem!"
 
+#: includes/data/wppfm-performance-source-fields.php:26
+msgid "Performance (high/mid/low)"
+msgstr "Performance (élevée/moyenne/faible)"
+
+#: includes/data/wppfm-performance-source-fields.php:27
+#: includes/data/wppfm-performance-source-fields.php:32
+#: includes/data/wppfm-performance-source-fields.php:37
+msgid "Performance Metrics (Feed Manager)"
+msgstr "Indicateurs de performance (Feed Manager)"
+
+#: includes/data/wppfm-performance-source-fields.php:31
+msgid "Revenue last N days"
+msgstr "Chiffre d’affaires des N derniers jours"
+
+#: includes/data/wppfm-performance-source-fields.php:36
+msgid "Orders last N days"
+msgstr "Commandes des N derniers jours"
+
 #. translators: %1$: plugin name, %2$: version number, %3$: link start, %4$: link end
 #: includes/libraries/wpmr_plugin_updater.php:241
 #, php-format
@@ -350,14 +391,14 @@ msgstr "Échec de l’acquisition du verrou de processus après %d tentatives"
 msgid "Failed to acquire process lock"
 msgstr "Échec de l’acquisition du verrou de processus"
 
-#: includes/libraries/wppfm-background-process.php:1288
+#: includes/libraries/wppfm-background-process.php:1328
 #, php-format
 msgid "Every %d minute"
 msgid_plural "Every %d minutes"
 msgstr[0] "Toutes les %d minutes"
 msgstr[1] "Toutes les %d minutes"
 
-#: includes/libraries/wppfm-background-process.php:1367
+#: includes/libraries/wppfm-background-process.php:1407
 msgid ""
 "Could not schedule the cron event required to start the feed process. Please "
 "check if your wp cron is configured correctly and is running."
@@ -773,7 +814,7 @@ msgid "Channel Info"
 msgstr "Informations sur le Canal"
 
 #. translators: %s: channel name
-#: includes/user-interface/class-wppfm-feed-editor-page.php:68
+#: includes/user-interface/class-wppfm-feed-editor-page.php:69
 #, php-format
 msgid ""
 "This feed requires the \"%s\" channel to be installed. Please open the "
@@ -825,6 +866,12 @@ msgstr "répété"
 #: includes/user-interface/class-wppfm-feed-form-control.php:142
 msgid "time(s) a day"
 msgstr "fois par jour"
+
+#: includes/user-interface/class-wppfm-feed-form-control.php:189
+msgid "read this article on how to use performance prioritizing"
+msgstr ""
+"Lisez cet article pour savoir comment utiliser la priorisation des "
+"performances (anglais)"
 
 #: includes/user-interface/class-wppfm-feed-list-page.php:48
 msgid "Product Feed List"
@@ -1567,19 +1614,19 @@ msgid "Feed Editor"
 msgstr "Éditeur de Flux"
 
 #: includes/user-interface/class-wppfm-main-header.php:82
-#: includes/user-interface/wppfm-admin-actions.php:66
+#: includes/user-interface/wppfm-admin-actions.php:67
 msgid "Channel Manager"
 msgstr "Gestionnaire de Canaux"
 
 #: includes/user-interface/class-wppfm-main-header.php:87
-#: includes/user-interface/wppfm-admin-actions.php:77
-#: includes/user-interface/wppfm-admin-actions.php:78
+#: includes/user-interface/wppfm-admin-actions.php:81
+#: includes/user-interface/wppfm-admin-actions.php:82
 msgid "Settings"
 msgstr "Réglages"
 
 #: includes/user-interface/class-wppfm-main-header.php:90
-#: includes/user-interface/wppfm-admin-actions.php:87
-#: includes/user-interface/wppfm-admin-actions.php:88
+#: includes/user-interface/wppfm-admin-actions.php:91
+#: includes/user-interface/wppfm-admin-actions.php:92
 msgid "Support"
 msgstr "Support"
 
@@ -2221,6 +2268,18 @@ msgstr "Description de l'aliment"
 msgid "Update Schedule"
 msgstr "Calendrier des mises à jour"
 
+#: includes/user-interface/elements/class-wppfm-main-input-selector-element.php:175
+msgid "Use Performance Prioritizing"
+msgstr "Utiliser la priorisation des performances"
+
+#: includes/user-interface/elements/class-wppfm-main-input-selector-element.php:189
+msgid "Period (days)"
+msgstr "Période (jours)"
+
+#: includes/user-interface/elements/class-wppfm-main-input-selector-element.php:201
+msgid "High tier percentage"
+msgstr "Pourcentage du niveau élevé"
+
 #: includes/user-interface/elements/class-wppfm-product-filter-selector-element.php:27
 msgid "Include"
 msgstr "Inclure"
@@ -2237,7 +2296,7 @@ msgstr "Gestionnaire de flux WP"
 msgid "Feed Manager"
 msgstr "Gestionnaire de flux"
 
-#: includes/user-interface/wppfm-admin-actions.php:46
+#: includes/user-interface/wppfm-admin-actions.php:47
 #, php-format
 msgid "%d channel update"
 msgid_plural "%d channel updates"
@@ -2245,12 +2304,12 @@ msgstr[0] "Mise à jour du canal %d"
 msgstr[1] "%d Mises à jour des canaux"
 
 #. translators: %d: Number of channel updates available
-#: includes/user-interface/wppfm-admin-actions.php:56
+#: includes/user-interface/wppfm-admin-actions.php:57
 #, php-format
 msgid "Channel Manager %s"
 msgstr "Gestionnaire de Canaux %s"
 
-#: includes/user-interface/wppfm-admin-actions.php:106
+#: includes/user-interface/wppfm-admin-actions.php:110
 msgid ""
 "Due to an update of your Feed Manager plugin, your feed backups are no "
 "longer valid! Please open the Feed Manager Settings page, remove all current "
@@ -2262,7 +2321,7 @@ msgstr ""
 "une nouvelle."
 
 #. translators: %s: link to the support page
-#: includes/user-interface/wppfm-admin-actions.php:235
+#: includes/user-interface/wppfm-admin-actions.php:239
 #, php-format
 msgid ""
 "2121 - Activating your license failed. Please open a support ticket at %s "
@@ -2271,7 +2330,7 @@ msgstr ""
 "2121 - L'activation de votre licence a échoué. Veuillez ouvrir un ticket "
 "d'assistance sur %s pour obtenir de l'aide à ce sujet."
 
-#: includes/user-interface/wppfm-admin-actions.php:262
+#: includes/user-interface/wppfm-admin-actions.php:266
 #, php-format
 msgid ""
 "An error has occurred. It is possible that the wpmarketingrobot website is "
@@ -2287,7 +2346,7 @@ msgstr ""
 "\t\t\t\tauke@wpmarketingrobot.com. Message d'erreur : %s"
 
 #. translators: 1: Name of the plugin, 2: url to the wpmarketingrobot store
-#: includes/user-interface/wppfm-admin-actions.php:313
+#: includes/user-interface/wppfm-admin-actions.php:317
 #, php-format
 msgid ""
 "You have an invalid or expired license key for your %1$s plugin. Please %2$s "
@@ -2297,11 +2356,11 @@ msgstr ""
 "Veuillez %2$s pour maintenir le bon fonctionnement du plugin et la validité "
 "de vos flux produits."
 
-#: includes/user-interface/wppfm-admin-actions.php:315
+#: includes/user-interface/wppfm-admin-actions.php:319
 msgid "click here to go to the Licenses renewal page"
 msgstr "cliquez ici pour accéder à la page de renouvellement des licences"
 
-#: includes/user-interface/wppfm-admin-actions.php:325
+#: includes/user-interface/wppfm-admin-actions.php:329
 #, php-format
 msgid ""
 "The license key for your %1$s plugin is expiring soon. If you wish, you can "
@@ -2312,7 +2371,7 @@ msgstr ""
 "souhaitez, vous pouvez %2$s pour la renouveler directement et vous assurer "
 "que vos flux produits continuent de fonctionner."
 
-#: includes/user-interface/wppfm-admin-actions.php:329
+#: includes/user-interface/wppfm-admin-actions.php:333
 msgid "click here"
 msgstr "cliquez ici"
 
@@ -2328,7 +2387,7 @@ msgstr "Go Premium"
 msgid "Get Support"
 msgstr "Obtenir de l'aide"
 
-#: includes/user-interface/wppfm-admin-menu-functions.php:295
+#: includes/user-interface/wppfm-admin-menu-functions.php:312
 #, php-format
 msgid ""
 "2122 - License verification failed. This may be due to a temporary issue "
@@ -2548,10 +2607,6 @@ msgstr "WP Marketing Robot"
 
 #~ msgid "You are not allowed to do this!"
 #~ msgstr "Vous n'avez pas le droit de faire cela!"
-
-#, php-format
-#~ msgid "Could not find file %s."
-#~ msgstr "Impossible de trouver les %s des fichiers."
 
 #~ msgid ""
 #~ "WPML support is now integrated in the Feed Manager plugin. To prevent "

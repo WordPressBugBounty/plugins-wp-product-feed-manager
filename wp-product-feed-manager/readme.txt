@@ -3,9 +3,9 @@ Contributors: wpmarketingrobot, michel-jongbloed, aukejomm
 Tags: Tags: Google product feed, google merchant center, google shopping, product feed manager, woocommerce google shopping
 Donate link: https://wpmarketingrobot.com/
 Requires at least: 6.5
-Tested up to: 6.9
+Tested up to: 6.10
 Requires PHP: 7.4
-Stable tag: 2.20.1
+Stable tag: 2.21.0
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -246,6 +246,16 @@ Notes: These calls occur only in wp-admin for the features above. If you don’t
 3. Save and generate your feed
 
 == Changelog ==
+= 2.21.0 2026-03-16 =
+Added - Added the option to use Performance Prioritization in your feeds
+Tested - Tested up to WooCommerce 10.6.1
+Tweak - Updated the cron trigger that checks for feeds in the auto update queue from every hour to every five minutes
+Fix - Fixed an issue where a feed with an extreme number of filtered out products would fail due to the feed not being updated for several minutes
+Fix - Fixed an issue that caused the "View Feed" button to only open .xml feeds
+Tweak - Added the option to include product performance data to the feed
+Tweak - Made some small positional improvements on the Product Feed Editor page
+Tweak - Improved the queries that are used when loading the Product Feed Editor page
+
 = 2.20.1 2026-02-24 =
 Tested - Tested up to WooCommerce 10.5.2.
 Fix - Re-minified the JavaScript files to fix an issue with the Settings page.
@@ -457,5 +467,5 @@ Fixed an issue with a folder name with a capital letter that would cause error m
 * Added a > symbol to the selectable separator options
 
 === Upgrade Notice ===
-= 2.20.1 2026-02-24 =
+= 2.21.0 2026-03-16 =
 * Important: This update introduces additional tweaks and some bug fixes. We strongly recommend backing up your existing feeds before upgrading.

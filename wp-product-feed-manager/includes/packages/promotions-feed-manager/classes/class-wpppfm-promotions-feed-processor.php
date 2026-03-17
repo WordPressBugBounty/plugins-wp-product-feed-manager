@@ -166,6 +166,7 @@ if ( ! class_exists( 'WPPPFM_Promotions_Feed_Processor' ) ) :
 
 		public function complete() {
 			parent::complete();
+			delete_transient( 'wppfm_client_request_id_' . $this->_feed_data->feedId );
 
 			// remove the properties from the options table
 			$properties_key = get_site_option( 'wppfm_background_process_key' );

@@ -427,6 +427,31 @@ jQuery( '#wppfm-accept-eula' ).on(
 	}
 );
 
+/*
+ * Performance prioritizing controls (3.21.0). Checkbox, period, high percentage persist on change and mark form dirty.
+ * Performance data is refreshed automatically at feed generation start when enabled.
+ */
+jQuery( '#wppfm-performance-enabled' ).on(
+	'change',
+	function() {
+		wppfm_performanceEnabledChanged();
+	}
+);
+
+jQuery( '#wppfm-performance-period-days' ).on(
+	'change',
+	function() {
+		wppfm_performancePeriodChanged();
+	}
+);
+
+jQuery( '#wppfm-performance-high-percentage' ).on(
+	'change',
+	function() {
+		wppfm_performanceHighPercentageChanged();
+	}
+);
+
 //jQuery( '.edit-output' ).click( function () { wppfm_editOutput( this.id ); } ); TODO: Check this out later. The this.id should get the id of the link but it doesn't.
 
 jQuery( '#wppfm-prepare-backup' ).on(

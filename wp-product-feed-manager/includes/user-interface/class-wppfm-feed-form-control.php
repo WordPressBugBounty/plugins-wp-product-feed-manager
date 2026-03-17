@@ -179,6 +179,17 @@ if ( ! class_exists( 'WPPFM_Feed_Form_Control' ) ) :
 		}
 
 		/**
+		 * Renders the performance prioritizing selector and inline help link.
+		 *
+		 * @since 3.21.0
+		 */
+		public static function performance_enabled_selector() {
+			echo '<input type="checkbox" name="wppfm-performance-enabled" id="wppfm-performance-enabled" value="1" />
+				( <a href="' . esc_url( 'https://www.wpmarketingrobot.com/help-item/using-product-feed-manager/using-performance-prioritizing-in-product-feed-manager/' ) . '" target="_blank" rel="noopener noreferrer">' .
+					esc_html__( 'read this article on how to use performance prioritizing', 'wp-product-feed-manager' ) . '</a> )';
+		}
+
+		/**
 		 * Creates the HTML code with a list of 24 hours to be used in an hour selector.
 		 *
 		 * @return string option list with 24 hours in options.

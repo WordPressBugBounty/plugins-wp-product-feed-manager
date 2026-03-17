@@ -21,7 +21,7 @@ if ( ! class_exists( 'WPPFM_Database_Management' ) ) :
 		 * Attributes
 		 * -------------------------------------------------------------------------------------------------- */
 
-		private $_version = '1.12.0'; // as of plugin version 3.9.0
+		private $_version = '1.13.0'; // as of plugin version 3.21.0 - adds feedmanager_product_performance table
 		private $_wpdb;
 		private $_charset_collate = '';
 
@@ -117,6 +117,7 @@ if ( ! class_exists( 'WPPFM_Database_Management' ) ) :
 			$this->status_table();
 			$this->categories_table();
 			$this->sources_table();
+			$this->product_performance_table();
 			//$this->error_table(); // deselected @since 2.2.0
 
 			// store the db version
@@ -288,6 +289,33 @@ if ( ! class_exists( 'WPPFM_Database_Management' ) ) :
 				category_id int NOT NULL,
 				category_label varchar(100) NOT NULL,
 				PRIMARY KEY  (category_id)
+			) " . $this->_charset_collate . ';';
+
+			dbDelta( $sql );
+		}
+
+		/**
+		 * Creates the product performance table for Performance Prioritizing feature.
+		 * Stores computed metrics (revenue, orders, tier) per feed/product/period.
+		 *
+		 * @since 3.21.0
+		 */
+		private function product_performance_table() {
+			$table_name = $this->_wpdb->prefix . 'feedmanager_product_performance';
+
+			$sql = "CREATE TABLE $table_name (
+				id bigint unsigned NOT NULL AUTO_INCREMENT,
+				product_feed_id bigint unsigned NOT NULL,
+				product_id bigint unsigned NOT NULL,
+				period_days smallint unsigned NOT NULL,
+				orders_count int unsigned NOT NULL DEFAULT 0,
+				revenue decimal(18,4) NOT NULL DEFAULT 0.0000,
+				performance_tier varchar(10) NOT NULL,
+				updated_gmt datetime NOT NULL,
+				PRIMARY KEY  (id),
+				UNIQUE KEY feed_product_period (product_feed_id, product_id, period_days),
+				KEY feed_id (product_feed_id),
+				KEY product_id (product_id)
 			) " . $this->_charset_collate . ';';
 
 			dbDelta( $sql );

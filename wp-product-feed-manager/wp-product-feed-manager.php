@@ -7,10 +7,10 @@
  * Author URI: https://www.wpmarketingrobot.com
  * Developer: Michel Jongbloed
  * Developer URI: https://www.wpmarketingrobot.com
- * Version: 2.20.1
- * Modified: 25-02-2026
+ * Version: 2.21.0
+ * Modified: 16-03-2026
  * WC requires at least: 8.4
- * WC tested up to: 10.5.2
+ * WC tested up to: 10.6.1
  * License: GPL-3.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  *
@@ -54,7 +54,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		 *
 		 * @var string  Containing the version number of the plugin.
 		 */
-		public $version = '2.20.1';
+		public $version = '2.21.0';
 
 		/**
 		 * Author Name.
@@ -135,6 +135,9 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 
 			// Declare compatibility with custom order tables.
 			add_action( 'before_woocommerce_init', array( $this, 'declare_compatibility_for_custom_order_tables' ) );
+
+			// Invalidate custom product fields cache when third-party keywords option changes.
+			add_action( 'update_option_wppfm_third_party_attribute_keywords', array( $this, 'invalidate_custom_product_fields_cache' ), 10, 3 );
 
 			do_action( 'wp_product_feed_manager_loaded' );
 		}
@@ -349,6 +352,19 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		}
 
 		/**
+		 * Invalidates the custom product fields transient when the third-party
+		 * attribute keywords option is updated.
+		 *
+		 * @param mixed  $old_value Old option value.
+		 * @param mixed  $value     New option value.
+		 * @param string $option    Option name.
+		 */
+		public function invalidate_custom_product_fields_cache( $old_value, $value, $option ) {
+			delete_transient( 'wppfm_custom_product_fields_' . md5( (string) $old_value ) );
+			delete_transient( 'wppfm_custom_product_fields_' . md5( (string) $value ) );
+		}
+
+		/**
 		 * Registers a dismiss notice action, declaring compatibility with the WooCommerce custom order tables feature.
 		 *
 		 * @since 2.36.0
@@ -368,7 +384,12 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 			$wppfm_database = new WPPFM_Database_Management();
 			$wppfm_database->make();
 
-			wp_schedule_event( time(), 'hourly', 'wppfm_feed_update_schedule' );
+			// Ensure the automatic feed update cron exists and uses the expected interval.
+			if ( function_exists( 'wppfm_schedule_feed_update_event' ) ) {
+				wppfm_schedule_feed_update_event();
+			} else {
+				wp_schedule_event( time() + MINUTE_IN_SECONDS, 'wppfm_feed_update_interval', 'wppfm_feed_update_schedule' );
+			}
 
 			// @since 3.18.0 also prime the feed watchdog cron to recover orphaned queues.
 			if ( apply_filters( 'wppfm_enable_feed_watchdog', true ) && ! wp_next_scheduled( 'wppfm_feed_watchdog_cron' ) ) {

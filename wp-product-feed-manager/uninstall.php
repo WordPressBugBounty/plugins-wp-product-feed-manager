@@ -43,6 +43,7 @@ $tables = array(
 	$wpdb->prefix . 'feedmanager_channel',
 	$wpdb->prefix . 'feedmanager_product_feed',
 	$wpdb->prefix . 'feedmanager_product_feedmeta',
+	$wpdb->prefix . 'feedmanager_product_performance',
 	$wpdb->prefix . 'feedmanager_source',
 	$wpdb->prefix . 'feedmanager_errors',
 );

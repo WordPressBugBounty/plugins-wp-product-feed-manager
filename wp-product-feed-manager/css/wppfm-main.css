@@ -94,10 +94,6 @@ i.wppfm-button-icon {
     display: inline-flex;
 }
 
-.wppfm-button:focus,
-.wppfm-button:hover {
-}
-
 .wppfm-inline-button {
     margin-right: 3px;
 }
@@ -304,7 +300,6 @@ div.wppfm-license-wrapper {
 }
 
 .wppfm-nav__support-selectors {
-    display: inline-block;
     float: right;
     text-align: right;
 }
@@ -594,13 +589,27 @@ div.wppfm-main-product-filter-section__body {
     width: 100%
 }
 
-.wppfm-value-option-input, .wppfm-sub-condition-selector {
+.wppfm-value-option-input {
     margin-top: 3px;
 }
 
 .wppfm-condition-value, .static-input-field {
     position: relative;
     top: 3px;
+}
+
+.wppfm-add-combined-field {
+    position: relative;
+    top: 3px;
+}
+
+.wppfm-condition-selector {
+    position: relative;
+    top: 3px;
+}
+
+.wppfm-sub-condition-selector {
+    margin-top: -3px;
 }
 
 /***************************************************/

@@ -140,16 +140,18 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 			// Remove the properties from the option table.
 			$this->cleanup_background_process_options();
 
-			$feed_status = '0' !== $this->_feed_data->status && '3' !== $this->_feed_data->status && '4' !== $this->_feed_data->status ? $this->_feed_data->status : $this->_feed_data->baseStatusId;
-			$feed_title  = $this->_feed_data->title . '.' . pathinfo( $this->_feed_file_path, PATHINFO_EXTENSION );
-			$this->register_feed_update( $this->_feed_data->feedId, $feed_title, count( $this->processed_products ), $feed_status );
+			$feed_status             = '0' !== $this->_feed_data->status && '3' !== $this->_feed_data->status && '4' !== $this->_feed_data->status ? $this->_feed_data->status : $this->_feed_data->baseStatusId;
+			$feed_title              = $this->_feed_data->title . '.' . pathinfo( $this->_feed_file_path, PATHINFO_EXTENSION );
+			$total_handled_products  = get_transient( 'wppfm_nr_of_processed_products' );
+			$total_handled_products  = false === $total_handled_products ? 0 : intval( $total_handled_products );
+			$this->register_feed_update( $this->_feed_data->feedId, $feed_title, $total_handled_products, $feed_status );
 			$this->clear_the_queue();
 
 			// Now the feed is ready to go, remove the feed id from the feed queue.
 			WPPFM_Feed_Controller::remove_id_from_feed_queue( $this->_feed_data->feedId );
 			WPPFM_Feed_Controller::set_feed_processing_flag();
 
-		$message = sprintf( 'Completed feed %s. The feed should contain %d products and its status has been set to %s.', $this->_feed_data->feedId, count( $this->processed_products ), $feed_status );
+		$message = sprintf( 'Completed feed %s. The feed should contain %d products and its status has been set to %s.', $this->_feed_data->feedId, $total_handled_products, $feed_status );
 		do_action( 'wppfm_feed_generation_message', $this->_feed_data->feedId, $message );
 		do_action( 'wppfm_register_feed_url', $this->_feed_data->feedId, $this->_feed_data->url );
 
@@ -158,6 +160,8 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 
 		// Clean up preserved feed context transient now that completion succeeded.
 		delete_transient( 'wppfm_feed_completion_context_' . $this->_feed_data->feedId );
+		delete_transient( 'wppfm_client_request_id_' . $this->_feed_data->feedId );
+		delete_transient( 'wppfm_nr_of_products_to_process_' . $this->_feed_data->feedId );
 
 		if ( ! WPPFM_Feed_Controller::feed_queue_is_empty() ) {
 				do_action( 'wppfm_next_in_queue_feed_update_activated', $this->_feed_data->feedId );

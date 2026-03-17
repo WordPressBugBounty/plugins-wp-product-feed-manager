@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WooCommerce Product Feed Manager\n"
-"POT-Creation-Date: 2026-01-31 12:52+0100\n"
-"PO-Revision-Date: 2026-01-31 12:53+0100\n"
+"POT-Creation-Date: 2026-03-16 08:54+0100\n"
+"PO-Revision-Date: 2026-03-16 08:57+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nl_NL\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.8\n"
+"X-Generator: Poedit 3.9\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-Flags-xgettext: --add-comments=translators:\n"
 "X-Poedit-WPHeader: wp-product-feed-manager.php\n"
@@ -27,7 +27,7 @@ msgid ""
 msgstr "Hier kunt u de parameters van uw Google Product Review feed bewerken."
 
 #. translators: %s: Folder where the feeds are stored
-#: includes/application/class-feed-master.php:235
+#: includes/application/class-feed-master.php:239
 #, php-format
 msgid ""
 "1430 - %s is not a writable folder. Make sure you have admin rights to this "
@@ -36,13 +36,13 @@ msgstr ""
 "1430 - De %s map is niet schrijfbaar. Zorg dat u administrator rechten heeft "
 "voor deze map."
 
-#: includes/application/class-feed-master.php:642
+#: includes/application/class-feed-master.php:682
 #: includes/user-interface/class-wppfm-i18n-scripts.php:94
 msgid "Fill with a static value"
 msgstr "Vul met een statische waarde"
 
-#: includes/application/class-feed-master.php:643
-#: includes/application/class-feed-master.php:648
+#: includes/application/class-feed-master.php:683
+#: includes/application/class-feed-master.php:688
 msgid "Use the settings in the Merchant Center"
 msgstr "Gebruik de instellingen uit het Merchant Center"
 
@@ -62,7 +62,30 @@ msgstr ""
 "bericht ontvangt, worden meldingen over mislukte feeds naar dit adres "
 "verzonden."
 
-#: includes/application/wppfm-cron-functions.php:109
+#: includes/application/class-wppfm-performance-prioritizer.php:54
+msgid "Invalid feed ID."
+msgstr "Ongeldige feed-ID."
+
+#: includes/application/class-wppfm-performance-prioritizer.php:59
+msgid "Could not load feed data."
+msgstr "Bestand niet gevonden."
+
+#: includes/application/class-wppfm-performance-prioritizer.php:94
+msgid ""
+"WooCommerce Analytics lookup tables are missing. Performance data cannot be "
+"computed."
+msgstr ""
+"WooCommerce Analytics-opzoektabellen ontbreken. Prestatiegegevens kunnen "
+"niet worden berekend."
+
+#: includes/application/wppfm-cron-functions.php:114
+#, php-format
+msgid "Every %d minute (WPPFM Feed Updates)"
+msgid_plural "Every %d minutes (WPPFM Feed Updates)"
+msgstr[0] "Elke %d minuut (WPPFM-feedupdates)"
+msgstr[1] "Elke %d minuten (WPPFM-feedupdates)"
+
+#: includes/application/wppfm-cron-functions.php:169
 #, php-format
 msgid "Every %d minute (WPPFM Feed Watchdog)"
 msgid_plural "Every %d minutes (WPPFM Feed Watchdog)"
@@ -131,7 +154,7 @@ msgstr ""
 msgid "Hide this warning for now"
 msgstr "Deze waarschuwing voorlopig verbergen"
 
-#: includes/application/wppfm-feed-processing-support.php:78
+#: includes/application/wppfm-feed-processing-support.php:94
 #, php-format
 msgid ""
 "2131 - Please try to refresh the page and open a support ticket at %s if the "
@@ -183,23 +206,23 @@ msgstr "Feed"
 msgid "Could not remove file %s because it does not seem to exist."
 msgstr "Kon het bestand %s niet verwijderen omdat het niet lijkt te bestaan."
 
-#: includes/data/class-wppfm-ajax-file.php:148
+#: includes/data/class-wppfm-ajax-file.php:162
 msgid ""
 "Could not update the feed file because the channel has not been installed"
 msgstr ""
 "Kon het feedbestand niet bijwerken omdat het kanaal niet is geïnstalleerd"
 
-#: includes/data/class-wppfm-ajax-file.php:414
+#: includes/data/class-wppfm-ajax-file.php:431
 msgid "Failed to re-initialize the plugin. Please try again."
 msgstr ""
 "Het opnieuw initialiseren van de plug-in is mislukt. Probeer het opnieuw."
 
-#: includes/data/class-wppfm-ajax-file.php:434
+#: includes/data/class-wppfm-ajax-file.php:451
 msgid "Feed processing data cleared"
 msgstr "Gegevens over het verwerken van product feeds gewist"
 
 #. translators: clearing the feed data failed
-#: includes/data/class-wppfm-ajax-file.php:437
+#: includes/data/class-wppfm-ajax-file.php:454
 msgid "Failed to clear the feed process. Please try again."
 msgstr "Het wissen van het feed-proces is mislukt. Probeer het opnieuw."
 
@@ -306,6 +329,24 @@ msgstr "WP_Filesystem kon niet worden geïnitialiseerd"
 msgid "Unable to initialize WP_Filesystem!"
 msgstr "Kan WP_Filesystem niet initialiseren!"
 
+#: includes/data/wppfm-performance-source-fields.php:26
+msgid "Performance (high/mid/low)"
+msgstr "Prestaties (hoog/middel/laag)"
+
+#: includes/data/wppfm-performance-source-fields.php:27
+#: includes/data/wppfm-performance-source-fields.php:32
+#: includes/data/wppfm-performance-source-fields.php:37
+msgid "Performance Metrics (Feed Manager)"
+msgstr "Prestatiestatistieken (Feed Manager)"
+
+#: includes/data/wppfm-performance-source-fields.php:31
+msgid "Revenue last N days"
+msgstr "Omzet van de afgelopen N dagen"
+
+#: includes/data/wppfm-performance-source-fields.php:36
+msgid "Orders last N days"
+msgstr "Bestellingen van de afgelopen N dagen"
+
 #. translators: %1$: plugin name, %2$: version number, %3$: link start, %4$: link end
 #: includes/libraries/wpmr_plugin_updater.php:241
 #, php-format
@@ -343,14 +384,14 @@ msgstr "Kon procesvergrendeling niet verkrijgen na %d pogingen"
 msgid "Failed to acquire process lock"
 msgstr "Verkrijgen van procesvergrendeling mislukt"
 
-#: includes/libraries/wppfm-background-process.php:1288
+#: includes/libraries/wppfm-background-process.php:1328
 #, php-format
 msgid "Every %d minute"
 msgid_plural "Every %d minutes"
 msgstr[0] "Elke %d minuut"
 msgstr[1] "Elke %d minuten"
 
-#: includes/libraries/wppfm-background-process.php:1367
+#: includes/libraries/wppfm-background-process.php:1407
 msgid ""
 "Could not schedule the cron event required to start the feed process. Please "
 "check if your wp cron is configured correctly and is running."
@@ -765,7 +806,7 @@ msgid "Channel Info"
 msgstr "Kanaal Info"
 
 #. translators: %s: channel name
-#: includes/user-interface/class-wppfm-feed-editor-page.php:68
+#: includes/user-interface/class-wppfm-feed-editor-page.php:69
 #, php-format
 msgid ""
 "This feed requires the \"%s\" channel to be installed. Please open the "
@@ -818,6 +859,11 @@ msgstr "voor"
 #: includes/user-interface/class-wppfm-feed-form-control.php:142
 msgid "time(s) a day"
 msgstr "keer per dag"
+
+#: includes/user-interface/class-wppfm-feed-form-control.php:189
+msgid "read this article on how to use performance prioritizing"
+msgstr ""
+"Lees dit artikel om te leren hoe u prestatieprioritering gebruikt (Engels)"
 
 #: includes/user-interface/class-wppfm-feed-list-page.php:48
 msgid "Product Feed List"
@@ -1543,19 +1589,19 @@ msgid "Feed Editor"
 msgstr "Feed Bewerker"
 
 #: includes/user-interface/class-wppfm-main-header.php:82
-#: includes/user-interface/wppfm-admin-actions.php:66
+#: includes/user-interface/wppfm-admin-actions.php:67
 msgid "Channel Manager"
 msgstr "Beheer Kanalen"
 
 #: includes/user-interface/class-wppfm-main-header.php:87
-#: includes/user-interface/wppfm-admin-actions.php:77
-#: includes/user-interface/wppfm-admin-actions.php:78
+#: includes/user-interface/wppfm-admin-actions.php:81
+#: includes/user-interface/wppfm-admin-actions.php:82
 msgid "Settings"
 msgstr "Instellingen"
 
 #: includes/user-interface/class-wppfm-main-header.php:90
-#: includes/user-interface/wppfm-admin-actions.php:87
-#: includes/user-interface/wppfm-admin-actions.php:88
+#: includes/user-interface/wppfm-admin-actions.php:91
+#: includes/user-interface/wppfm-admin-actions.php:92
 msgid "Support"
 msgstr "Ondersteuning"
 
@@ -2191,6 +2237,18 @@ msgstr "Product Feed Beschrijving"
 msgid "Update Schedule"
 msgstr "Update Schema"
 
+#: includes/user-interface/elements/class-wppfm-main-input-selector-element.php:175
+msgid "Use Performance Prioritizing"
+msgstr "Prestaties prioriteren gebruiken"
+
+#: includes/user-interface/elements/class-wppfm-main-input-selector-element.php:189
+msgid "Period (days)"
+msgstr "Periode (dagen)"
+
+#: includes/user-interface/elements/class-wppfm-main-input-selector-element.php:201
+msgid "High tier percentage"
+msgstr "Percentage hoge categorie"
+
 #: includes/user-interface/elements/class-wppfm-product-filter-selector-element.php:27
 msgid "Include"
 msgstr "Inclusief"
@@ -2207,7 +2265,7 @@ msgstr "WP Feed Manager"
 msgid "Feed Manager"
 msgstr "Feed Manager"
 
-#: includes/user-interface/wppfm-admin-actions.php:46
+#: includes/user-interface/wppfm-admin-actions.php:47
 #, php-format
 msgid "%d channel update"
 msgid_plural "%d channel updates"
@@ -2215,12 +2273,12 @@ msgstr[0] "%d Channel update"
 msgstr[1] "%d Channel updates"
 
 #. translators: %d: Number of channel updates available
-#: includes/user-interface/wppfm-admin-actions.php:56
+#: includes/user-interface/wppfm-admin-actions.php:57
 #, php-format
 msgid "Channel Manager %s"
 msgstr "Beheer Kanalen %s"
 
-#: includes/user-interface/wppfm-admin-actions.php:106
+#: includes/user-interface/wppfm-admin-actions.php:110
 msgid ""
 "Due to an update of your Feed Manager plugin, your feed backups are no "
 "longer valid! Please open the Feed Manager Settings page, remove all current "
@@ -2231,7 +2289,7 @@ msgstr ""
 "verwijder uw oude back-ups en maak een nieuwe."
 
 #. translators: %s: link to the support page
-#: includes/user-interface/wppfm-admin-actions.php:235
+#: includes/user-interface/wppfm-admin-actions.php:239
 #, php-format
 msgid ""
 "2121 - Activating your license failed. Please open a support ticket at %s "
@@ -2240,7 +2298,7 @@ msgstr ""
 "2121-Het activeren van uw licentie is mislukt. Open een support ticket op %s "
 "voor ondersteuning op dit punt."
 
-#: includes/user-interface/wppfm-admin-actions.php:262
+#: includes/user-interface/wppfm-admin-actions.php:266
 #, php-format
 msgid ""
 "An error has occurred. It is possible that the wpmarketingrobot website is "
@@ -2256,7 +2314,7 @@ msgstr ""
 "Foutbericht: %s"
 
 #. translators: 1: Name of the plugin, 2: url to the wpmarketingrobot store
-#: includes/user-interface/wppfm-admin-actions.php:313
+#: includes/user-interface/wppfm-admin-actions.php:317
 #, php-format
 msgid ""
 "You have an invalid or expired license key for your %1$s plugin. Please %2$s "
@@ -2266,11 +2324,11 @@ msgstr ""
 "Gelieve %2$s om de plugin werkend te houden en uw productfeeds geldig te "
 "houden."
 
-#: includes/user-interface/wppfm-admin-actions.php:315
+#: includes/user-interface/wppfm-admin-actions.php:319
 msgid "click here to go to the Licenses renewal page"
 msgstr "klik hier om naar de licentieverlengingspagina te gaan"
 
-#: includes/user-interface/wppfm-admin-actions.php:325
+#: includes/user-interface/wppfm-admin-actions.php:329
 #, php-format
 msgid ""
 "The license key for your %1$s plugin is expiring soon. If you wish, you can "
@@ -2281,7 +2339,7 @@ msgstr ""
 "kunt u %2$s om uw licentiesleutel direct te verlengen en ervoor te zorgen "
 "dat uw productfeeds blijven werken."
 
-#: includes/user-interface/wppfm-admin-actions.php:329
+#: includes/user-interface/wppfm-admin-actions.php:333
 msgid "click here"
 msgstr "klik hier"
 
@@ -2297,7 +2355,7 @@ msgstr "Go Premium"
 msgid "Get Support"
 msgstr "Support Aanvragen"
 
-#: includes/user-interface/wppfm-admin-menu-functions.php:295
+#: includes/user-interface/wppfm-admin-menu-functions.php:312
 #, php-format
 msgid ""
 "2122 - License verification failed. This may be due to a temporary issue "
@@ -2512,10 +2570,6 @@ msgstr "WP Marketing Robot"
 
 #~ msgid "You are not allowed to do this!"
 #~ msgstr "Deze actie is niet toegestaan!"
-
-#, php-format
-#~ msgid "Could not find file %s."
-#~ msgstr "Bestand %s niet gevonden."
 
 #~ msgid ""
 #~ "WPML support is now integrated in the Feed Manager plugin. To prevent "

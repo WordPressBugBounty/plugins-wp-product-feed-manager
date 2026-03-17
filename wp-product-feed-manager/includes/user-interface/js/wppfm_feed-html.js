@@ -116,7 +116,7 @@ function wppfm_addFeedSourceRow( rowId, sourceLevel, sourceRowsData, channel, re
 
 function wppfm_removeOutputCntrl( rowId, fieldName ) {
 	var html = '<a class="wppfm-remove-output wppfm-btn wppfm-btn-small" href="javascript:void(0)" id="';
-	html    += rowId + '" onclick="wppfm_removeRow(' + rowId + ', \'' + fieldName + '\')">( ' + wppfm_feed_settings_form_vars.remove + ' )</a>';
+	html    += rowId + '" onclick="wppfm_removeRow(' + rowId + ', \'' + fieldName + '\')">(' + wppfm_feed_settings_form_vars.remove + ')</a>';
 
 	return html;
 }

@@ -50,9 +50,31 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 			return $this->_wpdb->get_results( "SELECT title FROM {$this->_table_prefix}feedmanager_product_feed" );
 		}
 
+		/**
+		 * Request-level cache for feed rows to avoid duplicate queries when the same
+		 * feed is read from multiple places (e.g. wppfm_feed_form_sub_header_text,
+		 * wppfm_verify_feeds_channel_is_installed). Keyed by feed_id.
+		 *
+		 * @var array<string, object|null>
+		 */
+		private static $_feed_row_cache = array();
+
+		/**
+		 * Gets a single feed row by feed ID. Uses request-level caching to avoid
+		 * duplicate queries when the same feed is requested multiple times.
+		 *
+		 * @param int|string $feed_id The product feed ID.
+		 * @return object|null The feed row object or null if not found.
+		 */
 		public function get_feed_row( $feed_id ) {
-			return $this->_wpdb->get_row(
+			$cache_key = (string) $feed_id;
+			if ( array_key_exists( $cache_key, self::$_feed_row_cache ) ) {
+				return self::$_feed_row_cache[ $cache_key ];
+			}
+			$row = $this->_wpdb->get_row(
 				$this->_wpdb->prepare( "SELECT * FROM {$this->_table_prefix}feedmanager_product_feed WHERE product_feed_id = %d", $feed_id ) );
+			self::$_feed_row_cache[ $cache_key ] = $row;
+			return $row;
 		}
 
 		/**
@@ -81,12 +103,28 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 				$this->_wpdb->prepare( "SELECT feed_type_id FROM {$this->_table_prefix}feedmanager_product_feed WHERE product_feed_id = %d", $feed_id ) );
 		}
 
+		/**
+		 * Request-level cache for installed channels to avoid duplicate queries.
+		 * Cleared when channels are modified via register/remove/clean operations.
+		 *
+		 * @var array|null
+		 */
+		private static $_installed_channels_cache = null;
+
+		/**
+		 * Reads installed channels from the database. Uses request-level caching to avoid
+		 * duplicate queries when called from multiple places (e.g. include_channels,
+		 * wppfm_register_full_version_channels, channel_selector).
+		 *
+		 * @return array Installed channels with channel_id, name, and short keys.
+		 */
 		public function read_installed_channels() {
 			 $google = array( 'channel_id' => '1', 'name' => 'Google Merchant Centre', 'short' => 'google' );
 			 return array( $google );
 		}
 
 		public function register_a_channel( $channel_short_name, $channel_id, $channel_name ) {
+			self::$_installed_channels_cache = null; // Invalidate cache when channels change.
 			return $this->_wpdb->query(
 				$this->_wpdb->prepare(
 					"INSERT INTO {$this->_table_prefix}feedmanager_channel (channel_id, name, short) VALUES
@@ -113,12 +151,14 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 		}
 
 		public function remove_channel_from_db( $channel_short ) {
+			self::$_installed_channels_cache = null; // Invalidate cache when channels change.
 			$main_table = $this->_table_prefix . 'feedmanager_channel';
 
 			return $this->_wpdb->delete( $main_table, array( 'short' => $channel_short ) );
 		}
 
 		public function clean_channel_table() {
+			self::$_installed_channels_cache = null; // Invalidate cache when channels change.
 			return $this->_wpdb->query(
 				$this->_wpdb->prepare(
 					"DELETE FROM {$this->_table_prefix}feedmanager_channel WHERE channel_id = %d OR name = %s",
@@ -294,6 +334,338 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 		}
 
 		/**
+		 * Returns all product IDs for the given category selection, without batching/transient.
+		 * Used by Performance Prioritizer to get the full product set for analysis.
+		 *
+		 * @param string $category_string Comma-separated term IDs (from category mapping).
+		 * @param bool   $with_variation  True if variations should be included.
+		 * @param int    $feed_id         Feed ID for the wppfm_selected_categories filter. Optional.
+		 *
+		 * @return array Product post IDs.
+		 * @since 3.21.0
+		 */
+		public function get_all_post_ids_for_categories( $category_string, $with_variation = false, $feed_id = 0 ) {
+			$category_string = apply_filters( 'wppfm_selected_categories', $category_string, $feed_id );
+
+			if ( empty( $category_string ) ) {
+				return array();
+			}
+
+			// Sanitize: ensure only integers in the IN clause.
+			$ids = array_map( 'intval', array_filter( array_map( 'trim', explode( ',', $category_string ) ) ) );
+			if ( empty( $ids ) ) {
+				return array();
+			}
+			$ids = array_unique( $ids );
+			$id_list = implode( ',', $ids );
+
+			$product_query_limit = apply_filters( 'wppfm_product_query_limit', 1000 );
+			$max_products = apply_filters( 'wppfm_performance_max_products', 100000 );
+
+			$all_main_ids = array();
+			$start_id = -1;
+
+			do {
+				$products_query = $this->_wpdb->prepare(
+					"SELECT DISTINCT p.ID
+					FROM {$this->_table_prefix}posts p
+					LEFT JOIN {$this->_table_prefix}term_relationships tr ON (p.ID = tr.object_id)
+					LEFT JOIN {$this->_table_prefix}term_taxonomy tt ON (tr.term_taxonomy_id = tt.term_taxonomy_id)
+					WHERE p.post_type = 'product' AND p.post_status = 'publish' AND p.post_password = ''
+					AND tt.term_id IN ($id_list)
+					AND p.ID > %d
+					ORDER BY p.ID LIMIT %d",
+					$start_id,
+					$product_query_limit
+				);
+
+				$main_products_ids = $this->_wpdb->get_col( $products_query );
+
+				if ( ! empty( $main_products_ids ) ) {
+					$all_main_ids = array_merge( $all_main_ids, $main_products_ids );
+					$start_id = (int) end( $main_products_ids );
+				}
+
+				if ( count( $main_products_ids ) < $product_query_limit || count( $all_main_ids ) >= $max_products ) {
+					break;
+				}
+			} while ( true );
+
+			if ( ! $with_variation || empty( $all_main_ids ) ) {
+				return array_values( array_unique( array_filter( $all_main_ids ) ) );
+			}
+
+			// Resolve variations (same logic as get_post_ids).
+			$main_products_ids_string = implode( ',', array_map( 'absint', $all_main_ids ) );
+			$variation_parents = $this->_wpdb->get_col(
+				"SELECT DISTINCT post_parent FROM {$this->_table_prefix}posts
+				WHERE post_parent IN ($main_products_ids_string)
+				AND post_type = 'product_variation'
+				AND post_status = 'publish'
+				ORDER BY ID"
+			);
+
+			if ( empty( $variation_parents ) ) {
+				return array_values( array_unique( array_filter( $all_main_ids ) ) );
+			}
+
+			$simple_products_ids = array_diff( $all_main_ids, $variation_parents );
+			$variation_parents_string = implode( ',', array_map( 'absint', $variation_parents ) );
+
+			$product_variations_ids = $this->_wpdb->get_col(
+				"SELECT DISTINCT ID FROM {$this->_table_prefix}posts
+				WHERE post_parent IN ($variation_parents_string)
+				AND post_type = 'product_variation'
+				AND post_status = 'publish'
+				ORDER BY ID"
+			);
+
+			$all_product_ids = array_merge( $simple_products_ids, $product_variations_ids ? $product_variations_ids : array() );
+			asort( $all_product_ids );
+
+			return array_values( array_unique( array_filter( $all_product_ids ) ) );
+		}
+
+		/**
+		 * Reads specific performance-related feed meta keys for a feed.
+		 *
+		 * @param int   $feed_id   Feed ID.
+		 * @param array $meta_keys Optional. Keys to fetch. Defaults to all performance keys.
+		 *
+		 * @return array Associative array meta_key => meta_value.
+		 * @since 3.21.0
+		 */
+		public function get_feed_performance_meta( $feed_id, $meta_keys = array() ) {
+			$default_keys = array(
+				'wppfm_performance_enabled',
+				'wppfm_performance_period_days',
+				'wppfm_performance_high_percentage',
+				'wppfm_performance_last_update_gmt',
+				'wppfm_performance_last_analyzed_count',
+			);
+
+			$keys = empty( $meta_keys ) ? $default_keys : $meta_keys;
+			$placeholders = implode( ',', array_fill( 0, count( $keys ), '%s' ) );
+
+			$main_table = $this->_table_prefix . 'feedmanager_product_feedmeta';
+			$query = $this->_wpdb->prepare(
+				"SELECT meta_key, meta_value FROM $main_table WHERE product_feed_id = %d AND meta_key IN ($placeholders)",
+				array_merge( array( $feed_id ), $keys )
+			);
+
+			$rows = $this->_wpdb->get_results( $query, ARRAY_A );
+			$result = array();
+
+			foreach ( $rows as $row ) {
+				$result[ $row['meta_key'] ] = $row['meta_value'];
+			}
+
+			return $result;
+		}
+
+		/**
+		 * Updates or inserts a single feed meta value for performance settings.
+		 *
+		 * @param int    $feed_id   Feed ID.
+		 * @param string $meta_key  Meta key (e.g. wppfm_performance_enabled).
+		 * @param string $meta_value Meta value.
+		 *
+		 * @return int|false Number of affected rows or false.
+		 * @since 3.21.0
+		 */
+		public function update_feed_performance_meta( $feed_id, $meta_key, $meta_value ) {
+			$main_table = $this->_table_prefix . 'feedmanager_product_feedmeta';
+
+			$exists = $this->_wpdb->get_var(
+				$this->_wpdb->prepare(
+					"SELECT meta_id FROM $main_table WHERE product_feed_id = %d AND meta_key = %s",
+					$feed_id,
+					$meta_key
+				)
+			);
+
+			if ( $exists ) {
+				return $this->_wpdb->update(
+					$main_table,
+					array( 'meta_value' => $meta_value ),
+					array(
+						'product_feed_id' => $feed_id,
+						'meta_key'        => $meta_key,
+					),
+					array( '%s' ),
+					array( '%d', '%s' )
+				);
+			}
+
+			return $this->_wpdb->insert(
+				$main_table,
+				array(
+					'product_feed_id' => $feed_id,
+					'meta_key'        => $meta_key,
+					'meta_value'      => $meta_value,
+				),
+				array( '%d', '%s', '%s' )
+			);
+		}
+
+		/**
+		 * Deletes performance rows for a feed and period.
+		 *
+		 * @param int $feed_id    Feed ID.
+		 * @param int $period_days Period in days.
+		 *
+		 * @return int|false Number of deleted rows or false.
+		 * @since 3.21.0
+		 */
+		public function delete_performance_rows_for_feed( $feed_id, $period_days ) {
+			$table = $this->_table_prefix . 'feedmanager_product_performance';
+
+			return $this->_wpdb->query(
+				$this->_wpdb->prepare(
+					"DELETE FROM $table WHERE product_feed_id = %d AND period_days = %d",
+					$feed_id,
+					$period_days
+				)
+			);
+		}
+
+		/**
+		 * Inserts performance rows for a feed in bulk chunks.
+		 * Uses INSERT ... ON DUPLICATE KEY UPDATE to handle unique key conflicts efficiently.
+		 * Avoids per-row writes for large feeds (~200k products).
+		 *
+		 * @param int   $feed_id     Feed ID.
+		 * @param int   $period_days Period in days.
+		 * @param array $rows        Array of rows, each with product_id, orders_count, revenue, performance_tier.
+		 *
+		 * @return int Number of inserted/replaced rows.
+		 * @since 3.21.0
+		 */
+		public function insert_performance_rows( $feed_id, $period_days, $rows ) {
+			if ( empty( $rows ) ) {
+				return 0;
+			}
+
+			$table = $this->_table_prefix . 'feedmanager_product_performance';
+			$updated_gmt = gmdate( 'Y-m-d H:i:s' );
+			$inserted = 0;
+
+			// Filterable chunk size for bulk insert (default 1000 rows per query).
+			$chunk_size = (int) apply_filters( 'wppfm_performance_insert_chunk_size', 1000 );
+			$chunk_size = max( 1, min( 5000, $chunk_size ) );
+
+			$chunks = array_chunk( $rows, $chunk_size );
+
+			foreach ( $chunks as $chunk ) {
+				$values = array();
+				$placeholders = array();
+
+				foreach ( $chunk as $row ) {
+					$product_id = (int) ( $row['product_id'] ?? 0 );
+					$orders_count = (int) ( $row['orders_count'] ?? 0 );
+					$revenue = (float) ( $row['revenue'] ?? 0 );
+					$tier = sanitize_key( $row['performance_tier'] ?? 'low' );
+					if ( ! in_array( $tier, array( 'high', 'mid', 'low' ), true ) ) {
+						$tier = 'low';
+					}
+
+					$placeholders[] = '(%d, %d, %d, %d, %f, %s, %s)';
+					$values[] = $feed_id;
+					$values[] = $product_id;
+					$values[] = $period_days;
+					$values[] = $orders_count;
+					$values[] = $revenue;
+					$values[] = $tier;
+					$values[] = $updated_gmt;
+				}
+
+				$sql = 'INSERT INTO ' . $table . ' (product_feed_id, product_id, period_days, orders_count, revenue, performance_tier, updated_gmt) VALUES '
+					. implode( ', ', $placeholders )
+					. ' ON DUPLICATE KEY UPDATE orders_count = VALUES(orders_count), revenue = VALUES(revenue), performance_tier = VALUES(performance_tier), updated_gmt = VALUES(updated_gmt)';
+
+				$result = $this->_wpdb->query( $this->_wpdb->prepare( $sql, ...$values ) );
+				if ( false !== $result && $result > 0 ) {
+					$inserted += $result;
+				}
+			}
+
+			return $inserted;
+		}
+
+		/**
+		 * Gets performance row for a single product.
+		 *
+		 * @param int $feed_id     Feed ID.
+		 * @param int $product_id  Product post ID.
+		 * @param int $period_days Period in days.
+		 *
+		 * @return object|null Row or null.
+		 * @since 3.21.0
+		 */
+		public function get_performance_for_product( $feed_id, $product_id, $period_days ) {
+			$table = $this->_table_prefix . 'feedmanager_product_performance';
+
+			$row = $this->_wpdb->get_row(
+				$this->_wpdb->prepare(
+					"SELECT * FROM $table WHERE product_feed_id = %d AND product_id = %d AND period_days = %d",
+					$feed_id,
+					$product_id,
+					$period_days
+				)
+			);
+
+			return $row;
+		}
+
+		/**
+		 * Gets performance rows for multiple products. Returns keyed by product_id.
+		 * Chunks large product ID lists to avoid oversized IN clauses (~200k products).
+		 *
+		 * @param int   $feed_id     Feed ID.
+		 * @param int[] $product_ids Product post IDs.
+		 * @param int   $period_days Period in days.
+		 *
+		 * @return array Associative array product_id => row object.
+		 * @since 3.21.0
+		 */
+		public function get_performance_for_products( $feed_id, $product_ids, $period_days ) {
+			if ( empty( $product_ids ) ) {
+				return array();
+			}
+
+			$product_ids = array_map( 'absint', $product_ids );
+			$product_ids = array_values( array_unique( array_filter( $product_ids ) ) );
+
+			$prefetch_chunk_size = (int) apply_filters( 'wppfm_performance_prefetch_chunk_size', 2000 );
+			$prefetch_chunk_size = max( 1, min( 10000, $prefetch_chunk_size ) );
+
+			$keyed = array();
+			$chunks = array_chunk( $product_ids, $prefetch_chunk_size );
+
+			$table = $this->_table_prefix . 'feedmanager_product_performance';
+
+			foreach ( $chunks as $chunk ) {
+				$placeholders = implode( ',', array_fill( 0, count( $chunk ), '%d' ) );
+				$query_args = array_merge( array( $feed_id ), $chunk, array( $period_days ) );
+
+				$results = $this->_wpdb->get_results(
+					$this->_wpdb->prepare(
+						"SELECT * FROM $table WHERE product_feed_id = %d AND product_id IN ($placeholders) AND period_days = %d",
+						$query_args
+					)
+				);
+
+				if ( $results ) {
+					foreach ( $results as $row ) {
+						$keyed[ (int) $row->product_id ] = $row;
+					}
+				}
+			}
+
+			return $keyed;
+		}
+
+		/**
 		 * Gets the required data from the main
 		 *
 		 * @param string $post_id           The id of the post.
@@ -415,6 +787,7 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 		}
 
 		public function delete_feed( $feed_id ) {
+			unset( self::$_feed_row_cache[ (string) $feed_id ] ); // Invalidate cache when feed is deleted.
 			$main_table = $this->_table_prefix . 'feedmanager_product_feed';
 
 			return $this->_wpdb->delete( $main_table, array( 'product_feed_id' => $feed_id ) );
@@ -474,19 +847,43 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 			return $this->_wpdb->get_results( "SELECT attribute_name, attribute_label FROM $main_table" );
 		}
 
+		/**
+		 * Gets distinct meta_key values from product postmeta for custom product fields.
+		 * Excludes WooCommerce internal keys (starting with _) unless they match
+		 * third-party attribute keywords. Optimized by restricting to product posts
+		 * and using prepared statements. Results are cached via transient.
+		 *
+		 * @return array List of distinct meta_key strings.
+		 */
 		public function get_custom_product_fields() {
-			$keywords_array = explode( ',', get_option( 'wppfm_third_party_attribute_keywords', '%wpmr%,%cpf%,%unit%,%bto%,%yoast%' ) );
-			$main_table     = $this->_wpdb->postmeta;
+			$keywords_option = get_option( 'wppfm_third_party_attribute_keywords', '%wpmr%,%cpf%,%unit%,%bto%,%yoast%' );
+			$transient_key   = 'wppfm_custom_product_fields_' . md5( $keywords_option );
 
-			$query_string = "SELECT DISTINCT meta_key FROM $main_table WHERE meta_key NOT BETWEEN '_' AND '_z'";
-
-			foreach ( $keywords_array as $keyword ) {
-				$query_string .= " OR meta_key LIKE '" . trim( $keyword ) . "'";
+			$cached = get_transient( $transient_key );
+			if ( false !== $cached ) {
+				return $cached;
 			}
 
-			$query_string .= ' ORDER BY meta_key';
+			$keywords_array = array_filter( array_map( 'trim', explode( ',', $keywords_option ) ) );
+			$postmeta      = $this->_wpdb->postmeta;
+			$posts         = $this->_wpdb->posts;
 
-			return $this->_wpdb->get_col( $query_string );
+			// Restrict to products only to avoid scanning order/post meta – major performance win.
+			// Build condition: meta_key not starting with _ (WooCommerce internal) OR matches keyword patterns.
+			$like_placeholders = array_fill( 0, count( $keywords_array ), '%s' );
+			$like_clause       = ! empty( $like_placeholders ) ? ' OR pm.meta_key LIKE ' . implode( ' OR pm.meta_key LIKE ', $like_placeholders ) : '';
+			$query             = "SELECT DISTINCT pm.meta_key FROM $postmeta pm
+				INNER JOIN $posts p ON pm.post_id = p.ID
+				WHERE p.post_type IN ('product', 'product_variation')
+				AND (pm.meta_key NOT LIKE %s" . $like_clause . ")
+				ORDER BY pm.meta_key";
+
+			$params = array_merge( array( $this->_wpdb->esc_like( '_' ) . '%' ), $keywords_array );
+			$result = $this->_wpdb->get_col( $this->_wpdb->prepare( $query, $params ) );
+
+			set_transient( $transient_key, $result, HOUR_IN_SECONDS );
+
+			return $result;
 		}
 
 		public function clear_feed_batch_options() {
@@ -550,6 +947,7 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 		}
 
 		public function switch_feed_status( $feed_id, $new_status ) {
+			unset( self::$_feed_row_cache[ (string) $feed_id ] ); // Invalidate cache when feed status changes.
 			$main_table = $this->_table_prefix . 'feedmanager_product_feed';
 
 			return $this->_wpdb->update(
@@ -563,6 +961,7 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 		}
 
 		public function set_nr_feed_products( $feed_id, $nr_products ) {
+			unset( self::$_feed_row_cache[ (string) $feed_id ] ); // Invalidate cache when feed is updated.
 			$main_table = $this->_table_prefix . 'feedmanager_product_feed';
 
 			return $this->_wpdb->update( $main_table, array( 'products' => $nr_products ), array( 'product_feed_id' => $feed_id ) );
@@ -580,7 +979,7 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 		 *
 		 */
 		public function update_feed( $feed_id, $feed_data, $data_types ) {
-
+			unset( self::$_feed_row_cache[ (string) $feed_id ] ); // Invalidate cache when feed is updated.
 			$main_table = $this->_table_prefix . 'feedmanager_product_feed';
 
 			return $this->_wpdb->update(
@@ -597,6 +996,7 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 		}
 
 		public function update_feed_update_data( $feed_id, $feed_url, $nr_products ) {
+			unset( self::$_feed_row_cache[ (string) $feed_id ] ); // Invalidate cache when feed is updated.
 			$main_table = $this->_table_prefix . 'feedmanager_product_feed';
 
 			return $this->_wpdb->update(
@@ -629,6 +1029,7 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 		 * @return bool
 		 */
 		public function update_feed_file_status( $feed_id, $status ) {
+			unset( self::$_feed_row_cache[ (string) $feed_id ] ); // Invalidate cache when feed status changes.
 			$main_table = $this->_table_prefix . 'feedmanager_product_feed';
 
 			return $this->_wpdb->update( $main_table, array( 'status_id' => $status ), array( 'product_feed_id' => $feed_id ), array( '%d' ), array( '%d' ) );
@@ -688,6 +1089,7 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 		 * @since 2.7.0
 		 */
 		public function reset_all_feed_status() {
+			self::$_feed_row_cache = array(); // Invalidate entire cache when multiple feeds are updated.
 			$main_table = $this->_table_prefix . 'feedmanager_product_feed';
 			$failed_ids = $this->_wpdb->get_results( "SELECT product_feed_id FROM $main_table WHERE status_id > '2' OR status_id = '0'", 'ARRAY_A' );
 

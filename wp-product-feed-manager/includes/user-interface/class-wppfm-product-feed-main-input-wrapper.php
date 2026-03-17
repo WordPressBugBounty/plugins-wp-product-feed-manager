@@ -49,6 +49,10 @@ if ( ! class_exists( 'WPPFM_Product_Feed_Main_Input_Wrapper' ) ) :
 			WPPFM_Main_Input_Selector_Element::google_product_feed_title_element();
 			// Google product feed description input
 			WPPFM_Main_Input_Selector_Element::google_product_feed_description_element();
+			// Performance prioritizing (enabled, period, high percentage). Data is refreshed automatically at feed generation start.
+			WPPFM_Main_Input_Selector_Element::performance_enabled_checkbox_element();
+			WPPFM_Main_Input_Selector_Element::performance_period_days_element();
+			WPPFM_Main_Input_Selector_Element::performance_high_percentage_element();
 			// Feed update schedule selector
 			WPPFM_Main_Input_Selector_Element::feed_update_schedule_selector_element();
 			// Close the body and table code

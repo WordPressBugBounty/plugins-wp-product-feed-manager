@@ -295,8 +295,8 @@ function wppfm_regenerateFeed( feedId ) {
  * @since 3.16.0 Improved URL validation to be more robust and language-independent
  */
 function wppfm_viewFeed(url) {
-	// Check if URL is provided and appears to be a valid feed URL
-	if (url && /\/wppfm-feeds\/.*\.xml$/.test(url)) {
+	// Check if URL is provided and appears to be a valid feed URL (xml, csv, txt, or tsv)
+	if (url && /\/wppfm-feeds\/.*\.(xml|csv|txt|tsv)$/.test(url)) {
 		window.open(url);
 	} else {
 		// Show translated "feed not generated" message

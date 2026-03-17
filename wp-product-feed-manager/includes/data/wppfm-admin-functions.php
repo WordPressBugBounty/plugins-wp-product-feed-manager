@@ -459,9 +459,21 @@ function wppfm_get_real_file_path( $file_path ) {
  * @since 2.20.0
  */
 function wppfm_check_feed_update_schedule() {
-	if ( ! wp_get_schedule( 'wppfm_feed_update_schedule' ) ) {
-		// add the schedule cron
-		wp_schedule_event( time(), 'hourly', 'wppfm_feed_update_schedule' );
+	$hook             = 'wppfm_feed_update_schedule';
+	$desired_schedule = 'wppfm_feed_update_interval';
+
+	// Prefer the centralized scheduler when available (keeps upgrades consistent).
+	if ( function_exists( 'wppfm_schedule_feed_update_event' ) ) {
+		wppfm_schedule_feed_update_event();
+		return;
+	}
+
+	$current_schedule = wp_get_schedule( $hook );
+
+	if ( $desired_schedule !== $current_schedule ) {
+		// Normalize older installs that were scheduled hourly.
+		wp_clear_scheduled_hook( $hook );
+		wp_schedule_event( time() + MINUTE_IN_SECONDS, $desired_schedule, $hook );
 	}
 }
 

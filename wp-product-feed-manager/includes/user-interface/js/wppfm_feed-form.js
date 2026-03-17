@@ -14,6 +14,28 @@ var _customFields                = [];
 var _inputFields                 = [];
 var _feedHolder                  = [];
 
+/**
+ * Feed generation session state for the Feed Editor.
+ *
+ * This is used to avoid showing a stale "ready" message (status_id=2) from a previous run
+ * while a new generation has been initiated and the backend has not yet flipped to
+ * "in queue" / "processing".
+ *
+ * @since 3.21.0
+ *
+ * @type {{clientRequestId: string, feedId: (string|null), startedAtMs: number, hasSeenProcessing: boolean}|null}
+ */
+var _wppfmFeedGenerationSession = null;
+
+/**
+ * Active interval id for feed status polling in the Feed Editor.
+ *
+ * @since 3.21.0
+ *
+ * @type {number|null}
+ */
+var _wppfmFeedStatusCheckIntervalId = null;
+
 function wppfm_initializeStandardProductFeedForm( feedFileName, feedType = 'product-feed' ) {
 	// clear the previous form
 	jQuery( '#wppfm-main-input-map' ).empty();
@@ -427,6 +449,13 @@ function wppfm_initiateFeed() {
 	_feedHolder['source_fields']  = feedData['source_fields'];
 	_feedHolder['aggregatorName'] = feedData['aggregator_name'];
 
+	// Performance prioritizing settings (3.21.0)
+	_feedHolder['wppfm_performance_enabled'] = feedData['wppfm_performance_enabled'] || 'false';
+	_feedHolder['wppfm_performance_period_days'] = feedData['wppfm_performance_period_days'] || '30';
+	_feedHolder['wppfm_performance_high_percentage'] = feedData['wppfm_performance_high_percentage'] || '20';
+	_feedHolder['wppfm_performance_last_update_gmt'] = feedData['wppfm_performance_last_update_gmt'] || '';
+	_feedHolder['wppfm_performance_last_analyzed_count'] = feedData['wppfm_performance_last_analyzed_count'] || '';
+
 	console.log( _feedHolder );
 }
 
@@ -597,6 +626,63 @@ function wppfm_setScheduleSelector( days, freq ) {
 	}
 }
 
+/**
+ * Shows or hides the Period (days) and High tier percentage rows based on
+ * the "Use Performance Prioritizing" checkbox state. These inputs are only
+ * relevant when performance prioritizing is enabled.
+ */
+function wppfm_togglePerformanceDependentRows() {
+	var isChecked = jQuery( '#wppfm-performance-enabled' ).length && jQuery( '#wppfm-performance-enabled' ).is( ':checked' );
+	if ( isChecked ) {
+		jQuery( '#wppfm-performance-period-row' ).show();
+		jQuery( '#wppfm-performance-high-percentage-row' ).show();
+	} else {
+		jQuery( '#wppfm-performance-period-row' ).hide();
+		jQuery( '#wppfm-performance-high-percentage-row' ).hide();
+	}
+}
+
+/**
+ * Handlers for Performance Prioritizing controls (3.21.0).
+ * Sync UI to _feedHolder and mark form dirty.
+ */
+function wppfm_performanceEnabledChanged() {
+	wppfm_togglePerformanceDependentRows();
+	_wppfmPerformanceUiInitialized = true;
+	if ( _feedHolder && _feedHolder.feedId ) {
+		_feedHolder[ 'wppfm_performance_enabled' ] = jQuery( '#wppfm-performance-enabled' ).is( ':checked' ) ? 'true' : 'false';
+	}
+
+	// Redraw the mapping section so source selectors immediately hide/show the performance sources.
+	// (wppfm_fixedSourcesList reads the checkbox state.)
+	if ( _feedHolder && _feedHolder[ 'attributes' ] && jQuery( '#wppfm-attribute-map' ).length ) {
+		wppfm_drawAttributeMappingSection();
+		wppfm_activateSelect2SourceSelectors();
+	}
+
+	wppfm_mainInputChanged( false );
+}
+
+function wppfm_performancePeriodChanged() {
+	var el = jQuery( '#wppfm-performance-period-days' );
+	var val = parseInt( el.val(), 10 );
+	if ( isNaN( val ) || val < 7 ) { el.val( 7 ); val = 7; } else if ( val > 365 ) { el.val( 365 ); val = 365; }
+	if ( _feedHolder && _feedHolder.feedId ) {
+		_feedHolder[ 'wppfm_performance_period_days' ] = String( val );
+	}
+	wppfm_mainInputChanged( false );
+}
+
+function wppfm_performanceHighPercentageChanged() {
+	var el = jQuery( '#wppfm-performance-high-percentage' );
+	var val = parseInt( el.val(), 10 );
+	if ( isNaN( val ) || val < 1 ) { el.val( 1 ); val = 1; } else if ( val > 100 ) { el.val( 100 ); val = 100; }
+	if ( _feedHolder && _feedHolder.feedId ) {
+		_feedHolder[ 'wppfm_performance_high_percentage' ] = String( val );
+	}
+	wppfm_mainInputChanged( false );
+}
+
 function wppfm_setMainInputsLayoutDependingOnFeedTypeId( channelId, feedTypeId ) {
 	switch( channelId ) {
 		case '1': // Google
@@ -637,6 +723,9 @@ function wppfm_addCustomFieldsToInputFields( inputFields, customFields ) {
 				label: customFields[ i ].attribute_label,
 				prop: 'custom',
 			};
+			if ( customFields[ i ].attribute_group ) {
+				field.group = customFields[ i ].attribute_group;
+			}
 			inputFields.push( field );
 		}
 	}
@@ -763,7 +852,16 @@ function wppfm_setGoogleAnalytics() {
 function wppfm_generateAndSaveFeed() {
 	wppfm_showWorkingSpinner();
 	
-	// Show preparation message and hide waiting icon since we have specific feedback
+	// Start a new generation session (used to suppress stale "ready" status responses).
+	var rand = Math.random().toString( 36 ).slice( 2, 8 );
+	_wppfmFeedGenerationSession = {
+		clientRequestId: 'ui_' + Date.now() + '_' + rand,
+		feedId: null,
+		startedAtMs: Date.now(),
+		hasSeenProcessing: false,
+	};
+
+	// Show preparation message and hide waiting icon since we have specific feedback.
 	//noinspection JSUnresolvedVariable
 	wppfm_showInfoMessage( wppfm_feed_settings_form_vars.feed_preparing + ' <span class="wppfm-processing-dots"></span>' );
 	wppfm_hideWorkingSpinner();
@@ -779,13 +877,23 @@ function wppfm_generateAndSaveFeed() {
 
 		wppfm_handleSaveFeedToDbActionResult( dbResult, newFeed );
 
+		// Attach the feedId to the active session.
+		if ( _wppfmFeedGenerationSession ) {
+			_wppfmFeedGenerationSession.feedId = _feedHolder[ 'feedId' ];
+		}
+
+		// Start polling immediately after we know the feedId.
+		// In some environments/modes the update-feed-file Ajax call can block until the feed is finished,
+		// so waiting for its callback would start polling far too late.
+		wppfm_feedProcessStatusCheck( _feedHolder[ 'feedId' ], 3000 );
+
 		// convert the data to XML or csv and save the code to a feed file
 		wppfm_updateFeedFile( _feedHolder[ 'feedId' ], function( xmlResult ) {
 
 			wppfm_handleUpdateFeedFileActionResult( xmlResult );
 
 			wppfm_hideWorkingSpinner();
-		} );
+		}, _wppfmFeedGenerationSession ? _wppfmFeedGenerationSession.clientRequestId : '' );
 	} );
 }
 
@@ -832,8 +940,10 @@ function wppfm_handleUpdateFeedFileActionResult( updateResult ) {
 
 	// The started_progressing reply also contains the number of products that are to be processed for the feed.
 	if ( updateResult.startsWith( 'started_processing-' ) ) {
+		if ( _wppfmFeedGenerationSession ) {
+			_wppfmFeedGenerationSession.hasSeenProcessing = true;
+		}
 		totalNumberOfProductsInFeed = wppfm_extractNrOfFeedProductsFromUpdateResult( updateResult );
-		wppfm_initiateProgressBar( totalNumberOfProductsInFeed ); // Initiate the progress bar and use the total number of products for the feed.
 		feedProcessStatusCheckRepeatTime = wppfm_getFeedStatusCheckRepeatTime( totalNumberOfProductsInFeed );
 		updateResult = 'started_processing';
 	}
@@ -848,6 +958,9 @@ function wppfm_handleUpdateFeedFileActionResult( updateResult ) {
 
 		case 'pushed_to_queue':
 			errorMessageElement.hide();
+			if ( _wppfmFeedGenerationSession ) {
+				_wppfmFeedGenerationSession.hasSeenProcessing = true;
+			}
 			//noinspection JSUnresolvedVariable
 			wppfm_showInfoMessage( wppfm_feed_settings_form_vars.feed_queued );
 			wppfm_feedProcessStatusCheck( _feedHolder[ 'feedId' ], 10000 );
@@ -860,6 +973,10 @@ function wppfm_handleUpdateFeedFileActionResult( updateResult ) {
 			break;
 
 		case 'foreground_processing_complete':
+			// Foreground mode means the feed has already been processed when this callback runs.
+			// Still show "Started" briefly to be consistent with the background mode messaging.
+			//noinspection JSUnresolvedVariable
+			wppfm_showInfoMessage( wppfm_feed_settings_form_vars.feed_started + ' <span class="wppfm-processing-dots"></span>' );
 			wppfm_feedProcessStatusCheck( _feedHolder[ 'feedId' ], 0 );
 			wppfm_hideWorkingSpinner();
 			break;
@@ -888,11 +1005,21 @@ function wppfm_handleUpdateFeedFileActionResult( updateResult ) {
  * @param   {int}   repeatTime  Time to repeat the status check, default 10.
  */
 function wppfm_feedProcessStatusCheck( feedId, repeatTime ) {
-	if ( undefined === repeatTime || 0 === repeatTime ) {
+	// `repeatTime === 0` is used by callers to request an immediate one-off check.
+	var runOnce = ( 0 === repeatTime );
+
+	if ( undefined === repeatTime ) {
 		repeatTime = 10000;
 	} // default value
 
+	// Only allow a single active poll interval (Feed Editor only runs one generation at a time).
+	if ( _wppfmFeedStatusCheckIntervalId ) {
+		window.clearInterval( _wppfmFeedStatusCheckIntervalId );
+		_wppfmFeedStatusCheckIntervalId = null;
+	}
+
 	var wppfmStatusCheck           = window.setInterval( wppfm_checkAndSetStatus, repeatTime, feedId );
+	_wppfmFeedStatusCheckIntervalId = wppfmStatusCheck;
 	var successErrorMessageElement = jQuery( '#wppfm-success-message' );
 
 	if ( ! feedId ) {
@@ -900,26 +1027,58 @@ function wppfm_feedProcessStatusCheck( feedId, repeatTime ) {
 	}
 
 	function wppfm_checkAndSetStatus( feedId ) {
+		var clientRequestId = _wppfmFeedGenerationSession ? _wppfmFeedGenerationSession.clientRequestId : '';
+
 		wppfm_getCurrentFeedStatus( feedId, function( result ) {
-			var status = JSON.parse( result );
-			var statusId = status[ 'status_id' ];
-			var statusText = [ 'unknown', 'on hold', 'active', 'processing', 'in queue', 'error', 'failed'];
+			// When the backend returns an HTML error, wppfm_validateResponse() returns 'error'.
+			// Never JSON.parse() that, or the polling loop will crash and the UI will appear stuck.
+			if ( 'error' === result ) {
+				return;
+			}
+
+			var status;
+			try {
+				status = JSON.parse( result );
+			} catch ( e ) {
+				return;
+			}
+
 			var feedTypes = [ 'products', 'reviews', 'promotions', 'products',  'products', 'cars', 'products'];
 			var itemName = feedTypes[ parseInt( status[ 'feed_type_id' ] ) - 1 ];
 
-			console.log( 'Feed status changed to status ' + statusId + ' (' + statusText[ parseInt(statusId) ] + ')' );
-
 			wppfm_enableFeedActionButtons( wppfm_getUrlParameter( 'feed-type' ) );
+
+			// The "View Feed" button must stay disabled while this feed is queued/processing, even though
+			// wppfm_enableFeedActionButtons() may re-enable it when a feed URL is present.
+			var isFeedProcessActive = ( '3' === status[ 'status_id' ] || '4' === status[ 'status_id' ] );
+			if ( isFeedProcessActive ) {
+				wppfm_disableViewFeedButtons();
+			}
 
 			switch ( status[ 'status_id' ] ) {
 				case '0': // unknown
 					//noinspection JSUnresolvedVariable
 					wppfm_showSuccessMessage( wppfm_feed_settings_form_vars.feed_status_unknown.replace( '%feedname%', status[ 'title' ] ) );
 					window.clearInterval( wppfmStatusCheck );
+					_wppfmFeedStatusCheckIntervalId = null;
 					break;
 
 				case '1': // on hold
 				case '2': // active
+					// If a generation was just initiated from the UI, do not show a stale "ready" message
+					// until we have actually observed this run entering queue/processing.
+					if (
+						_wppfmFeedGenerationSession
+						&& String( _wppfmFeedGenerationSession.feedId ) === String( feedId )
+						&& ! _wppfmFeedGenerationSession.hasSeenProcessing
+						&& ( Date.now() - _wppfmFeedGenerationSession.startedAtMs ) < ( 10 * 60 * 1000 )
+					) {
+						//noinspection JSUnresolvedVariable
+						wppfm_showInfoMessage( wppfm_feed_settings_form_vars.feed_preparing + ' <span class="wppfm-processing-dots"></span>' );
+						wppfm_disableViewFeedButtons();
+						break;
+					}
+
 					// Get the feed url and store it in the wppfm-feed-url storage so the View Feed button gets the correct url to open.
 					wppfm_storeFeedUrlInSourceData( status[ 'url' ] );
 					wppfm_closeProgressBar();
@@ -929,17 +1088,45 @@ function wppfm_feedProcessStatusCheck( feedId, repeatTime ) {
 					wppfm_showSuccessMessage(
 						wppfm_feed_settings_form_vars.feed_status_ready.replace( '%1$s', status[ 'title' ] ).replace( '%2$s', status[ 'products' ] ).replace( '%3$s', itemName ) );
 					window.clearInterval( wppfmStatusCheck );
+					_wppfmFeedStatusCheckIntervalId = null;
+					if ( _wppfmFeedGenerationSession && String( _wppfmFeedGenerationSession.feedId ) === String( feedId ) ) {
+						_wppfmFeedGenerationSession = null;
+					}
 					break;
 
 				case '3': // processing
+					if ( _wppfmFeedGenerationSession && String( _wppfmFeedGenerationSession.feedId ) === String( feedId ) ) {
+						_wppfmFeedGenerationSession.hasSeenProcessing = true;
+					}
+
+					// Show the progress bar immediately when processing starts (same trigger as "Started..." message).
+					// If the initiating Ajax call blocks, the bar would otherwise only appear once it returns.
+					var totalToProcess = parseInt( status[ 'products_to_process' ], 10 );
+					if ( ! isNaN( totalToProcess ) && totalToProcess > 0 && ! jQuery( '#wppfm-progress-bar' ).is( ':visible' ) ) {
+						//noinspection JSUnresolvedVariable
+						wppfm_initiateProgressBar( totalToProcess );
+					}
+
+					// Only update the bar when we have a numeric processed count and a shown bar.
+					var processedCount = parseInt( status[ 'products_in_queue' ], 10 );
+					if ( ! isNaN( processedCount ) && jQuery( '#wppfm-progress-bar' ).is( ':visible' ) ) {
+						//noinspection JSUnresolvedVariable
+						wppfm_updateProgressBar( processedCount );
+					}
+
+					// Prefer showing "Started..." once the feed is in processing status.
 					//noinspection JSUnresolvedVariable
-					wppfm_updateProgressBar( status[ 'products_in_queue' ] )
-					wppfm_showInfoMessage( wppfm_feed_settings_form_vars.feed_status_still_processing );
+					wppfm_showInfoMessage( wppfm_feed_settings_form_vars.feed_started + ' <span class="wppfm-processing-dots"></span>' );
+					wppfm_disableViewFeedButtons();
 					break;
 
 				case '4': // in queue
+					if ( _wppfmFeedGenerationSession && String( _wppfmFeedGenerationSession.feedId ) === String( feedId ) ) {
+						_wppfmFeedGenerationSession.hasSeenProcessing = true;
+					}
 					//noinspection JSUnresolvedVariable
 					wppfm_showSuccessMessage( wppfm_feed_settings_form_vars.feed_status_added_to_queue );
+					wppfm_disableViewFeedButtons();
 					break;
 
 				case '5': // error
@@ -947,7 +1134,9 @@ function wppfm_feedProcessStatusCheck( feedId, repeatTime ) {
 					//noinspection JSUnresolvedVariable
 					wppfm_showErrorMessage( wppfm_feed_settings_form_vars.feed_status_error.replace( '%feedname%', status[ 'title' ] ) );
 					wppfm_switchToAlertProgressBar();
+					wppfm_disableViewFeedButtons();
 					window.clearInterval( wppfmStatusCheck );
+					_wppfmFeedStatusCheckIntervalId = null;
 					break;
 
 				case '6': // failed
@@ -955,10 +1144,19 @@ function wppfm_feedProcessStatusCheck( feedId, repeatTime ) {
 					//noinspection JSUnresolvedVariable
 					wppfm_showErrorMessage( wppfm_feed_settings_form_vars.feed_status_failed.replace( '%feedname%', status[ 'title' ] ) );
 					wppfm_switchToAlertProgressBar();
+					wppfm_disableViewFeedButtons();
 					window.clearInterval( wppfmStatusCheck );
+					_wppfmFeedStatusCheckIntervalId = null;
 					break;
 			}
-		} );
+		}, clientRequestId );
+	}
+
+	// Run an immediate status check so the UI updates without waiting for the first interval tick.
+	wppfm_checkAndSetStatus( feedId );
+
+	if ( runOnce ) {
+		window.clearInterval( wppfmStatusCheck );
 	}
 }
 
@@ -1240,6 +1438,7 @@ function wppfm_fillFeedFields( isNew, categoryChanged ) {
 	// set the layout of the update schedule selectors
 	wppfm_setScheduleSelector( schedule[ 0 ], schedule[ 3 ] );
 
+	wppfm_fillPerformanceValues();
 	wppfm_fillGoogleAnalyticsValues();
 }
 
@@ -1293,6 +1492,28 @@ function wppfm_fillMainInputValues( schedule ) {
 	jQuery( '#google-feed-title-selector' ).val( _feedHolder[ 'feedTitle' ] );
 	jQuery( '#google-feed-description-selector' ).val( _feedHolder[ 'feedDescription' ] );
 	jQuery( '#days-interval' ).val( schedule[ 0 ] );
+}
+
+/**
+ * Fills the Performance Prioritizing form controls from _feedHolder (3.21.0).
+ * Performance data is refreshed automatically at feed generation start when enabled.
+ */
+function wppfm_fillPerformanceValues() {
+	var enabled = _feedHolder[ 'wppfm_performance_enabled' ] === 'true';
+	jQuery( '#wppfm-performance-enabled' ).prop( 'checked', enabled );
+	var period = parseInt( _feedHolder[ 'wppfm_performance_period_days' ], 10 ) || 30;
+	period = Math.max( 7, Math.min( 365, period ) );
+	jQuery( '#wppfm-performance-period-days' ).val( period );
+	var high = parseInt( _feedHolder[ 'wppfm_performance_high_percentage' ], 10 ) || 20;
+	high = Math.max( 1, Math.min( 100, high ) );
+	jQuery( '#wppfm-performance-high-percentage' ).val( high );
+
+	// Mark the performance controls as initialized, so the source selector gating can
+	// safely use the live checkbox state from now on.
+	// @since 3.21.0
+	_wppfmPerformanceUiInitialized = true;
+
+	wppfm_togglePerformanceDependentRows();
 }
 
 function wppfm_fillGoogleAnalyticsValues() {
@@ -1751,8 +1972,8 @@ function wppfm_combinedCntrl( rowId, sourceLevel, combinationLevel, nrQueries, t
 
 		// draw the "add" button
 		if ( combinationLevel >= nrQueries ) {
-			htmlCode += '<span id="add-combined-field-' + rowId + '-' + sourceLevel + '-' + combinationLevel + '" style="display:initial">';
-			htmlCode += '(<a class="add-combined-field wppfm-btn wppfm-btn-small" href="javascript:void(0)"';
+			htmlCode += '<span class="wppfm-add-combined-field" id="add-combined-field-' + rowId + '-' + sourceLevel + '-' + combinationLevel + '" style="display:initial">';
+			htmlCode += ' (<a class="add-combined-field wppfm-btn wppfm-btn-small" href="javascript:void(0)"';
 			htmlCode += ' onclick="wppfm_addCombinedField(' + rowId + ', ' + sourceLevel + ', ' + combinationLevel + ')">' + wppfm_feed_settings_form_vars.add + '</a>)</span>';
 		}
 	}
@@ -1780,7 +2001,7 @@ function wppfm_ifConditionSelector( rowId, sourceLevel, conditionLevel, numberOf
 	var storeConditionFunctionString = 'wppfm_storeCondition(' + rowId + ', ' + sourceLevel + ', ' + conditionLevel + ')';
 
 	htmlCode += '<div class="condition-wrapper" id="condition-' + rowId + '-' + sourceLevel + '-' + conditionLevel + '">';
-	htmlCode += conditionSelector;
+	htmlCode += '<span class="wppfm-condition-selector">' + conditionSelector + '</span>';
 	htmlCode += wppfm_conditionFieldCntrl( rowId, sourceLevel, conditionLevel, - 1, 'input-field-cntrl', query.source, storeConditionFunctionString );
 	htmlCode += wppfm_conditionQueryCntrl( rowId, sourceLevel, conditionLevel, - 1, 'query-condition', 'wppfm_queryConditionChanged', query.condition );
 
@@ -2918,16 +3139,106 @@ function wppfm_getOutputFieldsList( level ) {
 	return htmlCode;
 }
 
+/**
+ * Tracks whether the Performance Prioritizing checkbox has been initialized from _feedHolder.
+ *
+ * The attribute mapping section is drawn before the main input values (including the checkbox)
+ * are filled when opening an existing feed. Without this flag, the source list gating would read
+ * the default unchecked checkbox and incorrectly hide the Performance Metrics options on load.
+ *
+ * @since 3.21.0
+ *
+ * @type {boolean}
+ */
+var _wppfmPerformanceUiInitialized = false;
+
+/**
+ * Checks if performance prioritizing is enabled for the current feed.
+ *
+ * We prefer the checkbox state (current UI) over _feedHolder because the user can
+ * toggle the setting without saving yet and the source list should react instantly.
+ *
+ * @since 3.21.0
+ *
+ * @returns {boolean}
+ */
+function wppfm_isPerformancePrioritizingEnabledForFeed() {
+	// During initial page build the mapping section is rendered before the checkbox is filled.
+	// In that phase, rely on the persisted feed value to avoid hiding valid options.
+	if ( ! _wppfmPerformanceUiInitialized ) {
+		return !! ( _feedHolder && _feedHolder[ 'wppfm_performance_enabled' ] === 'true' );
+	}
+
+	if ( jQuery( '#wppfm-performance-enabled' ).length ) {
+		return jQuery( '#wppfm-performance-enabled' ).is( ':checked' );
+	}
+
+	return !! ( _feedHolder && _feedHolder[ 'wppfm_performance_enabled' ] === 'true' );
+}
+
+/**
+ * Checks if a source field value is one of the Performance Metrics sources.
+ *
+ * @since 3.21.0
+ *
+ * @param {{value?: string}} field
+ * @returns {boolean}
+ */
+function wppfm_isPerformanceMetricSourceField( field ) {
+	return !! ( field && typeof field.value === 'string' && field.value.indexOf( 'wppfm_performance_' ) === 0 );
+}
+
+/**
+ * Renders the source selector options, with optgroup support for grouped fields (e.g. Performance Metrics).
+ * Groups are rendered first (Performance Metrics first), then ungrouped fields. Within each, sorted by label.
+ *
+ * @param {string|null} selectedValue The currently selected value.
+ * @returns {string} HTML for select options and optgroups.
+ */
 function wppfm_fixedSourcesList( selectedValue ) {
 
-	var htmlCode     = '';
-	var selectStatus = '';
+	var htmlCode = '';
+	var byGroup = {};
+	var ungrouped = [];
+	var performanceEnabled = wppfm_isPerformancePrioritizingEnabledForFeed();
 
 	for ( var i = 0; i < _inputFields.length; i ++ ) {
+		var field = _inputFields[ i ];
 
-		selectStatus = null !== selectedValue && selectedValue === _inputFields[ i ].value ? ' selected' : '';
+		// Hide performance metric sources unless performance prioritizing is enabled for this feed.
+		if ( ! performanceEnabled && wppfm_isPerformanceMetricSourceField( field ) ) {
+			continue;
+		}
 
-		htmlCode += '<option value = "' + _inputFields[ i ].value + '" itemprop="' + _inputFields[ i ].prop + '" ' + selectStatus + '>' + _inputFields[ i ].label + '</option>';
+		if ( field.group ) {
+			if ( ! byGroup[ field.group ] ) { byGroup[ field.group ] = []; }
+			byGroup[ field.group ].push( field );
+		} else {
+			ungrouped.push( field );
+		}
+	}
+
+	var sortByLabel = function( a, b ) { return ( '' + a.label ).toUpperCase() < ( '' + b.label ).toUpperCase() ? -1 : 1; };
+
+	// Render grouped fields first (Performance Metrics, then others)
+	var groupNames = Object.keys( byGroup );
+	groupNames.sort();
+	for ( var g = 0; g < groupNames.length; g ++ ) {
+		var grp = byGroup[ groupNames[ g ] ];
+		grp.sort( sortByLabel );
+		htmlCode += '<optgroup label="' + wppfm_escapeHtml( groupNames[ g ] ) + '">';
+		for ( var j = 0; j < grp.length; j ++ ) {
+			var selectStatus = null !== selectedValue && selectedValue === grp[ j ].value ? ' selected' : '';
+			htmlCode += '<option value="' + wppfm_escapeHtml( grp[ j ].value ) + '" itemprop="' + ( grp[ j ].prop || 'custom' ) + '"' + selectStatus + '>' + wppfm_escapeHtml( grp[ j ].label ) + '</option>';
+		}
+		htmlCode += '</optgroup>';
+	}
+
+	// Render ungrouped fields
+	ungrouped.sort( sortByLabel );
+	for ( var k = 0; k < ungrouped.length; k ++ ) {
+		var selectStatus = null !== selectedValue && selectedValue === ungrouped[ k ].value ? ' selected' : '';
+		htmlCode += '<option value="' + wppfm_escapeHtml( ungrouped[ k ].value ) + '" itemprop="' + ( ungrouped[ k ].prop || 'meta' ) + '"' + selectStatus + '>' + wppfm_escapeHtml( ungrouped[ k ].label ) + '</option>';
 	}
 
 	return htmlCode;

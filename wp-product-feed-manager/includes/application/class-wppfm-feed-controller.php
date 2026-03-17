@@ -206,12 +206,12 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 			if ( '' === $feed_file ) {
 				return null;
 			}
-
-			$monitor_data = self::get_feed_growth_monitor_data( $feed_file );
-			$prev_feed_size = $monitor_data['size'];
-			$prev_feed_time_stamp = $monitor_data['timestamp'];
-			$prev_processed_products = $monitor_data['processed'];
-			$bonus_delay = $monitor_data['bonus_delay'];
+			// Retrieve the last known growth-monitor snapshot for this feed file.
+			$monitor_data          = self::get_feed_growth_monitor_data( $feed_file );
+			$prev_feed_size        = $monitor_data['size'];
+			$prev_feed_time_stamp  = $monitor_data['timestamp'];
+			$prev_handled_items    = $monitor_data['processed']; // Now represents \"handled\" items (added or filtered).
+			$bonus_delay           = $monitor_data['bonus_delay'];
 
 			$curr_feed_size = file_exists( $feed_file ) ? filesize( $feed_file ) : false;
 
@@ -221,24 +221,42 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 				return true;
 			}
 
-			$current_processed_products = self::get_processed_products_counter();
+			// Use the handled-items counter for stall detection. This counter is
+			// increased for every queue entry that is processed, regardless of
+			// whether the product is added to the feed or filtered out. This makes
+			// the watchdog more robust on feeds with heavy filtering.
+			$current_handled_items = self::get_handled_items_counter();
 
-			$feed_grew     = $curr_feed_size > $prev_feed_size;
-			$products_grew = $current_processed_products > $prev_processed_products;
+			$feed_grew   = $curr_feed_size > $prev_feed_size;
+			$items_grew  = $current_handled_items > $prev_handled_items;
 
-			if ( $feed_grew || $products_grew ) {
-				$bonus = $products_grew ? apply_filters( 'wppfm_failed_detection_alpha', 60, $feed_file ) : 0;
+			if ( $feed_grew || $items_grew ) {
+				// When the process clearly made progress (either the file grew or more
+				// items where handled), extend the allowed delay before we consider the
+				// feed stalled. This keeps the behaviour compatible with the previous
+				// implementation while using the more robust handled-items signal.
+				$bonus = $items_grew ? apply_filters( 'wppfm_failed_detection_alpha', 60, $feed_file ) : 0;
 
 				self::persist_feed_growth_monitor_data(
 					array(
 						'size'        => $curr_feed_size,
 						'timestamp'   => time(),
 						'file'        => $feed_file,
-						'processed'   => $current_processed_products,
+						'processed'   => $current_handled_items,
 						'bonus_delay' => $bonus,
 					)
 				);
 
+				return false;
+			}
+
+			// Safety guard: when there are no ids left in the product queue, the
+			// feed process has effectively finished and any lack of recent file
+		// growth should not be treated as a hard failure. This prevents false
+			// positives on hosts where the final growth check runs after the
+			// queue has been drained or when the last part of the run only
+			// contains filtered products.
+			if ( 0 === self::nr_ids_remaining_in_product_queue() ) {
 				return false;
 			}
 
@@ -309,6 +327,23 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 		}
 
 		/**
+		 * Returns the handled-items counter from the transient store.
+		 *
+		 * This counter tracks every queue entry that has been processed by the
+		 * background worker (added to the feed or filtered out). It is used by
+		 * the stalled-feed watchdog logic to distinguish \"no progress\" from
+		 * \"only filtered products left\" on large feeds.
+		 *
+		 * @since 3.19.x
+		 * @return int
+		 */
+		private static function get_handled_items_counter() {
+			$handled_items = get_transient( 'wppfm_nr_of_handled_items' );
+
+			return false === $handled_items ? 0 : intval( $handled_items );
+		}
+
+		/**
 		 * Retrieves or initializes the feed growth monitor data.
 		 *
 		 * @since 3.18.0
@@ -325,7 +360,9 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 					'size'        => 0,
 					'timestamp'   => time(),
 					'file'        => $feed_file,
-					'processed'   => self::get_processed_products_counter(),
+					// For new runs, initialise the processed field using the handled-items
+					// counter so the growth monitor reflects overall queue progress.
+					'processed'   => self::get_handled_items_counter(),
 					'bonus_delay' => 0,
 				);
 				self::persist_feed_growth_monitor_data( $data );
@@ -340,7 +377,10 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 				'size'        => isset( $stored[0] ) ? intval( $stored[0] ) : 0,
 				'timestamp'   => isset( $stored[1] ) ? intval( $stored[1] ) : time(),
 				'file'        => $stored[2] ?? $feed_file,
-				'processed'   => isset( $stored[3] ) ? intval( $stored[3] ) : self::get_processed_products_counter(),
+				// The stored \"processed\" slot now represents handled items. For legacy
+				// payloads that were still based on \"products added\", fall back to the
+				// current handled-items counter so the monitor has a sane baseline.
+				'processed'   => isset( $stored[3] ) ? intval( $stored[3] ) : self::get_handled_items_counter(),
 				'bonus_delay' => isset( $stored[4] ) ? intval( $stored[4] ) : 0,
 			);
 
@@ -348,7 +388,7 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 				$data['size']        = 0;
 				$data['timestamp']   = time();
 				$data['file']        = $feed_file;
-				$data['processed']   = self::get_processed_products_counter();
+				$data['processed']   = self::get_handled_items_counter();
 				$data['bonus_delay'] = 0;
 				self::persist_feed_growth_monitor_data( $data );
 			}

@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WooCommerce Product Feed Manager\n"
-"POT-Creation-Date: 2026-02-25 08:43+0100\n"
+"POT-Creation-Date: 2026-03-16 08:45+0100\n"
 "PO-Revision-Date: 2018-08-20 20:39+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
-"X-Generator: Poedit 3.8\n"
+"X-Generator: Poedit 3.9\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-Flags-xgettext: --add-comments=translators:\n"
 "X-Poedit-WPHeader: wp-product-feed-manager.php\n"
@@ -27,20 +27,20 @@ msgid ""
 msgstr ""
 
 #. translators: %s: Folder where the feeds are stored
-#: includes/application/class-feed-master.php:235
+#: includes/application/class-feed-master.php:239
 #, php-format
 msgid ""
 "1430 - %s is not a writable folder. Make sure you have admin rights to this "
 "folder."
 msgstr ""
 
-#: includes/application/class-feed-master.php:679
+#: includes/application/class-feed-master.php:682
 #: includes/user-interface/class-wppfm-i18n-scripts.php:94
 msgid "Fill with a static value"
 msgstr ""
 
-#: includes/application/class-feed-master.php:680
-#: includes/application/class-feed-master.php:685
+#: includes/application/class-feed-master.php:683
+#: includes/application/class-feed-master.php:688
 msgid "Use the settings in the Merchant Center"
 msgstr ""
 
@@ -57,7 +57,28 @@ msgid ""
 "this message, feed failure notifications should be delivered to this address."
 msgstr ""
 
-#: includes/application/wppfm-cron-functions.php:113
+#: includes/application/class-wppfm-performance-prioritizer.php:54
+msgid "Invalid feed ID."
+msgstr ""
+
+#: includes/application/class-wppfm-performance-prioritizer.php:59
+msgid "Could not load feed data."
+msgstr ""
+
+#: includes/application/class-wppfm-performance-prioritizer.php:94
+msgid ""
+"WooCommerce Analytics lookup tables are missing. Performance data cannot be "
+"computed."
+msgstr ""
+
+#: includes/application/wppfm-cron-functions.php:114
+#, php-format
+msgid "Every %d minute (WPPFM Feed Updates)"
+msgid_plural "Every %d minutes (WPPFM Feed Updates)"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/application/wppfm-cron-functions.php:169
 #, php-format
 msgid "Every %d minute (WPPFM Feed Watchdog)"
 msgid_plural "Every %d minutes (WPPFM Feed Watchdog)"
@@ -115,7 +136,7 @@ msgstr ""
 msgid "Hide this warning for now"
 msgstr ""
 
-#: includes/application/wppfm-feed-processing-support.php:78
+#: includes/application/wppfm-feed-processing-support.php:94
 #, php-format
 msgid ""
 "2131 - Please try to refresh the page and open a support ticket at %s if the "
@@ -154,21 +175,21 @@ msgstr ""
 msgid "Could not remove file %s because it does not seem to exist."
 msgstr ""
 
-#: includes/data/class-wppfm-ajax-file.php:149
+#: includes/data/class-wppfm-ajax-file.php:162
 msgid ""
 "Could not update the feed file because the channel has not been installed"
 msgstr ""
 
-#: includes/data/class-wppfm-ajax-file.php:418
+#: includes/data/class-wppfm-ajax-file.php:431
 msgid "Failed to re-initialize the plugin. Please try again."
 msgstr ""
 
-#: includes/data/class-wppfm-ajax-file.php:438
+#: includes/data/class-wppfm-ajax-file.php:451
 msgid "Feed processing data cleared"
 msgstr ""
 
 #. translators: clearing the feed data failed
-#: includes/data/class-wppfm-ajax-file.php:441
+#: includes/data/class-wppfm-ajax-file.php:454
 msgid "Failed to clear the feed process. Please try again."
 msgstr ""
 
@@ -253,6 +274,24 @@ msgstr ""
 msgid "Unable to initialize WP_Filesystem!"
 msgstr ""
 
+#: includes/data/wppfm-performance-source-fields.php:26
+msgid "Performance (high/mid/low)"
+msgstr ""
+
+#: includes/data/wppfm-performance-source-fields.php:27
+#: includes/data/wppfm-performance-source-fields.php:32
+#: includes/data/wppfm-performance-source-fields.php:37
+msgid "Performance Metrics (Feed Manager)"
+msgstr ""
+
+#: includes/data/wppfm-performance-source-fields.php:31
+msgid "Revenue last N days"
+msgstr ""
+
+#: includes/data/wppfm-performance-source-fields.php:36
+msgid "Orders last N days"
+msgstr ""
+
 #. translators: %1$: plugin name, %2$: version number, %3$: link start, %4$: link end
 #: includes/libraries/wpmr_plugin_updater.php:241
 #, php-format
@@ -286,14 +325,14 @@ msgstr ""
 msgid "Failed to acquire process lock"
 msgstr ""
 
-#: includes/libraries/wppfm-background-process.php:1288
+#: includes/libraries/wppfm-background-process.php:1328
 #, php-format
 msgid "Every %d minute"
 msgid_plural "Every %d minutes"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/libraries/wppfm-background-process.php:1367
+#: includes/libraries/wppfm-background-process.php:1407
 msgid ""
 "Could not schedule the cron event required to start the feed process. Please "
 "check if your wp cron is configured correctly and is running."
@@ -741,6 +780,10 @@ msgstr ""
 
 #: includes/user-interface/class-wppfm-feed-form-control.php:142
 msgid "time(s) a day"
+msgstr ""
+
+#: includes/user-interface/class-wppfm-feed-form-control.php:189
+msgid "read this article on how to use performance prioritizing"
 msgstr ""
 
 #: includes/user-interface/class-wppfm-feed-list-page.php:48
@@ -1977,6 +2020,18 @@ msgstr ""
 
 #: includes/user-interface/elements/class-wppfm-main-input-selector-element.php:161
 msgid "Update Schedule"
+msgstr ""
+
+#: includes/user-interface/elements/class-wppfm-main-input-selector-element.php:175
+msgid "Use Performance Prioritizing"
+msgstr ""
+
+#: includes/user-interface/elements/class-wppfm-main-input-selector-element.php:189
+msgid "Period (days)"
+msgstr ""
+
+#: includes/user-interface/elements/class-wppfm-main-input-selector-element.php:201
+msgid "High tier percentage"
 msgstr ""
 
 #: includes/user-interface/elements/class-wppfm-product-filter-selector-element.php:27

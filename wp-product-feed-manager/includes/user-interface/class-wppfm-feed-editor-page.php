@@ -103,29 +103,39 @@ if ( ! class_exists( 'WPPFM_Feed_Editor_Page' ) ) :
 				$feed_data      = null;
 			}
 
-			$this->_feed_data = array(
-				'feed_id'             => $this->_feed_id ?: false,
-				'feed_file_name'      => $feed_data ? $feed_data['title'] : '',
-				'channel_id'          => $feed_data ? $feed_data['channel'] : '',
-				'feed_type_id'        => $feed_data ? $feed_data['feed_type_id'] : '',
-				'language'            => $feed_data ? $feed_data['language'] : '',
-				'currency'            => $feed_data ? $feed_data['currency'] : '',
-				'target_country'      => $feed_data ? $feed_data['country'] : '',
-				'category_mapping'    => $feed_data ? $feed_data['category_mapping'] : '',
-				'main_category'       => $feed_data ? $feed_data['main_category'] : '',
-				'include_variations'  => $feed_data ? $feed_data['include_variations'] : '',
-				'is_aggregator'       => $feed_data ? $feed_data['is_aggregator'] : '',
-				'aggregator_name'     => $feed_data ? $feed_data['aggregator_name'] : '', // Specifically for a Google Dynamic Remarketing Support feed.
-				'url'                 => $feed_data ? $feed_data['url'] : '',
-				'source'              => $feed_data ? $feed_data['source'] : '',
-				'feed_title'          => $feed_data ? $feed_data['feed_title'] : '',
-				'feed_description'    => $feed_data ? $feed_data['feed_description'] : '',
-				'schedule'            => $feed_data ? $feed_data['schedule'] : '',
-				'status_id'           => $feed_data ? $feed_data['status_id'] : '',
-				'feed_filter'         => $feed_filter ?: null,
-				'attribute_data'      => $attribute_data,
-				'source_fields'       => $source_fields,
-				'google_analytics'    => $feed_data ? $feed_data['google_analytics'] : 0,
+		$performance_meta = array();
+		if ( $this->_feed_id ) {
+			$performance_meta = $queries_class->get_feed_performance_meta( $this->_feed_id );
+		}
+
+		$this->_feed_data = array(
+			'feed_id'             => $this->_feed_id ?: false,
+			'feed_file_name'      => $feed_data ? $feed_data['title'] : '',
+			'channel_id'          => $feed_data ? $feed_data['channel'] : '',
+			'feed_type_id'        => $feed_data ? $feed_data['feed_type_id'] : '',
+			'language'            => $feed_data ? $feed_data['language'] : '',
+			'currency'            => $feed_data ? $feed_data['currency'] : '',
+			'target_country'      => $feed_data ? $feed_data['country'] : '',
+			'category_mapping'    => $feed_data ? $feed_data['category_mapping'] : '',
+			'main_category'       => $feed_data ? $feed_data['main_category'] : '',
+			'include_variations'  => $feed_data ? $feed_data['include_variations'] : '',
+			'is_aggregator'       => $feed_data ? $feed_data['is_aggregator'] : '',
+			'aggregator_name'     => $feed_data ? $feed_data['aggregator_name'] : '', // Specifically for a Google Dynamic Remarketing Support feed.
+			'url'                 => $feed_data ? $feed_data['url'] : '',
+			'source'              => $feed_data ? $feed_data['source'] : '',
+			'feed_title'          => $feed_data ? $feed_data['feed_title'] : '',
+			'feed_description'    => $feed_data ? $feed_data['feed_description'] : '',
+			'schedule'            => $feed_data ? $feed_data['schedule'] : '',
+			'status_id'           => $feed_data ? $feed_data['status_id'] : '',
+			'feed_filter'         => $feed_filter ?: null,
+			'attribute_data'      => $attribute_data,
+			'source_fields'       => $source_fields,
+			'google_analytics'    => $feed_data ? $feed_data['google_analytics'] : 0,
+			'wppfm_performance_enabled'           => $performance_meta['wppfm_performance_enabled'] ?? 'false',
+			'wppfm_performance_period_days'        => $performance_meta['wppfm_performance_period_days'] ?? '30',
+			'wppfm_performance_high_percentage'    => $performance_meta['wppfm_performance_high_percentage'] ?? '20',
+			'wppfm_performance_last_update_gmt'    => $performance_meta['wppfm_performance_last_update_gmt'] ?? '',
+			'wppfm_performance_last_analyzed_count' => $performance_meta['wppfm_performance_last_analyzed_count'] ?? '',
 				'utm_id'              => $feed_data ? $feed_data['utm_id'] : '',
 				'utm_source'          => $feed_data ? $feed_data['utm_source'] : '',
 				'utm_medium'          => $feed_data ? $feed_data['utm_medium'] : '',

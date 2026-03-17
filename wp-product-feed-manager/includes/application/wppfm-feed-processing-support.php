@@ -18,6 +18,22 @@ trait WPPFM_Processing_Support {
 	/** @var string|null */
 	private $_temp_currency = null;
 
+	/**
+	 * Cached "Use Performance Prioritizing" state for the current feed.
+	 *
+	 * @since 3.21.0
+	 * @var bool|null Null means "not loaded yet".
+	 */
+	private $_wppfm_performance_enabled_cache = null;
+
+	/**
+	 * Feed ID that the performance enabled cache belongs to.
+	 *
+	 * @since 3.21.0
+	 * @var int|null
+	 */
+	private $_wppfm_performance_enabled_cache_feed_id = null;
+
     
 
 	/**
@@ -1860,7 +1876,145 @@ trait WPPFM_Processing_Support {
 			}
 		}
 
+		// Performance metrics from feedmanager_product_performance (tier, revenue, orders).
+		// @since 3.21.0
+		if ( $this->performance_fields_requested( $active_field_names ) ) {
+			// When performance prioritizing is disabled for this feed, do not leak any previously computed data.
+			// Instead, resolve performance fields to empty values so they cannot appear in the generated feed.
+			if ( $this->is_performance_prioritizing_enabled_for_feed() ) {
+				$this->inject_performance_attributes( $product );
+			} else {
+				$this->clear_performance_attributes( $product );
+			}
+		}
+
 		$woocommerce_product = null;
+	}
+
+	/**
+	 * Returns whether performance prioritizing is enabled for the current feed.
+	 *
+	 * This is cached per request to avoid repeated meta lookups during feed generation.
+	 *
+	 * @since 3.21.0
+	 *
+	 * @return bool
+	 */
+	private function is_performance_prioritizing_enabled_for_feed() {
+		$feed_id = (int) ( $this->_feed_data->feedId ?? 0 );
+		if ( ! $feed_id ) {
+			return false;
+		}
+
+		if (
+			null !== $this->_wppfm_performance_enabled_cache
+			&& (int) $this->_wppfm_performance_enabled_cache_feed_id === $feed_id
+		) {
+			return (bool) $this->_wppfm_performance_enabled_cache;
+		}
+
+		$queries = new WPPFM_Queries();
+		$meta    = $queries->get_feed_performance_meta( $feed_id, array( 'wppfm_performance_enabled' ) );
+		$enabled = 'true' === ( $meta['wppfm_performance_enabled'] ?? 'false' );
+
+		$this->_wppfm_performance_enabled_cache         = $enabled;
+		$this->_wppfm_performance_enabled_cache_feed_id = $feed_id;
+
+		return $enabled;
+	}
+
+	/**
+	 * Clears performance attributes on the product object (ensures empty output).
+	 *
+	 * @since 3.21.0
+	 *
+	 * @param object $product Product data object (modified by reference).
+	 *
+	 * @return void
+	 */
+	private function clear_performance_attributes( $product ) {
+		$product->wppfm_performance_tier    = '';
+		$product->wppfm_performance_revenue = '';
+		$product->wppfm_performance_orders  = '';
+	}
+
+	/**
+	 * Checks if any performance procedural fields are requested.
+	 *
+	 * @param array $active_field_names Column names requested for the feed.
+	 *
+	 * @return bool
+	 * @since 3.21.0
+	 */
+	private function performance_fields_requested( $active_field_names ) {
+		$perf_fields = array( 'wppfm_performance_tier', 'wppfm_performance_revenue', 'wppfm_performance_orders' );
+		foreach ( $perf_fields as $field ) {
+			if ( in_array( $field, $active_field_names, true ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Injects performance tier, revenue, and orders into the product object.
+	 *
+	 * Looks up the product's row in feedmanager_product_performance for the current feed.
+	 * The product ID used matches the feed queue (variation or parent per includeVariations).
+	 * When no row exists, uses defaults: tier=low, revenue=0, orders=0.
+	 *
+	 * @param object $product Product data object (modified by reference).
+	 *
+	 * @since 3.21.0
+	 */
+	private function inject_performance_attributes( $product ) {
+		// Defensive guard: never output performance data when performance prioritizing is disabled.
+		if ( ! $this->is_performance_prioritizing_enabled_for_feed() ) {
+			$this->clear_performance_attributes( $product );
+			return;
+		}
+
+		$feed_id = $this->_feed_data->feedId ?? 0;
+		if ( ! $feed_id ) {
+			$this->clear_performance_attributes( $product );
+			return;
+		}
+
+		// Read from per-request prefetch cache when available (avoids N+1 queries per product).
+		if ( function_exists( 'wppfm_performance_cache' ) ) {
+			$cache = wppfm_performance_cache();
+			if ( is_array( $cache ) ) {
+				$row = isset( $cache[ (int) $product->ID ] ) ? $cache[ (int) $product->ID ] : null;
+				if ( $row ) {
+					$product->wppfm_performance_tier   = in_array( (string) $row->performance_tier, array( 'high', 'mid', 'low' ), true ) ? (string) $row->performance_tier : 'low';
+					$product->wppfm_performance_revenue = is_numeric( $row->revenue ) ? number_format( (float) $row->revenue, 2, '.', '' ) : '0';
+					$product->wppfm_performance_orders  = (string) (int) ( $row->orders_count ?? 0 );
+				} else {
+					$product->wppfm_performance_tier   = 'low';
+					$product->wppfm_performance_revenue = '0';
+					$product->wppfm_performance_orders  = '0';
+				}
+				return;
+			}
+		}
+
+		// Fallback: single lookup when cache not initialized (e.g. non-batch context).
+		$queries     = new WPPFM_Queries();
+		$meta        = $queries->get_feed_performance_meta( $feed_id, array( 'wppfm_performance_period_days' ) );
+		$period_days = (int) ( $meta['wppfm_performance_period_days'] ?? 30 );
+		$period_days = max( 7, min( 365, $period_days ) );
+
+		$row = $queries->get_performance_for_product( $feed_id, (int) $product->ID, $period_days );
+
+		if ( $row ) {
+			$product->wppfm_performance_tier   = in_array( (string) $row->performance_tier, array( 'high', 'mid', 'low' ), true ) ? (string) $row->performance_tier : 'low';
+			$product->wppfm_performance_revenue = is_numeric( $row->revenue ) ? number_format( (float) $row->revenue, 2, '.', '' ) : '0';
+			$product->wppfm_performance_orders  = (string) (int) ( $row->orders_count ?? 0 );
+		} else {
+			$product->wppfm_performance_tier   = 'low';
+			$product->wppfm_performance_revenue = '0';
+			$product->wppfm_performance_orders  = '0';
+		}
 	}
 
 	/**

@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 require_once __DIR__ . '/application/wppfm-feed-health-monitor.php';
+require_once __DIR__ . '/data/wppfm-performance-source-fields.php';
 
 /**
  * Includes all required classes
@@ -189,6 +190,9 @@ function include_classes() {
 	}
 	if ( ! class_exists( 'WPPFM_Feed_Queries' ) ) {
 		require_once __DIR__ . '/application/class-wppfm-feed-queries.php';
+	}
+	if ( ! class_exists( 'WPPFM_Performance_Prioritizer' ) ) {
+		require_once __DIR__ . '/application/class-wppfm-performance-prioritizer.php';
 	}
 	if ( ! class_exists( 'WPPFM_Folders' ) ) {
 		require_once __DIR__ . '/setup/class-wppfm-folders.php';

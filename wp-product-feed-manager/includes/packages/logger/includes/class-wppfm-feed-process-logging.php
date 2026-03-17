@@ -18,6 +18,24 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WPPFM_Feed_Process_Logging {
 	/**
+	 * Returns the active client request id for a feed (if any).
+	 *
+	 * The feed editor can send a `client_request_id` that we store in a transient when a generation
+	 * starts. We use it here to prefix log messages so browser console logs and server logs can be
+	 * cross-referenced reliably.
+	 *
+	 * @since 3.21.0
+	 *
+	 * @param string $feed_id
+	 *
+	 * @return string
+	 */
+	private static function get_client_request_id_for_feed( $feed_id ) {
+		$req = get_transient( 'wppfm_client_request_id_' . $feed_id );
+		return is_string( $req ) ? $req : '';
+	}
+
+	/**
 	 * Initiates the logging of a feed process and writes a header to the logging file
 	 *
 	 * @since 2.7.0
@@ -33,12 +51,15 @@ class WPPFM_Feed_Process_Logging {
 		$log_file_name         = self::generate_log_file_name( $feed_id );
 		$background_processing = 'true' === get_option( 'wppfm_disabled_background_mode', 'false' ) ? 'foreground' : 'background';
 		$starter               = $silent ? 'through a cron' : 'manually';
+		$client_request_id     = self::get_client_request_id_for_feed( $feed_id );
+		$client_request_tag    = '' !== $client_request_id ? sprintf( ' (client_request_id=%s)', $client_request_id ) : '';
 		$log_header            = sprintf(
-			'%sGenerating feed %s %s initiated in %s mode.',
+			'%sGenerating feed %s %s initiated in %s mode.%s',
 			self::generate_log_tag( 'MESSAGE' ),
 			$feed_id,
 			$starter,
-			$background_processing
+			$background_processing,
+			$client_request_tag
 		);
 
 		$wp_filesystem->put_contents( WPPFM_LOGGINGS_DIR . '/' . $log_file_name, '', FS_CHMOD_FILE ); // start with a clear log
@@ -56,7 +77,9 @@ class WPPFM_Feed_Process_Logging {
 	 */
 	public static function add_to_feed_process_logging( $feed_id, $message, $tag = 'MESSAGE' ) {
 		$log_file_name = self::generate_log_file_name( $feed_id );
-		$log_message   = self::generate_log_tag( $tag ) . $message;
+		$client_request_id = self::get_client_request_id_for_feed( $feed_id );
+		$client_prefix     = '' !== $client_request_id ? sprintf( '[client_request_id=%s] ', $client_request_id ) : '';
+		$log_message        = self::generate_log_tag( $tag ) . $client_prefix . $message;
 		$file_path     = WPPFM_LOGGINGS_DIR . '/' . $log_file_name;
 
 		wppfm_append_line_to_file( $file_path, $log_message, true );

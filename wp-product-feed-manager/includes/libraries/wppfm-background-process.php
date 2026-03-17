@@ -129,8 +129,8 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 
 		$this->cron_hook_identifier     = $this->identifier . '_cron';
 		$this->cron_interval_identifier = $this->identifier . '_cron_interval';
-		$processed_products_option      = get_option( 'wppfm_processed_products' );
-		$this->processed_products       = $processed_products_option ? explode( ',', $processed_products_option ) : array();
+		// Keep this in-memory list empty; queue progression is the source of truth for processed items.
+		$this->processed_products       = array();
 		
 		// Allow customization of progress update interval
 		$this->progress_update_interval = apply_filters( 
@@ -957,6 +957,19 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 				set_transient( 'wppfm_nr_of_processed_products', $total_handled_products );
 			}
 
+			// Initialise a separate transient that tracks all handled items (added or filtered).
+			// This counter is used by the stalled-feed watchdog logic so that heavy filtering
+			// does not look like a stalled feed when the file itself is no longer growing.
+			$handled_items_count = get_transient( 'wppfm_nr_of_handled_items' );
+
+			if ( false === $handled_items_count ) {
+				$handled_items_count = 0;
+				set_transient(
+					'wppfm_nr_of_handled_items',
+					$handled_items_count
+				);
+			}
+
 			// @since 2.10.0
 			if ( ! $properties_key ) {
 				$feed_id = filter_input( INPUT_GET, 'feed_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
@@ -1026,6 +1039,10 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 
 			do_action( 'wppfm_feed_processing_batch_activated', $feed_id, $initial_memory, count( $batch->data ) );
 
+			// Expose batch product IDs for performance prefetch (avoids N+1 per-product lookups).
+			$batch_product_ids = $this->extract_product_ids_from_batch_data( $batch->data );
+			do_action( 'wppfm_feed_processing_batch_loaded', $feed_id, $batch_product_ids, $feed_data, $pre_data );
+
 			foreach ( $batch->data as $key => $value ) {
 				// Validate lock ownership before processing each item
 				if ( ! $this->is_current_process_locked() ) {
@@ -1041,22 +1058,26 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 					$this->last_lock_refresh = $current_time;
 				}
 
+				// Every queue entry that reaches this point is considered a handled item,
+				// regardless of whether it will eventually be added to the feed or filtered out.
+				// This allows the feed watchdog to detect forward progress even when the file
+				// no longer grows because all remaining products are filtered out.
+				$handled_items_count++;
+
+				// Persist the handled-items counter periodically to reduce database writes.
+				if ( $handled_items_count % $this->progress_update_interval === 0 ) {
+					set_transient( 'wppfm_nr_of_handled_items', $handled_items_count );
+				}
+
 				// If it's not an array, then it's a product id.
 				if ( ! is_array( $value ) ) {
 					$value = array( 'product_id' => $value );
 				}
 
-				// Prevent doubles in the feed.
-				// phpcs:disable WordPress.PHP.StrictInArray.MissingTrueStrict
-				if ( array_key_exists( 'product_id', $value ) && in_array( $value['product_id'], $this->processed_products ) ) {
-					unset( $batch->data[ $key ] ); // Remove this product from the queue.
-					continue;
-				}
-
 				// Run the task.
 				$task = $this->task( $value, $feed_data, $feed_file_path, $pre_data, $channel_details, $relations_table );
 
-				// If there was no failure and the id is known, add the product id to the list of processed products.
+				// If the product was added successfully, increment feed progress counters.
 				if ( 'product added' === $task && array_key_exists( 'product_id', $value ) ) {
 					$this->products_handled_in_batch++;
 					$total_handled_products++;
@@ -1066,7 +1087,6 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 						set_transient( 'wppfm_nr_of_processed_products', $total_handled_products );
 					}
 					
-					$this->processed_products[] = $value['product_id'];
 				}
 
 				unset( $batch->data[ $key ] ); // Remove this product from the queue.
@@ -1116,12 +1136,17 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 
 		$this->unlock_process();
 
+		// Persist the final processed counter for both continuation and completion paths.
+		// The completion routine reads this transient to store the final product count on the feed record.
+		set_transient( 'wppfm_nr_of_processed_products', $total_handled_products );
+
 		// If the queue is not empty, restart the process.
 		if ( ! $this->is_queue_empty() ) {
 			update_option( 'wppfm_processed_products', implode( ',', $this->processed_products ) );
 			
-			// Ensure counter is up to date even if not on interval boundary
+			// Ensure progress counters are up to date even if not on interval boundary.
 			set_transient( 'wppfm_nr_of_processed_products', $total_handled_products );
+			set_transient( 'wppfm_nr_of_handled_items', $handled_items_count );
 
 			// @since 2.3.0
 			do_action( 'wppfm_activated_next_batch', $feed_id );
@@ -1267,6 +1292,7 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	public function complete() {
 		delete_option( 'wppfm_processed_products' );
 		delete_transient( 'wppfm_nr_of_processed_products' );
+		delete_transient( 'wppfm_nr_of_handled_items' );
 
 		// Note: wppfm_running_silent is cleared in end_batch() when the feed queue is empty,
 		// so it persists across multiple feeds in one automatic run and allows failure emails.
@@ -1450,6 +1476,34 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 			unset( $pending[ $feed_id ] );
 			update_site_option( 'wppfm_pending_dispatch_feeds', $pending );
 		}
+	}
+
+	/**
+	 * Extracts product IDs from batch queue data for prefetching.
+	 * Skips non-product items (e.g. file_format_line, error_message).
+	 *
+	 * @param array $batch_data Batch data array from the queue.
+	 *
+	 * @return int[] Product post IDs.
+	 */
+	protected function extract_product_ids_from_batch_data( $batch_data ) {
+		$product_ids = array();
+
+		if ( ! is_array( $batch_data ) ) {
+			return $product_ids;
+		}
+
+		foreach ( $batch_data as $item ) {
+			$value = $item;
+			if ( ! is_array( $value ) ) {
+				$value = array( 'product_id' => $value );
+			}
+			if ( array_key_exists( 'product_id', $value ) && is_numeric( $value['product_id'] ) ) {
+				$product_ids[] = (int) $value['product_id'];
+			}
+		}
+
+		return array_values( array_unique( array_filter( $product_ids ) ) );
 	}
 
 	/**

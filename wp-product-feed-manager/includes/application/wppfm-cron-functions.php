@@ -86,6 +86,62 @@ function wppfm_include_files_for_review_feed_package() {
 }
 
 /**
+ * Register the feed update cron schedule.
+ *
+ * @param array $schedules Current cron schedules.
+ *
+ * @return array
+ * @since 3.24.0 Introduced a dedicated (default 5-minute) feed update interval.
+ */
+function wppfm_register_feed_update_schedule( $schedules ) {
+	if ( isset( $schedules['wppfm_feed_update_interval'] ) ) {
+		return $schedules;
+	}
+
+	$interval_minutes = apply_filters( 'wppfm_feed_update_interval_minutes', 5 );
+	$interval_minutes = max( 1, intval( $interval_minutes ) );
+
+	$schedules['wppfm_feed_update_interval'] = array(
+		'interval' => $interval_minutes * MINUTE_IN_SECONDS,
+		'display'  => sprintf(
+			/* translators: %d: Number of minutes */
+			_n(
+				'Every %d minute (WPPFM Feed Updates)',
+				'Every %d minutes (WPPFM Feed Updates)',
+				$interval_minutes,
+				'wp-product-feed-manager'
+			),
+			$interval_minutes
+		),
+	);
+
+	return $schedules;
+}
+
+/**
+ * Ensure the feed update cron event exists (and uses the expected interval).
+ *
+ * @since 3.24.0 Reschedules older hourly events to the dedicated (default 5-minute) interval.
+ */
+function wppfm_schedule_feed_update_event() {
+	$desired_schedule = 'wppfm_feed_update_interval';
+	$hook             = 'wppfm_feed_update_schedule';
+
+	$event = function_exists( 'wp_get_scheduled_event' ) ? wp_get_scheduled_event( $hook ) : false;
+
+	if ( $event && isset( $event->schedule ) && $desired_schedule !== $event->schedule ) {
+		// Keep the event, but normalize the recurrence when upgrading from older plugin versions.
+		wp_clear_scheduled_hook( $hook );
+		$event = false;
+	}
+
+	if ( ! $event && ! wp_next_scheduled( $hook ) ) {
+		// Start on a short delay to avoid overlap during activation or heavy admin requests.
+		wp_schedule_event( time() + MINUTE_IN_SECONDS, $desired_schedule, $hook );
+	}
+}
+
+/**
  * Register the feed watchdog cron schedule.
  *
  * @param array $schedules Current cron schedules.
@@ -281,3 +337,6 @@ function wppfm_watchdog_start_next_feed( $context = 'unknown' ) {
 add_filter( 'cron_schedules', 'wppfm_register_feed_watchdog_schedule' );
 add_action( 'init', 'wppfm_schedule_feed_watchdog_event' );
 add_action( 'wppfm_feed_watchdog_cron', 'wppfm_handle_feed_watchdog_cron' );
+
+add_filter( 'cron_schedules', 'wppfm_register_feed_update_schedule' ); // phpcs:disable WordPress.WP.CronInterval.ChangeDetected
+add_action( 'init', 'wppfm_schedule_feed_update_event' );

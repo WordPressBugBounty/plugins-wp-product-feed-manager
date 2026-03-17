@@ -396,6 +396,12 @@ if ( ! class_exists( 'WPPFM_Db_Management' ) ) :
 				defined( 'WPPFM_TRANSIENT_LIVE' ) ? WPPFM_TRANSIENT_LIVE : DAY_IN_SECONDS
 			);
 
+			set_transient(
+				'wppfm_nr_of_handled_items',
+				0,
+				defined( 'WPPFM_TRANSIENT_LIVE' ) ? WPPFM_TRANSIENT_LIVE : DAY_IN_SECONDS
+			);
+
 			delete_transient( 'wppfm_feed_file_size' );
 		}
 

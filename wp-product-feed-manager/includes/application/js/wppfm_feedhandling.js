@@ -125,6 +125,16 @@ function wppfm_filterActiveMetaData( metaData, categoryMapping ) {
 		activeMeta.push( new Wppfm_AttributeMeta( 'category_mapping', categoryMapping ) );
 	}
 
+	// Append feed-level performance meta (3.21.0) from form controls so they persist on save.
+	var perfEnabled = jQuery( '#wppfm-performance-enabled' ).length && jQuery( '#wppfm-performance-enabled' ).is( ':checked' ) ? 'true' : 'false';
+	var perfPeriod = jQuery( '#wppfm-performance-period-days' ).length ? jQuery( '#wppfm-performance-period-days' ).val() : '30';
+	var perfHigh = jQuery( '#wppfm-performance-high-percentage' ).length ? jQuery( '#wppfm-performance-high-percentage' ).val() : '20';
+	perfPeriod = String( Math.max( 7, Math.min( 365, parseInt( perfPeriod, 10 ) || 30 ) ) );
+	perfHigh = String( Math.max( 1, Math.min( 100, parseInt( perfHigh, 10 ) || 20 ) ) );
+	activeMeta.push( new Wppfm_AttributeMeta( 'wppfm_performance_enabled', perfEnabled ) );
+	activeMeta.push( new Wppfm_AttributeMeta( 'wppfm_performance_period_days', perfPeriod ) );
+	activeMeta.push( new Wppfm_AttributeMeta( 'wppfm_performance_high_percentage', perfHigh ) );
+
 	return activeMeta;
 }
 

@@ -136,6 +136,11 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 
 		$this->fill_the_background_queue();
 
+		// Store the total products-to-process so the UI progress bar can start immediately
+		// when the feed enters processing, even if the initiating Ajax request blocks.
+		$nr_of_products_in_feed = $this->_background_process->nr_of_products_in_queue();
+		set_transient( 'wppfm_nr_of_products_to_process_' . $this->_feed->feedId, intval( $nr_of_products_in_feed ), HOUR_IN_SECONDS );
+
 		// Hook for performance monitoring - feed processing starting
 		do_action( 'wppfm_feed_generation_ready_to_start', $this->_feed->feedId );
 
@@ -145,8 +150,6 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		// feed actually completes (success or failure), so that failure detection can send the
 		// notice email when running in silent/automatic mode. The transient is cleared in the
 		// background process complete() method when the batch finishes.
-
-		$nr_of_products_in_feed = $this->_background_process->nr_of_products_in_queue();
 
 		if ( ! $silent ) {
 			echo 'started_processing-' . esc_html( $nr_of_products_in_feed );
@@ -173,6 +176,7 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 				$file_extension = function_exists( 'wppfm_get_file_type' ) ? wppfm_get_file_type( $current_feed_status['channel_id'] ) : 'xml';
 				$feed_file      = wppfm_get_file_path( $current_feed_status['title'] . '.' . $file_extension );
 				$current_feed_status['products_in_queue'] = get_transient( 'wppfm_nr_of_processed_products' );
+				$current_feed_status['products_to_process'] = get_transient( 'wppfm_nr_of_products_to_process_' . $feed_id );
 
 				// If it is, set the feed status to fail and change the $current_feed_status['status_id'] to 6.
 				if ( WPPFM_Feed_Controller::feed_processing_failed( $feed_file ) ) {
@@ -731,6 +735,9 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 				'_product_parent_description',
 				'_woocs_currency',
 				'_low_stock_amount',
+				'wppfm_performance_tier',
+				'wppfm_performance_revenue',
+				'wppfm_performance_orders',
 			);
 		}
 

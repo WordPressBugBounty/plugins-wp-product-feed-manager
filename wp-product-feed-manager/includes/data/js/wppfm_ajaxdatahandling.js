@@ -182,7 +182,14 @@ function wppfm_updateFeedToDb( feedData, metaData, feedFilter, callback ) {
 	);
 }
 
-function wppfm_updateFeedFile( feed_id, callback ) {
+/**
+ * Triggers feed generation.
+ *
+ * @param {int} feed_id
+ * @param {Function} callback
+ * @param {string} [clientRequestId] Optional correlation id for cross-referencing browser logs with server logs.
+ */
+function wppfm_updateFeedFile( feed_id, callback, clientRequestId ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
@@ -190,6 +197,7 @@ function wppfm_updateFeedFile( feed_id, callback ) {
 			dataType: 'text',
 			feedId: feed_id,
 			updateFeedFileNonce: myAjaxNonces.updateFeedFileNonce,
+			client_request_id: clientRequestId ? String( clientRequestId ) : '',
 
 		},
 		function( response ) {
@@ -199,13 +207,21 @@ function wppfm_updateFeedFile( feed_id, callback ) {
 	);
 }
 
-function wppfm_getCurrentFeedStatus( feedId, callback ) {
+/**
+ * Reads feed status for the feed editor polling loop.
+ *
+ * @param {int} feedId
+ * @param {Function} callback
+ * @param {string} [clientRequestId] Optional correlation id for cross-referencing browser logs with server logs.
+ */
+function wppfm_getCurrentFeedStatus( feedId, callback, clientRequestId ) {
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
 			action: 'wppfm-ajax-get-feed-status',
 			sourceId: feedId,
 			feedStatusNonce: myAjaxNonces.feedStatusNonce,
+			client_request_id: clientRequestId ? String( clientRequestId ) : '',
 
 		},
 		function( response ) {
