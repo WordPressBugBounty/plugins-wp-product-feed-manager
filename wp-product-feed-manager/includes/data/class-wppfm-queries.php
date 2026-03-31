@@ -476,6 +476,7 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 		public function update_feed_performance_meta( $feed_id, $meta_key, $meta_value ) {
 			$main_table = $this->_table_prefix . 'feedmanager_product_feedmeta';
 
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Custom feed meta table with dedicated product_feed_id and meta_key indexes; this is not a wp_postmeta scan.
 			$exists = $this->_wpdb->get_var(
 				$this->_wpdb->prepare(
 					"SELECT meta_id FROM $main_table WHERE product_feed_id = %d AND meta_key = %s",
@@ -485,6 +486,7 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 			);
 
 			if ( $exists ) {
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key,WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Updating a keyed row in the custom feed meta table; these required column names trigger a generic meta sniff.
 				return $this->_wpdb->update(
 					$main_table,
 					array( 'meta_value' => $meta_value ),
@@ -497,6 +499,7 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 				);
 			}
 
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key,WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Inserting a keyed row in the custom feed meta table; these required column names trigger a generic meta sniff.
 			return $this->_wpdb->insert(
 				$main_table,
 				array(

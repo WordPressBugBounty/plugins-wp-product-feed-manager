@@ -5,222 +5,201 @@ Donate link: https://wpmarketingrobot.com/
 Requires at least: 6.5
 Tested up to: 6.10
 Requires PHP: 7.4
-Stable tag: 2.21.0
+Stable tag: 2.22.0
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Easily create high-quality product feeds for Google Shopping and Google Merchant Center in your WooCommerce store. Increase sales on Google now!
+
+The WooCommerce product feed plugin built for Google. Create a Google Merchant feed in 5 minutes—no coding, no errors. Start selling on Google Shopping today.
 
 == Description ==
 
-**Creating a Google Product Feed in WooCommerce has never been simpler!**
-Elevate your WooCommerce store's sales and visibility with *Product Feed Manager for WooCommerce*, the go-to plugin for Google Shopping feeds. Trusted by a diverse community of WooCommerce sellers, our plugin is engineered to make your life easier and your sales higher.
+Google Feed Manager for WooCommerce is a free WordPress plugin that creates compliant product feeds for Google Merchant Center. It supports 7 feed types including Primary, Supplemental, Promotions, and Local Inventory feeds. The plugin auto-maps required attributes, schedules automatic updates, and handles up to 100 products per feed. No coding required—generate your first Google Shopping feed in under 5 minutes.
 
-From budding online entrepreneurs to seasoned e-commerce giants, our user base is as extensive as it is varied. Whether you're selling handcrafted jewelry or managing a multinational electronics storefront, you're in good company. And we've been excelling at this since our inception!
+**This WooCommerce feed manager gets your products on Google Shopping—fast.** Generate a compliant product feed, connect it to Google Merchant Center, and start appearing in shopping feeds where buyers are searching.
 
-Google Feed Manager for Google Shopping in WooCommerce Free sets you up with all the essentials to get your Google Shopping feeds up and running. For those who aim to supercharge their feeds, our Pro version unlocks a suite of advanced features and capabilities, ensuring your feeds are optimized to the max.
+No XML. No spreadsheets. No developer.
 
-=== Google Shopping for everyone, Built by Google Shopping practitioners ===
-Google Shopping is a powerful platform for online selling, but mastering its intricacies can feel like navigating a labyrinth. The good news is, you don't have to go it alone. We've got your back!
+== The Hidden Cost of a Bad Product Feed ==
 
-Our mission is to make Google Shopping accessible to everyone. Whether you're a rookie webshop owner or a seasoned e-commerce veteran, our Google Shopping Feed Manager for WooCommerce equips you with the necessary tools to maneuver through the complexities of Google Shopping. We turn these challenges into stepping stones for your online business growth and success.
+Every day without a working WooCommerce Google Shopping feed costs you sales. Your competitors are already there.
 
-=== <a href="https://wpmarketingrobot.com/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=pro_version" target="_blank">Get Product Feed Manager for Google Shopping in WooCommerce - Premium</a> ===
+Here's what most store owners don't realize: 15–20% of WooCommerce products get rejected in Google Merchant Center due to small data errors. That means for every €100 in ad budget, €15–20 goes to "invisible" products that never show up. Without a proper Google feed, you're paying for traffic you'll never get.
 
-== Product feed for WooCommerce - Video Demo, Google Shopping Feed ==
-[youtube ttps://www.youtube.com/watch?v=z7cioNVXvD4]
+And if you've tried creating a product feed manually? You know the pain:
+- Rejected products with cryptic error messages
+- Hours lost reformatting data fields
+- Shopping feeds that break every time you update inventory
+- The sinking feeling when "Disapproved" turns red in Merchant Center
+
+Meanwhile, your competitors keep selling.
+
+== What If Your Google Merchant Feed Just Worked? ==
+
+Imagine opening Google Merchant Center and seeing zero errors. Your products approved. Your ads running. Sales coming in while you sleep.
+
+That's not a fantasy. That's what happens when your WooCommerce product feed is built right from the start.
+
+We've spent years inside Google Merchant Center. We've fixed thousands of disapproved feeds. We've seen what works—and what doesn't.
+
+So we built the Google feed manager for WooCommerce we wished existed.
 
 <a target="_blank" href="https://wpmarketingrobot.com/help-center/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=documentation">Documentation</a> | <a target="_blank" href="https://www.youtube.com/@wpmarketingrobot/videos">Video Tutorials</a> | <a target="_blank" href="https://wpmarketingrobot.com/help-item/faq/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=faq">FAQ</a> | <a target="_blank" href="https://wpmarketingrobot.com/support/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=support">Support</a>
 
-== What customers say about us ==
->**Excellent Plugin / Solid Customer Support!**
-> I'm pleased with this plugin for creating different feeds. I started with the free version that allowed me to create just a feed for Google Shopping. That worked well. Then I needed to create some additional feeds so I purchased the Pro version which I feel was reasonably priced. I did need to turn to support for assistance on different feed issues along the way and in each instance they successfully responded in one business day. Overall, the 'Product Feed Manager' plugin is reliable and so is their customer support.
->
-> @fredgerendasy
+== See It In Action ==
 
-> **Essential for any e-commerce and outstanding support.**
-> This plugin is really essential for any shop that wants to be reliably listed by Google. 
->This has become a critical component of my business strategy and when bug appeared after using this plugin smoothly for years, Michel was here and allowed me to keep running my business.
->
->Thanks again for your work!
->
-> @poissonvert
+[youtube https://www.youtube.com/watch?v=z7cioNVXvD4]
 
-== WHY a Feed Manager for Google Shopping in WooCommerce? ==
-Are you grappling with the complexities of managing your WooCommerce product feed for Google Shopping? Are you overwhelmed with the nuances of Google's latest algorithms and requirements? Do you find yourself constantly updating your product feeds, worried that you're falling behind in the race?
+== 3 Steps. 5 Minutes. Done. ==
 
-You're not alone, and these are the everyday challenges online shop owners face in the digital marketplace.
+1. **Pick your feed type** – Primary, Supplemental, Promotions, Local Inventory, or 4 others
+2. **Map your data** – We auto-fill required fields; you customize what matters
+3. **Generate** – Copy your feed URL into Merchant Center
 
-With Product Feed Manager for Google Shopping in WooCommerce, you can overcome these obstacles and unlock these unparalleled benefits:
+That's it. No XML editing. No spreadsheet gymnastics. No developer needed.
 
-* **Dominate Google Shopping**: Outclass your competition with our laser-focused Google Shopping tools. With support exclusively for Google channels, we offer expertise that's second to none. Claim your rightful spot at the top of Google Shopping search results and watch your sales soar.
+== Every Google Feed Type. One Plugin. ==
 
-* **Supports Google Merchant Center feed types**:
+- **Primary Feed** – Your main product catalog
+- **Supplemental Feed** – Override or add data to existing products
+- **Promotions Feed** – Run sales and special offers
+- **Local Inventory Feed** – Show in-store availability
+- **Manufacturer Center Feed** – Brand-level product data
+- **Dynamic Remarketing Feed** – Retarget past visitors
+- **Product Ratings Feed** – Display star ratings in ads
 
-	* Google Merchant Center primary feed
-	* Google Merchant Center Supplemental feed
-	* Google Promotions Feed
-	* Google Local Inventory feed
-	* Google Manufacturer Center feed
-	* Google Dynamic Remarketing feed
-	* Google Product Ratings feed
+== Real Store Owners. Real Results. ==
 
-* **Simplify Your Feed Management**: Say goodbye to the complications of managing multiple product feeds. Our plugin takes care of all the technical aspects, including data optimization and real-time syncing, so you can focus on what you do best—selling products.
+> "I started with the free version for Google Shopping. It worked. When I needed more feeds, I upgraded. Support responded in one business day, every time. Reliable plugin, reliable team."
+> — @fredgerendasy
 
-* **Elevate Your Product Listings**: Benefit from our advanced features like automated feed updates, custom labels, and advanced filtering options. Enable Google to better understand and rank your products, putting you ahead in the marketplace.
+> "This plugin is essential for any shop that wants to be reliably listed by Google. It's become a critical component of my business strategy."
+> — @poissonvert
 
-* **Optimize Your Marketing Strategy**: Google Merchant Feed Manager provides in-depth analytics and performance metrics. Harness these powerful insights to refine your product listings, identify top-performing products, and allocate your marketing budget effectively.
+== Built for Stores That Actually Sell ==
 
-* **Enhance Customer Experience**: Superior feed quality leads to more accurate product listings, which in turn elevates the Shopping experience for your customers. Enjoy lower bounce rates, higher engagement, and ultimately, increased sales and customer satisfaction.
+Industry research shows that only 5–10% of products in a typical catalog actually generate Shopping traffic. Google calls the rest "zombie products"—items in your feed that get zero impressions. The difference? Attribute-rich product data—what Google calls "Golden Records"—that algorithms can understand, match, and surface to buyers. Early data suggests these complete records see 3–4× more visibility in AI-driven shopping experiences.
 
-Start dominating Google Shopping today. Your success is our mission, and with the Product Feed Manager plugin for WooCommerce, you're always one step ahead.
+**Performance Prioritizing**
+Rank products automatically based on real WooCommerce sales data. Focus ad spend on items that actually convert. Assign performance tiers (high/mid/low) to Google custom labels and build smarter bidding strategies—no spreadsheets, no guesswork.
 
-== Unveil Key Features in Product Feed Manager for Google Shopping in WooCommerce ==
-Our Product Feed manager brings a suite of features that make product feed management in WooCommerce simple yet powerful. Let's delve into the details.
+**Filters that protect your margins**
+Exclude out-of-stock items. Hide low-margin products. Cut low-performers from your feed entirely. Only advertise what makes you money.
 
-== Easy and Quick Installation to Get You Started ==
-Setting up our Product Feed manager for WooCommerce plugin is as straightforward as installing any other WordPress plugin. Once installed, our intuitive interface guides you through a quick 3-step feed creation process:
-1. Choose your Google feed type
-2. Complete category and attribute mapping
-3. Generate your feed with a click
+**Scheduled updates**
+Your feed refreshes automatically. Merchant Center pulls the latest data. You don't lift a finger.
 
-== Showing All Possible Data in Your Google Shopping Campaigns ==
-Your Shopping campaigns can now be more informative and engaging than ever. We ensure every piece of relevant data about your product makes it to the feed.
+**Scales with you**
+10 products or 10,000—same speed, same reliability. Large catalogs run without slowing your site.
 
-== Advanced Data Manipulation ==
-Fine-tune your data fields with ease. Our robust features enable advanced data manipulation, offering you a tailored feed that meets your specific business requirements.
+**Plays nice with your stack**
+Works with Yoast, RankMath, WooCommerce Brands, Germanized, currency switchers, and more. Premium adds WPML, Polylang, and TranslatePress.
 
-== Make Use of WordPress Hooks ==
-For the seasoned WordPress user, our plugin allows data manipulation through WordPress hooks. You can hook into WordPress's core to customize data without any constraints, making the plugin highly extensible.
+**Developer-friendly**
+WordPress hooks let you customize any data field. No constraints, full control.
 
-== Adding Missing WooCommerce Data ==
-Never fret about incomplete product data. Our plugin ensures that all requisite WooCommerce data fields are automatically included in your feed.
+**Built to Google's specs**
+Strictly follows Google's 2026 Merchant Center requirements and CSS guidelines. When Google updates their feed specifications, we update the plugin.
 
-== Only the Products in the Feed That Matter ==
-Prioritize profitability with our advanced filters. Set rules to exclude low-margin or low-stock products, or only include items on sale. Filter using any available WooCommerce and WordPress data sources.
+== The Difference Between Free and Pro ==
 
-== Large Webshops? We Got You Covered ==
-Scalability is no issue. Whether you're listing 10 products or 10,000, our plugin is optimized to handle feeds of any size, ensuring peak performance.
+**Free includes:**
+- All 7 Google feed types
+- Attribute mapping and edit rules
+- Scheduled auto-updates
+- Product filters
+- Up to 100 products per feed
 
-== Powerful Integration of Other Tools ==
-Our plugin seamlessly integrates with various tools and plugins to enhance your workflow:
-- WPML (Premium feature)
-- Poly Lang (Premium feature)
-- TranslatePress (premium feature)
-- Yoast primary category feature
-- Rankmath SEO primary category feature
-- WooCommerce currency switcher
-- WooCommerce Brands plugin
-- Germanized
-- WooCommerce brands
-- Yith WooCommerce Brands
-- External Images from wpintense.com
+**Pro unlocks:**
+- Unlimited products per feed
+- Advanced filtering logic
+- Full multilingual support (WPML, Polylang, TranslatePress)
+- Multi-channel: Amazon, eBay, Facebook, Instagram, Pinterest, Etsy
 
-== Auto-Scheduled Updates to Google Merchant Center ==
-Say goodbye to manual uploads. Auto-schedule your feeds to update in Google Merchant Center according to your timetable. Effortless and reliable.
-
-== Don't Worry Your Feeds Are Disapproved ==
-Cut down on disapprovals and errors. Our user-friendly interface, pre-populated required attributes, and advanced data manipulation ensure that your feeds meet Google's stringent requirements.
-
-== On Top of the Business ==
-Stay ahead of your competition and enjoy peace of mind with our regular updates and prompt customer support.
-
-=== Premium Features for Advanced Users ===
-Unlock even more functionalities and advanced settings with our premium features. Tailor your product feeds like never before. 
-
-- All Free features
-- Unlimited Product Feed Generated (Free version limited to 100 products per feed)
-- Advanced product filter
-- Full support WPML
-- Poly Lang Multi-language support
-- TranslatePress
-- E-commerce version with Multiple channels like Google Shopping, Amazon, eBay, Facebook, Instagram, Etsy,  Pinterest, etc
-
-=== <a href="https://wpmarketingrobot.com/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=pro_version" target="_blank">Get our Premium Product Feed Manager or Multi-Channel Product feed manager </a> ===
+=== <a href="https://wpmarketingrobot.com/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=pro_version" target="_blank">Upgrade to Pro → More products, more channels, more sales</a> ===
 
 == Installation ==
 
-=== From within WordPress ===
+**Under 2 minutes. No technical skills required.**
 
-Go to Plugins > Add New;
-Search for "Product feed manager for Google Shopping in WooCommerce";
-Activate "Product Feed Manager plugin" from your plugins page.
+= From WordPress (Recommended) =
 
-=== Manually ===
+1. Go to **Plugins → Add New**
+2. Search for "Google Feed Manager for WooCommerce"
+3. Click **Install Now**, then **Activate**
 
-Upload the wp-product-feed-manager folder to your /wp-content/plugins/ directory;
-Activate "Product Feed Manager plugin" from your plugins page.
+Done. Your first feed is 3 clicks away.
 
-That's basically it. You're ready to create your first feed in WooCommerce and start making money.
+= Manual Installation =
 
-Take a look at the video. They lead you through the process of creating your first product feed.
+1. Upload the `wp-product-feed-manager` folder to `/wp-content/plugins/`
+2. Activate from **Plugins** page
 
-= Install Google Merchant feed manager =
+= Watch the Walkthrough =
+
 [youtube https://www.youtube.com/watch?v=bgEFUWAdNOc]
-
-= How to set up a basic feed in WooCommerce =
-[youtube ttps://www.youtube.com/watch?v=z7cioNVXvD4]
 
 == Frequently Asked Questions ==
 
-= Why should I go with your plugin? =
-Because it’s built for Google Merchant Center from the ground up: full Google feed types, precise attribute mapping and edit rules, robust filters, scheduled updates, and hooks for developers. It scales from small stores to very large catalogs without slowing your site.
-Pro tip: Map identifiers (brand/gtin/mpn) early to reduce disapprovals and speed approvals.
+= How fast can I get my products on Google Shopping? =
 
-= How does the Product Feed Manager plugin work? =
-It reads your WooCommerce product data, maps it to Google’s attributes, and generates a compliant XML feed URL. The plugin refreshes the feed on a schedule, and Google Merchant Center fetches it automatically via Scheduled fetch.
+5 minutes from install to feed URL. Pick feed type, map attributes (we pre-fill the required ones), click Generate. Paste the URL into Merchant Center. Your products start syncing immediately.
 
-= Any issues? Start here =
-1) Update WordPress, WooCommerce, theme, and other plugins. 2) Check PHP/MySQL versions and memory limits. 3) Deactivate/reactivate; if needed reinstall (settings are preserved). 4) Review our docs; then contact support with details if needed.
+= Why this plugin instead of the dozens of others? =
 
-= What's the best WooCommerce feed plugin? =
-If you’re comparing the *best WooCommerce feed plugin*, pick one focused on Google: all key GMC feed types (Primary, Supplemental, Promotions, Local Inventory, Manufacturer Center, Dynamic Remarketing, Product Ratings), advanced attribute mapping and filters, scheduled updates, and proven large‑catalog performance.
-Pro tip: Exclude low‑margin or low‑stock items with filters to improve ROAS.
+Built exclusively for Google. Not a multi-channel afterthought—a Google-first tool with:
+- All 7 GMC feed types
+- Precise attribute mapping with edit rules
+- Filters that protect your ad spend
+- Scheduled updates that just work
+- Hooks for developers who need control
 
-= How to create a WooCommerce product feed? =
-Here’s how to *create a WooCommerce product feed* in 3 steps:
-1) Go to **Product Feeds → Add New** → choose **Google Product Feed**, set target country and language.
-2) Map required attributes (id, title, description, link, image_link, price, availability, condition) and recommended ones (brand, gtin, mpn). Add rules/filters if needed.
-3) Click **Generate** and copy the feed URL.
-Pro tip: Add UTM parameters so GMC traffic is cleanly attributed in GA/GAds.
+It scales from 10 products to 10,000+ without slowing your site.
 
-= Does it support variables, custom fields, and product identifiers? =
-Yes. Variable products and variations are supported. You can map custom meta (including ACF) and send identifiers (brand/gtin/mpn) using WooCommerce’s identifier fields in the selector.
+= How do I connect WooCommerce to Google Merchant Center? =
 
-= Best Google Shopping plugin for WooCommerce? =
-For Google Shopping, choose a plugin built around Google’s specs and workflows: complete Google feed types, powerful edit rules, scheduled updates, and performance for large catalogs. Free covers Google essentials; Pro adds unlimited products per feed and multilingual/multi‑channel options.
+1. **Generate** your feed in the plugin → copy the feed URL
+2. In Merchant Center: **Products → Feeds → Add** → choose **Scheduled fetch**
+3. Paste URL, set fetch frequency, save
+4. Verify your website domain if you haven't already
 
-= What’s included in Free vs Pro? =
-Free: All Google essentials with a **limit of 100 products per feed**.
-Pro: **Unlimited** products per feed, advanced filtering, multilingual support (WPML/Polylang/TranslatePress), and more channels (Amazon, eBay, Facebook, Instagram, Etsy, Pinterest, etc.).
-Pro tip: Upgrade before you exceed the free cap to keep Diagnostics consistent across SKUs.
+First fetch happens within the hour. Check **Diagnostics** after—fix identifiers and category mapping first for the fastest approval.
 
-= Auto Sync: Does it work? =
-Yes! Automatic sync is our core feature. The plugin refreshes the feed URL on a schedule; in Google Merchant Center use **Products → Feeds → (+) → Scheduled fetch** to pull the latest version automatically.
-Pro tip: On low‑traffic sites, set a real server cron alongside WP‑Cron for maximum reliability.
+= Will my variable products and variations work? =
 
-= How to connect WooCommerce to Google Merchant Center? =
-1) Create and **Generate** your Google feed in the plugin → copy the feed URL.
-2) In **Google Merchant Center**: **Products → Feeds → (+)**, pick country/language, choose **Scheduled fetch**, paste URL, set frequency/time, save.
-3) Verify and claim your website; configure shipping (and tax where applicable).
-4) After the first fetch, check **Diagnostics** and adjust mapping/rules to resolve warnings.
-Pro tip: Fix identifiers, price/availability, and category mapping first—these drive the biggest approval wins.
+Yes. All variations export with their own prices, images, and attributes. Custom fields (including ACF) map directly into feed attributes.
 
-= Any Issues? Start here =
-Start with the next steps when you have any issues with your installation and plugin.
-First make sure you have all your plugins, theme, and WordPress updated to the latest version. Follow WooCommerce requirements as a minimum for the use of our plugin.
+= What if my products get disapproved? =
 
-PHP 5.6 or greater
-MySQL 5.6 or greater
-WP Memory limit of 256 MB or higher for larger shops (Up to 2Gig)
-If you have all of that sorted please follow the next steps before contacting us.
+Usually it's missing identifiers (brand/GTIN/MPN) or category mapping. The plugin includes:
+- Pre-populated required attributes
+- Edit rules to transform data on the fly
+- Filters to exclude products that shouldn't advertise
 
-Are you still experiencing issues with our plugin? Follow these steps before contacting us:
-1) Check out our <a href="https://wpmarketingrobot.com/help-center/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=documentation" target="_blank">Documentation</a>
-2) Deactivate and re-activate the plugin, it might solve the issue;
-3) In case de- & reactivating the plugin doesn't solve the problem, remove the plugin and reinstall it (do not worry, you will not lose your current project settings and product feeds);
-4) Still experiencing issues? <a href="https://wordpress.org/support/plugin/wp-product-feed-manager/">Send in a support request</a>, we are happy to get you up and running.
+Fix identifiers first—they cause 60%+ of disapprovals.
 
+= Does the feed update automatically? =
+
+Yes. Set your schedule once. The plugin regenerates the feed; Merchant Center fetches it automatically. You don't touch it again unless your product data structure changes.
+
+**Pro tip:** On low-traffic sites, use a real server cron instead of WP-Cron for reliable timing.
+
+= Free vs Pro—what's the real difference? =
+
+**Free:** Everything you need to run Google Shopping with up to 100 products per feed. All feed types, scheduling, mapping, filters.
+
+**Pro:** Removes the 100-product cap. Adds advanced filters, multilingual support (WPML/Polylang/TranslatePress), and additional channels (Amazon, eBay, Facebook, Instagram, Pinterest, Etsy).
+
+Most stores start free. Upgrade when you hit the cap or need more channels.
+
+= Something's not working. What do I do? =
+
+1. Update WordPress, WooCommerce, and the plugin to latest versions
+2. Check PHP 7.4+ and memory limit (256MB minimum, 512MB+ for large catalogs)
+3. Deactivate/reactivate the plugin
+4. If stuck: <a href="https://wpmarketingrobot.com/help-center/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=documentation" target="_blank">check documentation</a> or <a href="https://wordpress.org/support/plugin/wp-product-feed-manager/">open a support ticket</a>
+
+We respond within 1 business day.
 
 == External services ==
 
@@ -246,6 +225,11 @@ Notes: These calls occur only in wp-admin for the features above. If you don’t
 3. Save and generate your feed
 
 == Changelog ==
+= 2.22.0 2026-03-30 =
+Fix - When making a new feed the product performance data selector would not work correctly.
+Tweak - Hardened the failed feed trigger to prevent unnecessary emails reporting a failed automatic feed process
+Added - Added a 'Product Category primary' source
+
 = 2.21.0 2026-03-16 =
 Added - Added the option to use Performance Prioritization in your feeds
 Tested - Tested up to WooCommerce 10.6.1
@@ -467,5 +451,5 @@ Fixed an issue with a folder name with a capital letter that would cause error m
 * Added a > symbol to the selectable separator options
 
 === Upgrade Notice ===
-= 2.21.0 2026-03-16 =
+= 2.22.0 2026-03-30 =
 * Important: This update introduces additional tweaks and some bug fixes. We strongly recommend backing up your existing feeds before upgrading.

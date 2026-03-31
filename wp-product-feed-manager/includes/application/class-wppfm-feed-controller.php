@@ -73,6 +73,65 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 		}
 
 		/**
+		 * Returns the transient key used to serialize feed startup for a single feed id.
+		 *
+		 * This short-lived guard closes the gap between "feed start requested" and
+		 * "background worker lock acquired", where a second request could otherwise
+		 * prepare the same feed again and create a duplicate batch key.
+		 *
+		 * @param string $feed_id The feed id that is starting.
+		 *
+		 * @return string
+		 */
+		private static function get_feed_startup_lock_key( $feed_id ) {
+			return 'wppfm_feed_startup_lock_' . sanitize_key( (string) $feed_id );
+		}
+
+		/**
+		 * Attempts to acquire the per-feed startup lock.
+		 *
+		 * @param string $feed_id The feed id that is starting.
+		 *
+		 * @return bool True when the startup lock was acquired.
+		 */
+		public static function acquire_feed_startup_lock( $feed_id ) {
+			if ( '' === (string) $feed_id ) {
+				return false;
+			}
+
+			$lock_key = self::get_feed_startup_lock_key( $feed_id );
+			$existing = get_site_transient( $lock_key );
+
+			if ( ! empty( $existing ) ) {
+				return false;
+			}
+
+			$ttl = max( MINUTE_IN_SECONDS, intval( apply_filters( 'wppfm_feed_startup_lock_ttl', 5 * MINUTE_IN_SECONDS, $feed_id ) ) );
+
+			return (bool) set_site_transient(
+				$lock_key,
+				array(
+					'feed_id' => (string) $feed_id,
+					'ts'      => time(),
+				),
+				$ttl
+			);
+		}
+
+		/**
+		 * Releases the per-feed startup lock.
+		 *
+		 * @param string $feed_id The feed id whose startup lock should be cleared.
+		 */
+		public static function release_feed_startup_lock( $feed_id ) {
+			if ( '' === (string) $feed_id ) {
+				return;
+			}
+
+			delete_site_transient( self::get_feed_startup_lock_key( $feed_id ) );
+		}
+
+		/**
 		 * Checks if the feed queue is empty.
 		 *
 		 * @return bool true if the feed is empty.
@@ -215,8 +274,12 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 
 			$curr_feed_size = file_exists( $feed_file ) ? filesize( $feed_file ) : false;
 
-			// If the file does not exist, return true.
+			// If the file does not exist, treat as failure only when the worker is not
+			// actively reporting progress (avoids races while the file is recreated).
 			if ( false === $curr_feed_size ) {
+				if ( self::background_process_heartbeat_is_fresh() ) {
+					return false;
+				}
 				delete_transient( 'wppfm_feed_file_size' ); // Reset the counter.
 				return true;
 			}
@@ -267,6 +330,11 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 
 			// And the delay time has passed.
 			if ( (int) $prev_feed_time_stamp + $delay < time() ) {
+				// A fresh heartbeat means the background worker is still alive; do not
+				// flag a stall while it may simply be between writes or batches.
+				if ( self::background_process_heartbeat_is_fresh() ) {
+					return false;
+				}
 				delete_transient( 'wppfm_feed_file_size' ); // Reset the counter.
 				return true;
 			}

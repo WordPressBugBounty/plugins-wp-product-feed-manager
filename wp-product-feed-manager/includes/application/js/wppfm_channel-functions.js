@@ -96,6 +96,8 @@ function wppfm_clearMainChannelSelectors() {
 	// standard for all channels
 	jQuery( '#update-schedule-row' ).show();
 	jQuery( '#add-product-variations-row' ).show();
+	jQuery( '#wppfm-add-google-analytics-row' ).show();
+
 	// Performance prioritizing: checkbox always visible; period and high-percentage only when enabled.
 	jQuery( '#wppfm-performance-enabled-row' ).show();
 	if ( typeof wppfm_togglePerformanceDependentRows === 'function' ) {

@@ -132,6 +132,11 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 
 			do_action( 'wppfm_feed_generation_message', $this->_feed_data->feedId, 'Started the complete function to clean up the feed process and queue.' );
 
+			// Successful completion cancels any deferred watchdog failure email for this feed.
+			if ( function_exists( 'wppfm_cancel_deferred_feed_failure_notice' ) ) {
+				wppfm_cancel_deferred_feed_failure_notice( (string) $this->_feed_data->feedId );
+			}
+
 			// Flush any remaining buffer before completing
 			if ( method_exists( $this, 'flush_file_buffer' ) ) {
 				$this->flush_file_buffer();
@@ -255,10 +260,27 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 					$class_data->add_parent_data( $product_data, $product_parent_id, $post_columns_query_string, $this->_feed_data->language );
 				}
 
-				$wpmr_variation_data = $class_data->get_own_variation_data( $product_id );
+				$translated_variation_id = $product_id;
+				$variation_product       = $wc_product;
+
+				if ( $wc_product instanceof WC_Product_Variation && has_filter( 'wpml_object_id' ) ) {
+					// Use the translated variation object so variation-specific fields do not fall back to the original-language ID or description.
+					$wpml_variation_id = apply_filters( 'wpml_object_id', $product_id, 'product_variation', true, $this->_feed_data->language );
+
+					if ( $wpml_variation_id && (int) $wpml_variation_id !== (int) $product_id ) {
+						$translated_wc_product = wc_get_product( $wpml_variation_id );
+
+						if ( $translated_wc_product instanceof WC_Product_Variation ) {
+							$translated_variation_id = (int) $wpml_variation_id;
+							$variation_product       = $translated_wc_product;
+						}
+					}
+				}
+
+				$wpmr_variation_data = $class_data->get_own_variation_data( $translated_variation_id );
 
 				// Get the correct variation data.
-				WPPFM_Variations::fill_product_data_with_variation_data( $product_data, $wc_product, $wpmr_variation_data, $this->_feed_data->language, $this->_feed_data->currency );
+				WPPFM_Variations::fill_product_data_with_variation_data( $product_data, $variation_product, $wpmr_variation_data, $this->_feed_data->language, $this->_feed_data->currency );
 			}
 
 			$row_category = $this->get_mapped_category( $product_parent_id, $this->_feed_data->mainCategory, json_decode( $this->_feed_data->categoryMapping ) );
@@ -319,6 +341,20 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 							foreach( $product_features as $i => $product_feature ) { $product_features[ $i ] = trim( $product_feature ); }
 							$main_materials = array_slice( $product_features, 0, 3 );
 							$product_placeholder[ $key ] = implode( '/', $main_materials );
+						}
+
+						// @since 3.21.0.
+						// The Facebook feed specifications allow the internal_label attribute that contains comma separated labels to be wrapped in square brackets.
+						if ( 'internal_label' === $key ) {
+							$raw_value = (string) $product_placeholder[ $key ];
+							$labels    = array_map( 'trim', explode( ',', $raw_value ) );
+							$labels    = array_filter( $labels );
+						
+							$quoted_labels = array_map( function ( $label ) {
+								return "'" . $label . "'";
+							}, $labels );
+						
+							$product_placeholder[ $key ] = implode( ',', $quoted_labels );
 						}
 					}
 				}
@@ -512,6 +548,20 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 				$data_class = new WPPFM_Data();
 				$data_class->update_feed_status( $feed_id, 6 );
 				WPPFM_Feed_Controller::remove_id_from_feed_queue( $feed_id );
+
+				// Terminal failure while metadata could not be restored (automatic runs only).
+				if ( get_transient( 'wppfm_running_silent' ) && class_exists( 'WPPFM_Email' ) ) {
+					if ( function_exists( 'wppfm_cancel_deferred_feed_failure_notice' ) ) {
+						wppfm_cancel_deferred_feed_failure_notice( (string) $feed_id );
+					}
+					WPPFM_Email::send_feed_failed_message(
+						(string) $feed_id,
+						array(
+							'detected_at' => time(),
+							'source'      => 'missing_feed_context',
+						)
+					);
+				}
 			}
 
 			$this->clear_the_queue();

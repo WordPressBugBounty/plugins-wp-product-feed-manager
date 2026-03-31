@@ -71,6 +71,7 @@ function wppfm_woocommerceSourceOptions() {
 		{value: 'post_modified', label: 'Product Modified', prop: 'post'},
 		{value: 'post_modified_gmt', label: 'Post Modified GMT', prop: 'post'},
 		{value: 'product_cat_string', label: 'Product Category String', prop: 'main'},
+		{value: 'product_category_primary', label: 'Product Category Primary', prop: 'main'},
 		{value: 'post_content', label: 'Product Description', prop: 'post'},
 		{value: 'post_excerpt', label: 'Product Short Description', prop: 'post'},
 		{value: 'product_tags', label: 'Product Tags', prop: 'meta'},

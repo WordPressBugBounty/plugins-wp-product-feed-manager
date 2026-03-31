@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WooCommerce Product Feed Manager\n"
-"POT-Creation-Date: 2026-03-16 08:54+0100\n"
-"PO-Revision-Date: 2026-03-16 08:57+0100\n"
+"POT-Creation-Date: 2026-03-29 08:49+0200\n"
+"PO-Revision-Date: 2026-03-29 08:51+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nl_NL\n"
@@ -20,14 +20,18 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: *.js\n"
 
-#: includes/application/class-feed-master.php:105
+#: includes/application/class-feed-master.php:124
 msgid ""
 "1428 - Failed to load the feed data, please try to generate a feed in the "
 "foreground mode (see Settings page) and then try the background mode again."
 msgstr "Hier kunt u de parameters van uw Google Product Review feed bewerken."
 
+#: includes/application/class-feed-master.php:227
+msgid "Unknown feed type"
+msgstr "Onbekend feedtype"
+
 #. translators: %s: Folder where the feeds are stored
-#: includes/application/class-feed-master.php:239
+#: includes/application/class-feed-master.php:297
 #, php-format
 msgid ""
 "1430 - %s is not a writable folder. Make sure you have admin rights to this "
@@ -36,23 +40,119 @@ msgstr ""
 "1430 - De %s map is niet schrijfbaar. Zorg dat u administrator rechten heeft "
 "voor deze map."
 
-#: includes/application/class-feed-master.php:682
+#: includes/application/class-feed-master.php:740
 #: includes/user-interface/class-wppfm-i18n-scripts.php:94
 msgid "Fill with a static value"
 msgstr "Vul met een statische waarde"
 
-#: includes/application/class-feed-master.php:683
-#: includes/application/class-feed-master.php:688
+#: includes/application/class-feed-master.php:741
+#: includes/application/class-feed-master.php:746
 msgid "Use the settings in the Merchant Center"
 msgstr "Gebruik de instellingen uit het Merchant Center"
 
+#. translators: 1: Site name, 2: Feed ID
+#: includes/application/class-wppfm-email.php:71
+#, php-format
+msgid "Feed generation failure on %1$s (feed ID %2$s)"
+msgstr "Mislukte feedgeneratie op %1$s (feed-ID %2$s)"
+
+#. translators: %s: Site name
+#: includes/application/class-wppfm-email.php:79
+#, php-format
+msgid "Feed generation failure on %s"
+msgstr "Mislukte feedgeneratie op %s"
+
+#: includes/application/class-wppfm-email.php:94
+msgid "Background batch ended early"
+msgstr "Achtergrondbatch is voortijdig beëindigd"
+
+#: includes/application/class-wppfm-email.php:96
+msgid "Feed generation stalled (confirmed after automatic check)"
+msgstr "Feedgeneratie is vastgelopen (bevestigd na automatische controle)"
+
+#: includes/application/class-wppfm-email.php:98
+msgid "Feed completion failed (could not restore feed data)"
+msgstr ""
+"Voltooien van de feed mislukt (feedgegevens konden niet worden hersteld)"
+
+#: includes/application/class-wppfm-email.php:100
+#: includes/user-interface/class-wppfm-i18n-scripts.php:134
+#: includes/user-interface/class-wppfm-list-table.php:150
+#: includes/user-interface/class-wppfm-list-table.php:206
+msgid "Unknown"
+msgstr "Onbekend"
+
+#: includes/application/class-wppfm-email.php:114
+msgid "Unknown time"
+msgstr "Onbekende tijd"
+
+#: includes/application/class-wppfm-email.php:142
+#, php-format
+msgid ""
+"This is an automatic message from the %1$s plugin on your %2$s shop.\n"
+"\n"
+"A product feed has been marked as failed after generation stopped or could "
+"not complete.\n"
+"\n"
+"Feed ID: %3$s\n"
+"Failure detected: %4$s\n"
+"Details: %5$s\n"
+"\n"
+"Please open the feed list in your WordPress admin, review the affected feed, "
+"and try regenerating it manually.\n"
+"\n"
+"If the problem continues, open a support ticket and include this message."
+msgstr ""
+"Dit is een automatisch bericht van de %1$s-plugin op uw %2$s-winkel.\n"
+"\n"
+"Een productfeed is gemarkeerd als mislukt omdat de generatie is gestopt of "
+"niet kon worden voltooid.\n"
+"\n"
+"Feed-ID: %3$s\n"
+"Fout gedetecteerd: %4$s\n"
+"Details: %5$s\n"
+"\n"
+"Open de feedlijst in uw WordPress-beheer, controleer de getroffen feed en "
+"probeer deze handmatig opnieuw te genereren.\n"
+"\n"
+"Als het probleem aanhoudt, maak dan een supportticket aan en voeg dit "
+"bericht toe."
+
+#: includes/application/class-wppfm-email.php:166
+#, php-format
+msgid ""
+"This is an automatic message from the %1$s plugin on your %2$s shop.\n"
+"\n"
+"One or more product feeds failed to generate.\n"
+"\n"
+"Failure detected: %3$s\n"
+"Details: %4$s\n"
+"\n"
+"Please check the status of your feeds in WordPress admin and try manually "
+"regenerating them.\n"
+"\n"
+"If the problem continues, open a support ticket and include this message."
+msgstr ""
+"Dit is een automatisch bericht van de %1$s-plugin op uw %2$s-winkel.\n"
+"\n"
+"Een of meer productfeeds konden niet worden gegenereerd.\n"
+"\n"
+"Fout gedetecteerd: %3$s\n"
+"Details: %4$s\n"
+"\n"
+"Controleer de status van uw feeds in het WordPress-beheer en probeer deze "
+"handmatig opnieuw te genereren.\n"
+"\n"
+"Als het probleem aanhoudt, maak een supportticket aan en voeg dit bericht "
+"toe."
+
 #. translators: %s: site name
-#: includes/application/class-wppfm-email.php:80
+#: includes/application/class-wppfm-email.php:198
 #, php-format
 msgid "Test email from %s - Feed Manager Notice Recipient"
 msgstr "Test-e-mail van %s – Ontvanger van de Feedmanager-melding"
 
-#: includes/application/class-wppfm-email.php:87
+#: includes/application/class-wppfm-email.php:205
 #, php-format
 msgid ""
 "This is a test email from the %1$s plugin on your %2$s shop. If you receive "
@@ -375,23 +475,23 @@ msgid "Error"
 msgstr "Fout"
 
 #. translators: %d: number of attempts
-#: includes/libraries/wppfm-background-process.php:734
+#: includes/libraries/wppfm-background-process.php:742
 #, php-format
 msgid "Could not acquire process lock after %d attempts"
 msgstr "Kon procesvergrendeling niet verkrijgen na %d pogingen"
 
-#: includes/libraries/wppfm-background-process.php:774
+#: includes/libraries/wppfm-background-process.php:782
 msgid "Failed to acquire process lock"
 msgstr "Verkrijgen van procesvergrendeling mislukt"
 
-#: includes/libraries/wppfm-background-process.php:1328
+#: includes/libraries/wppfm-background-process.php:1350
 #, php-format
 msgid "Every %d minute"
 msgid_plural "Every %d minutes"
 msgstr[0] "Elke %d minuut"
 msgstr[1] "Elke %d minuten"
 
-#: includes/libraries/wppfm-background-process.php:1407
+#: includes/libraries/wppfm-background-process.php:1429
 msgid ""
 "Could not schedule the cron event required to start the feed process. Please "
 "check if your wp cron is configured correctly and is running."
@@ -863,7 +963,7 @@ msgstr "keer per dag"
 #: includes/user-interface/class-wppfm-feed-form-control.php:189
 msgid "read this article on how to use performance prioritizing"
 msgstr ""
-"Lees dit artikel om te leren hoe u prestatieprioritering gebruikt (Engels)"
+"lees dit artikel om te leren hoe u prestatieprioritering gebruikt (Engels)"
 
 #: includes/user-interface/class-wppfm-feed-list-page.php:48
 msgid "Product Feed List"
@@ -1307,12 +1407,6 @@ msgstr "Bekijk"
 #: includes/user-interface/class-wppfm-i18n-scripts.php:133
 msgid "Other"
 msgstr "Andere"
-
-#: includes/user-interface/class-wppfm-i18n-scripts.php:134
-#: includes/user-interface/class-wppfm-list-table.php:150
-#: includes/user-interface/class-wppfm-list-table.php:206
-msgid "Unknown"
-msgstr "Onbekend"
 
 #: includes/user-interface/class-wppfm-i18n-scripts.php:135
 #: includes/user-interface/class-wppfm-list-table.php:191

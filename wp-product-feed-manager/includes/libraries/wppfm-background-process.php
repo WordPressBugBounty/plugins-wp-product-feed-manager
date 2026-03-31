@@ -504,12 +504,6 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 
 		$background_mode_disabled = get_option( 'wppfm_disabled_background_mode', 'false' );
 
-
-		if ( 'false' === $background_mode_disabled && $this->is_process_running() ) {
-			// Background process already running.
-			wp_die();
-		}
-
 		if ( $this->is_queue_empty() ) {
 			$feed_id = filter_input( INPUT_GET, 'feed_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 			$message = 'Tried to start a new batch but the queue is empty!';
@@ -520,6 +514,20 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 
 		if ( 'false' === $background_mode_disabled ) {
 			check_ajax_referer( $this->identifier, 'nonce' );
+		}
+
+		// Acquire the existing process lock before entering handle() so two accepted
+		// loopback requests cannot both pass the pre-flight checks and start processing.
+		$this->lock_process();
+
+		// Another request may have drained the queue while this request was waiting for
+		// the lock, so validate again before we start reading batch state.
+		if ( $this->is_queue_empty() ) {
+			$feed_id = filter_input( INPUT_GET, 'feed_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+			$message = 'Tried to start a new batch after acquiring the process lock, but the queue is empty!';
+			do_action( 'wppfm_feed_generation_message', $feed_id, $message, 'WARNING' );
+			$this->unlock_process();
+			wp_die();
 		}
 
 		$this->handle();
@@ -911,7 +919,11 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	 * @return   void|bool
 	 */
 	protected function handle() {
-		$this->lock_process();
+		// maybe_handle() acquires the process lock as early as possible for async requests.
+		// Keep this fallback so direct/internal calls still use the same lock lifecycle.
+		if ( ! $this->is_current_process_locked() ) {
+			$this->lock_process();
+		}
 
 		do {
 			// Validate that we still own the lock before processing each batch
@@ -1267,9 +1279,19 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 			$message = 'Batch ended prematurely.';
 			do_action( 'wppfm_feed_generation_message', $feed_id, $message, 'ERROR' );
 
-			// Send failure notification email when running in automatic/silent mode.
+			// Terminal failure: notify immediately when running in automatic/silent mode.
 			if ( $was_running_silent && class_exists( 'WPPFM_Email' ) ) {
-				WPPFM_Email::send_feed_failed_message();
+				$notice_feed_id = ( 'unknown' !== (string) $feed_id && '' !== (string) $feed_id ) ? (string) $feed_id : '';
+				if ( '' !== $notice_feed_id && function_exists( 'wppfm_cancel_deferred_feed_failure_notice' ) ) {
+					wppfm_cancel_deferred_feed_failure_notice( $notice_feed_id );
+				}
+				WPPFM_Email::send_feed_failed_message(
+					$notice_feed_id,
+					array(
+						'detected_at' => time(),
+						'source'      => 'batch_aborted',
+					)
+				);
 			}
 		}
 

@@ -1758,6 +1758,14 @@ trait WPPFM_Processing_Support {
 			$product->product_type = $woocommerce_product->get_type();
 		}
 
+		// @since 3.22.0. One path only: primary category breadcrumb, else first assigned term (by term_id).
+		if ( in_array( 'product_category_primary', $active_field_names, true ) ) {
+			$product->product_category_primary = WPPFM_Taxonomies::make_main_product_category_string( $product->ID );
+			if ( '' === $product->product_category_primary && 0 !== $woocommerce_parent_id ) {
+				$product->product_category_primary = WPPFM_Taxonomies::make_main_product_category_string( $woocommerce_parent_id );
+			}
+		}
+
 		// @since 2.2.0.
 		if ( in_array( 'product_variation_title_without_attributes', $active_field_names, true ) ) {
 			$product_title = get_post_field( 'post_title', $product->ID );

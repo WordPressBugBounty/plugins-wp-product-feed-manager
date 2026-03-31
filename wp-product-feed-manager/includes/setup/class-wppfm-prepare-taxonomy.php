@@ -24,49 +24,89 @@ if ( ! class_exists( 'WPPFM_Prepare_Taxonomy' ) ) :
 	 */
 	class WPPFM_Prepare_Taxonomy {
 
+		/**
+		 * Reads a text file through the plugin WP_Filesystem wrapper and returns normalized lines.
+		 *
+		 * @param string $path Absolute file path.
+		 *
+		 * @return string[]
+		 */
+		private static function get_file_lines( $path ) {
+			$wp_filesystem = wppfm_get_wp_filesystem();
+			$contents      = $wp_filesystem->exists( $path ) ? $wp_filesystem->get_contents( $path ) : '';
+
+			if ( empty( $contents ) ) {
+				return array();
+			}
+
+			$lines = preg_split( "/\r\n|\n|\r/", $contents );
+
+			// Remove the trailing split artifact for files that already end with a newline.
+			if ( ! empty( $lines ) && '' === end( $lines ) ) {
+				array_pop( $lines );
+			}
+
+			return array_map( 'strval', $lines );
+		}
+
+		/**
+		 * Writes normalized lines to disk through WP_Filesystem.
+		 *
+		 * @param string   $path             Absolute file path.
+		 * @param string[] $lines            Lines to write without trailing newlines.
+		 * @param bool     $remove_duplicates Optional. Remove duplicate lines before writing.
+		 *
+		 * @return bool
+		 */
+		private static function put_file_lines( $path, $lines, $remove_duplicates = false ) {
+			$wp_filesystem = wppfm_get_wp_filesystem();
+			$lines         = array_map( 'strval', (array) $lines );
+
+			if ( $remove_duplicates ) {
+				$lines = array_values( array_unique( $lines ) );
+			}
+
+			$contents = empty( $lines ) ? '' : implode( "\r\n", $lines ) . "\r\n";
+
+			return (bool) $wp_filesystem->put_contents( $path, $contents, FS_CHMOD_FILE );
+		}
+
 		public static function remove_merchant_rates_from_pricegrabber_category_file() {
 
 			$path  = WPPFM_CHANNEL_DATA_DIR . '/pricegrabber/taxonomy.en-US.txt';
 			$rpath = WPPFM_CHANNEL_DATA_DIR . '/pricegrabber/taxonomy_new.en-US.txt';
+			$lines = self::get_file_lines( $path );
+			$out   = array();
 
-			$fhr = fopen( $path, 'r' );
-			$fhw = fopen( $rpath, 'w' );
-
-			while ( ! feof( $fhr ) ) {
-
-				$line = fgets( $fhr );
+			foreach ( $lines as $line ) {
 
 				if ( strpos( $line, ',$' ) !== false ) {
-					$tline   = $line ? substr( $line, 0, strpos( $line, ',$' ) ) : '';
-					$newline = $tline . "\r\n";
+					$out[] = $line ? substr( $line, 0, strpos( $line, ',$' ) ) : '';
 				} else {
-					$newline = $line;
+					$out[] = $line;
 				}
-
-				fputs( $fhw, $newline );
 			}
+
+			self::put_file_lines( $rpath, $out );
 		}
 
 		public static function prepare_amazone_category_file() {
 
 			$path  = WPPFM_CHANNEL_DATA_DIR . '/amazon/taxonomy.en-US.txt';
 			$rpath = WPPFM_CHANNEL_DATA_DIR . '/amazon/taxonomy_new.en-US.txt';
+			$lines = self::get_file_lines( $path );
+			$out   = array();
 
-			$fhr = fopen( $path, 'r' );
-			$fhw = fopen( $rpath, 'w' );
-
-			while ( ! feof( $fhr ) ) {
-
-				$line = fgets( $fhr );
+			foreach ( $lines as $line ) {
 
 				if ( strpos( $line, '/' ) !== false ) {
-					$newline = str_replace( '/', ' > ', $line );
+					$out[] = str_replace( '/', ' > ', $line );
 				} else {
-					$newline = $line;
+					$out[] = $line;
 				}
-
-				fputs( $fhw, $newline );
 			}
+
+			self::put_file_lines( $rpath, $out );
 		}
 
 
@@ -74,71 +114,47 @@ if ( ! class_exists( 'WPPFM_Prepare_Taxonomy' ) ) :
 
 			$path  = WPPFM_CHANNEL_DATA_DIR . '/bing/taxonomy.en-US.txt';
 			$rpath = WPPFM_CHANNEL_DATA_DIR . '/bing/taxonomy_new.en-US.txt';
+			$lines = self::get_file_lines( $path );
+			$out   = array();
 
-			$fhr = fopen( $path, 'r' );
-			$fhw = fopen( $rpath, 'w' );
-
-			while ( ! feof( $fhr ) ) {
-
-				$line = fgets( $fhr );
-
-				$newline = substr($line, strrpos($line, ' - ') + 3);
-
-				fputs( $fhw, $newline );
+			foreach ( $lines as $line ) {
+				$out[] = substr( $line, strrpos( $line, ' - ' ) + 3 );
 			}
+
+			self::put_file_lines( $rpath, $out );
 		}
 
 		public static function prepare_vergelijk_category_file() {
 
 			$path  = WPPFM_CHANNEL_DATA_DIR . '/vergelijk/taxonomy.nl-NL.txt';
 			$rpath = WPPFM_CHANNEL_DATA_DIR . '/vergelijk/taxonomy_new.nl-NL.txt';
+			$lines = self::get_file_lines( $path );
+			$out   = array();
 
-			$fhr = fopen( $path, 'r' );
-			$fhw = fopen( $rpath, 'w' );
-
-			while ( ! feof( $fhr ) ) {
-
-				$line = fgets( $fhr );
+			foreach ( $lines as $line ) {
 
 				$removed_tabs = str_replace( "\t", '|', $line );
 
 				$explode = explode( '|', $removed_tabs );
 
-				$category = $explode[1];
-
-				str_replace( '"', '', $category );
-
-				$newline = $category . ' > ' . $explode[3] . ' > ' . $explode[5];
-
-				fputs( $fhw, $newline );
+				$category = isset( $explode[1] ) ? str_replace( '"', '', $explode[1] ) : '';
+				$out[]    = $category . ' > ' . ( $explode[3] ?? '' ) . ' > ' . ( $explode[5] ?? '' );
 			}
 
-			// now remove the doubles
-			$l     = file( $rpath );
-			$lines = array_unique( $l );
-			file_put_contents( $rpath, $lines );
+			self::put_file_lines( $rpath, $out, true );
 		}
 
 		public static function prepare_bol_content_category_file() {
 			$path  = WPPFM_CHANNEL_DATA_DIR . '/bol_content/taxonomy.nl-NL.txt';
 			$rpath = WPPFM_CHANNEL_DATA_DIR . '/bol_content/taxonomy_new.nl-NL.txt';
+			$lines = self::get_file_lines( $path );
+			$out   = array();
 
-			$fhr = fopen( $path, 'r' );
-			$fhw = fopen( $rpath, 'w' );
-
-			while ( ! feof( $fhr ) ) {
-
-				$line = fgets( $fhr );
-
-				$new_line = preg_replace( "/\t/", ' > ', $line );
-
-				fputs( $fhw, $new_line );
+			foreach ( $lines as $line ) {
+				$out[] = preg_replace( "/\t/", ' > ', $line );
 			}
 
-			// now remove the doubles
-			$l     = file( $rpath );
-			$lines = array_unique( $l );
-			file_put_contents( $rpath, $lines );
+			self::put_file_lines( $rpath, $out, true );
 		}
 
 		public static function convert_kieskeurig_category_file() {
@@ -146,18 +162,15 @@ if ( ! class_exists( 'WPPFM_Prepare_Taxonomy' ) ) :
 			$path    = WPPFM_CHANNEL_DATA_DIR . '/kieskeurig/taxonomy.nl-NL.txt';
 			$rpath   = WPPFM_CHANNEL_DATA_DIR . '/kieskeurig/taxonomy_new.nl-NL.txt';
 			$newline = '';
-
-			$fhr = fopen( $path, 'r' );
-			$fhw = fopen( $rpath, 'w' );
+			$lines   = self::get_file_lines( $path );
+			$out     = array();
 
 			$r_1 = '';
 			$r_2 = '';
 
 			$c = 0;
 
-			while ( ! feof( $fhr ) ) {
-
-				$line = fgets( $fhr );
+			foreach ( $lines as $line ) {
 
 				if ( $c < 2 ) { // remove the first two lines
 					$newline = '';
@@ -182,59 +195,56 @@ if ( ! class_exists( 'WPPFM_Prepare_Taxonomy' ) ) :
 						$cat_2 = '' === $line_cats[2] ? $r_2 : $line_cats[2];
 						$cat_3 = $line_cats[5];
 
-						$newline = $cat_1 . ' > ' . $cat_2 . ' > ' . $cat_3 . "\r\n";
+						$newline = $cat_1 . ' > ' . $cat_2 . ' > ' . $cat_3;
 					}
 				}
 
-				fputs( $fhw, $newline );
+				$out[] = $newline;
 			}
+
+			self::put_file_lines( $rpath, $out );
 		}
 
 		public static function prepare_beslis_category_file() {
 
 			$path  = WPPFM_CHANNEL_DATA_DIR . '/beslis/category_overview.xml';
 			$rpath = WPPFM_CHANNEL_DATA_DIR . '/beslis/taxonomy-new.nl-NL.txt';
-
-			$fhw = fopen( $rpath, 'w' );
-
-			$xml = simplexml_load_file( $path );
+			$xml   = simplexml_load_file( $path );
+			$lines = array();
 
 			foreach ( $xml->categories->maincat as $main_cat ) {
 
 				$newline = (string) $main_cat['name'][0];
-
-				fputs( $fhw, $newline . "\r\n" );
+				$lines[] = $newline;
 
 				foreach ( $main_cat as $level_1 ) {
 
 					$level_1_line = $newline . ' > ' . (string) $level_1['name'][0];
-
-					fputs( $fhw, $level_1_line . "\r\n" );
+					$lines[]      = $level_1_line;
 
 					foreach ( $level_1 as $level_2 ) {
 
 						$level_2_line = $level_1_line . ' > ' . (string) $level_2['name'][0];
-
-						fputs( $fhw, $level_2_line . "\r\n" );
+						$lines[]      = $level_2_line;
 					}
 				}
 			}
+
+			self::put_file_lines( $rpath, $lines );
 		}
 
 		public static function prepare_heureka_category_file() {
 			$path       = WPPFM_CHANNEL_DATA_DIR . '/heureka/category_overview.xml';
 			$rpath      = WPPFM_CHANNEL_DATA_DIR . '/heureka/taxonomy-new.cs-CZ.txt';
 			$cat_prefix = 'Heureka.cz | ';
-
-			$fhw = fopen( $rpath, 'w' );
-
-			$xml = simplexml_load_file( $path );
+			$xml        = simplexml_load_file( $path );
+			$lines      = array();
 
 			foreach ( $xml->CATEGORY as $main_cat ) {
 				$newline = $main_cat[0]->CATEGORY_NAME;
 
 				if ( ! empty( $newline ) ) {
-					fputs( $fhw, $newline . "\r\n" );
+					$lines[] = (string) $newline;
 				}
 
 				foreach ( $main_cat as $level_1 ) {
@@ -242,7 +252,7 @@ if ( ! class_exists( 'WPPFM_Prepare_Taxonomy' ) ) :
 					$level_1_line   = str_replace( ' | ', ' > ', $level_1_string );
 
 					if ( ! empty( $level_1_line ) ) {
-						fputs( $fhw, $level_1_line . "\r\n" );
+						$lines[] = $level_1_line;
 					}
 
 					foreach ( $level_1 as $level_2 ) {
@@ -250,7 +260,7 @@ if ( ! class_exists( 'WPPFM_Prepare_Taxonomy' ) ) :
 						$level_2_line   = str_replace( ' | ', ' > ', $level_2_string );
 
 						if ( ! empty( $level_2_line ) ) {
-							fputs( $fhw, $level_2_line . "\r\n" );
+							$lines[] = $level_2_line;
 						}
 
 						foreach ( $level_2 as $level_3 ) {
@@ -258,7 +268,7 @@ if ( ! class_exists( 'WPPFM_Prepare_Taxonomy' ) ) :
 							$level_3_line   = str_replace( ' | ', ' > ', $level_3_string );
 
 							if ( ! empty( $level_3_line ) ) {
-								fputs( $fhw, $level_3_line . "\r\n" );
+								$lines[] = $level_3_line;
 							}
 
 							foreach ( $level_3 as $level_4 ) {
@@ -266,7 +276,7 @@ if ( ! class_exists( 'WPPFM_Prepare_Taxonomy' ) ) :
 								$level_4_line   = str_replace( ' | ', ' > ', $level_4_string );
 
 								if ( ! empty( $level_4_line ) ) {
-									fputs( $fhw, $level_4_line . "\r\n" );
+									$lines[] = $level_4_line;
 								}
 
 								foreach ( $level_4 as $level_5 ) {
@@ -274,7 +284,7 @@ if ( ! class_exists( 'WPPFM_Prepare_Taxonomy' ) ) :
 									$level_5_line   = str_replace( ' | ', ' > ', $level_5_string );
 
 									if ( ! empty( $level_5_line ) ) {
-										fputs( $fhw, $level_5_line . "\r\n" );
+										$lines[] = $level_5_line;
 									}
 
 									foreach ( $level_5 as $level_6 ) {
@@ -282,7 +292,7 @@ if ( ! class_exists( 'WPPFM_Prepare_Taxonomy' ) ) :
 										$level_6_line   = str_replace( ' | ', ' > ', $level_6_string );
 
 										if ( ! empty( $level_6_line ) ) {
-											fputs( $fhw, $level_6_line . "\r\n" );
+											$lines[] = $level_6_line;
 										}
 									}
 								}
@@ -291,43 +301,40 @@ if ( ! class_exists( 'WPPFM_Prepare_Taxonomy' ) ) :
 					}
 				}
 			}
+
+			self::put_file_lines( $rpath, $lines );
 		}
 
 		public static function prepare_nextag_category_file() {
 
 			$path  = WPPFM_CHANNEL_DATA_DIR . '/nextag/taxonomy.en-US.txt';
 			$rpath = WPPFM_CHANNEL_DATA_DIR . '/nextag/taxonomy_new.en-US.txt';
+			$lines = self::get_file_lines( $path );
+			$out   = array();
 
-			$fhr = fopen( $path, 'r' );
-			$fhw = fopen( $rpath, 'w' );
-
-			while ( ! feof( $fhr ) ) {
-
-				$line = fgets( $fhr );
+			foreach ( $lines as $line ) {
 
 				if ( strpos( $line, '/' ) !== false ) {
-
 					$newline = str_replace( '/', '>', $line );
 				} else {
-
 					$newline = $line;
 				}
 
-				fputs( $fhw, trim( $newline ) . "\r\n" );
+				$out[] = trim( $newline );
 			}
+
+			self::put_file_lines( $rpath, $out );
 		}
 
 		public static function prepare_ricardo_category_file() {
 
 			$path  = WPPFM_CHANNEL_DATA_DIR . '/ricardo/taxonomy_source.fr-CH.txt';
 			$rpath = WPPFM_CHANNEL_DATA_DIR . '/ricardo/taxonomy.fr-CH.txt';
+			$lines = self::get_file_lines( $path );
+			$out   = array();
 
-			$fhr = fopen( $path, 'r' );
-			$fhw = fopen( $rpath, 'w' );
-
-			while ( ! feof( $fhr ) ) {
-
-				$line = trim( fgets( $fhr ) );
+			foreach ( $lines as $line ) {
+				$line = trim( $line );
 
 				$first_tab_pos = strpos( $line, "\t" );
 				// get the number
@@ -346,42 +353,40 @@ if ( ! class_exists( 'WPPFM_Prepare_Taxonomy' ) ) :
 
 				$newline = trim( $newline, ' > ' );
 
-				fputs( $fhw, trim( $newline . ' (' . $cat_nr . ')' ) . "\r\n" );
+				$out[] = trim( $newline . ' (' . $cat_nr . ')' );
 			}
 
+			self::put_file_lines( $rpath, $out );
 		}
 
 		public static function prepare_ebay_category_file() {
 
 			$path  = WPPFM_CHANNEL_DATA_DIR . '/ebay/taxonomy_source.en-US.txt';
 			$rpath = WPPFM_CHANNEL_DATA_DIR . '/ebay/taxonomy.en-US.txt';
+			$lines = self::get_file_lines( $path );
+			$out   = array();
 
-			$fhr = fopen( $path, 'r' );
-			$fhw = fopen( $rpath, 'w' );
-
-			while ( ! feof( $fhr ) ) {
-
-				$line = trim( fgets( $fhr ) );
+			foreach ( $lines as $line ) {
+				$line = trim( $line );
 
 				$line_items = explode( ';', $line );
 
 				if ( $line_items[0] && $line_items[1] ) {
-					fputs( $fhw, trim( $line_items[1] . ' (' . $line_items[0] . ')' ) . "\r\n" );
+					$out[] = trim( $line_items[1] . ' (' . $line_items[0] . ')' );
 				}
 			}
+
+			self::put_file_lines( $rpath, $out );
 		}
 
 		public static function prepare_koopjespakker_category_file() {
 
 			$path  = WPPFM_CHANNEL_DATA_DIR . '/koopjespakker/taxonomy.en-US.txt';
 			$rpath = WPPFM_CHANNEL_DATA_DIR . '/koopjespakker/taxonomy_new.en-US.txt';
+			$lines = self::get_file_lines( $path );
+			$out   = array();
 
-			$fhr = fopen( $path, 'r' );
-			$fhw = fopen( $rpath, 'w' );
-
-			while ( ! feof( $fhr ) ) {
-
-				$line = fgets( $fhr );
+			foreach ( $lines as $line ) {
 
 				$newline_1 = str_replace( '/', '>', $line );
 				$newline_2 = str_replace( '|', '>', $newline_1 );
@@ -389,9 +394,11 @@ if ( ! class_exists( 'WPPFM_Prepare_Taxonomy' ) ) :
 				$newline = trim( $newline_2 );
 
 				if ( '' !== $newline && strpos( $line, 'concat' ) === false && strpos( $line, 'Options' ) === false ) {
-					fputs( $fhw, $newline . "\r\n" );
+					$out[] = $newline;
 				}
 			}
+
+			self::put_file_lines( $rpath, $out );
 		}
 
 	}

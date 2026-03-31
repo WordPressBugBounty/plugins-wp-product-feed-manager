@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WooCommerce Product Feed Manager\n"
-"POT-Creation-Date: 2026-03-16 08:50+0100\n"
-"PO-Revision-Date: 2026-03-16 08:54+0100\n"
+"POT-Creation-Date: 2026-03-29 08:45+0200\n"
+"PO-Revision-Date: 2026-03-29 08:49+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -20,7 +20,7 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: *.js\n"
 
-#: includes/application/class-feed-master.php:105
+#: includes/application/class-feed-master.php:124
 msgid ""
 "1428 - Failed to load the feed data, please try to generate a feed in the "
 "foreground mode (see Settings page) and then try the background mode again."
@@ -29,8 +29,12 @@ msgstr ""
 "un flux en mode avant-plan (voir la page des paramètres) et ensuite "
 "réessayez le mode arrière-plan."
 
+#: includes/application/class-feed-master.php:227
+msgid "Unknown feed type"
+msgstr "Type de flux inconnu"
+
 #. translators: %s: Folder where the feeds are stored
-#: includes/application/class-feed-master.php:239
+#: includes/application/class-feed-master.php:297
 #, php-format
 msgid ""
 "1430 - %s is not a writable folder. Make sure you have admin rights to this "
@@ -39,25 +43,121 @@ msgstr ""
 "1430 - %s n'est pas un dossier inscriptible. Assurez-vous d'avoir les droits "
 "d'administrateur pour ce répertoire."
 
-#: includes/application/class-feed-master.php:682
+#: includes/application/class-feed-master.php:740
 #: includes/user-interface/class-wppfm-i18n-scripts.php:94
 msgid "Fill with a static value"
 msgstr "Remplir avec une valeur statique"
 
-#: includes/application/class-feed-master.php:683
-#: includes/application/class-feed-master.php:688
+#: includes/application/class-feed-master.php:741
+#: includes/application/class-feed-master.php:746
 msgid "Use the settings in the Merchant Center"
 msgstr "Utilisez les paramètres du Merchant Center"
 
+#. translators: 1: Site name, 2: Feed ID
+#: includes/application/class-wppfm-email.php:71
+#, php-format
+msgid "Feed generation failure on %1$s (feed ID %2$s)"
+msgstr "Échec de la génération du flux sur %1$s (ID du flux %2$s)"
+
+#. translators: %s: Site name
+#: includes/application/class-wppfm-email.php:79
+#, php-format
+msgid "Feed generation failure on %s"
+msgstr "Échec de la génération du flux sur %s"
+
+#: includes/application/class-wppfm-email.php:94
+msgid "Background batch ended early"
+msgstr "Le traitement en arrière-plan s’est terminé prématurément"
+
+#: includes/application/class-wppfm-email.php:96
+msgid "Feed generation stalled (confirmed after automatic check)"
+msgstr ""
+"La génération du flux est bloquée (confirmé après vérification automatique)"
+
+#: includes/application/class-wppfm-email.php:98
+msgid "Feed completion failed (could not restore feed data)"
+msgstr ""
+"Échec de la finalisation du flux (impossible de restaurer les données du "
+"flux)"
+
+#: includes/application/class-wppfm-email.php:100
+#: includes/user-interface/class-wppfm-i18n-scripts.php:134
+#: includes/user-interface/class-wppfm-list-table.php:150
+#: includes/user-interface/class-wppfm-list-table.php:206
+msgid "Unknown"
+msgstr "Inconnu"
+
+#: includes/application/class-wppfm-email.php:114
+msgid "Unknown time"
+msgstr "Heure inconnue"
+
+#: includes/application/class-wppfm-email.php:142
+#, php-format
+msgid ""
+"This is an automatic message from the %1$s plugin on your %2$s shop.\n"
+"\n"
+"A product feed has been marked as failed after generation stopped or could "
+"not complete.\n"
+"\n"
+"Feed ID: %3$s\n"
+"Failure detected: %4$s\n"
+"Details: %5$s\n"
+"\n"
+"Please open the feed list in your WordPress admin, review the affected feed, "
+"and try regenerating it manually.\n"
+"\n"
+"If the problem continues, open a support ticket and include this message."
+msgstr ""
+"Ceci est un message automatique du plugin %1$s sur votre boutique %2$s.\n"
+"\n"
+"Un flux produit a été marqué comme échoué car sa génération s’est arrêtée ou "
+"n’a pas pu être complétée.\n"
+"\n"
+"ID du flux : %3$s\n"
+"Échec détecté : %4$s\n"
+"Détails : %5$s\n"
+"\n"
+"Veuillez ouvrir la liste des flux dans votre administration WordPress, "
+"vérifier le flux concerné et essayer de le régénérer manuellement.\n"
+"\n"
+"Si le problème persiste, ouvrez un ticket de support et incluez ce message."
+
+#: includes/application/class-wppfm-email.php:166
+#, php-format
+msgid ""
+"This is an automatic message from the %1$s plugin on your %2$s shop.\n"
+"\n"
+"One or more product feeds failed to generate.\n"
+"\n"
+"Failure detected: %3$s\n"
+"Details: %4$s\n"
+"\n"
+"Please check the status of your feeds in WordPress admin and try manually "
+"regenerating them.\n"
+"\n"
+"If the problem continues, open a support ticket and include this message."
+msgstr ""
+"Ceci est un message automatique du plugin %1$s sur votre boutique %2$s.\n"
+"\n"
+"Un ou plusieurs flux produits n’ont pas pu être générés.\n"
+"\n"
+"Échec détecté : %3$s\n"
+"Détails : %4$s\n"
+"\n"
+"Veuillez vérifier le statut de vos flux dans l’administration WordPress et "
+"essayer de les régénérer manuellement.\n"
+"\n"
+"Si le problème persiste, ouvrez un ticket de support et incluez ce message."
+
 #. translators: %s: site name
-#: includes/application/class-wppfm-email.php:80
+#: includes/application/class-wppfm-email.php:198
 #, php-format
 msgid "Test email from %s - Feed Manager Notice Recipient"
 msgstr ""
 "E-mail de test de %s – Destinataire de la notification du gestionnaire de "
 "flux"
 
-#: includes/application/class-wppfm-email.php:87
+#: includes/application/class-wppfm-email.php:205
 #, php-format
 msgid ""
 "This is a test email from the %1$s plugin on your %2$s shop. If you receive "
@@ -382,23 +482,23 @@ msgid "Error"
 msgstr "Erreur"
 
 #. translators: %d: number of attempts
-#: includes/libraries/wppfm-background-process.php:734
+#: includes/libraries/wppfm-background-process.php:742
 #, php-format
 msgid "Could not acquire process lock after %d attempts"
 msgstr "Échec de l’acquisition du verrou de processus après %d tentatives"
 
-#: includes/libraries/wppfm-background-process.php:774
+#: includes/libraries/wppfm-background-process.php:782
 msgid "Failed to acquire process lock"
 msgstr "Échec de l’acquisition du verrou de processus"
 
-#: includes/libraries/wppfm-background-process.php:1328
+#: includes/libraries/wppfm-background-process.php:1350
 #, php-format
 msgid "Every %d minute"
 msgid_plural "Every %d minutes"
 msgstr[0] "Toutes les %d minutes"
 msgstr[1] "Toutes les %d minutes"
 
-#: includes/libraries/wppfm-background-process.php:1407
+#: includes/libraries/wppfm-background-process.php:1429
 msgid ""
 "Could not schedule the cron event required to start the feed process. Please "
 "check if your wp cron is configured correctly and is running."
@@ -870,7 +970,7 @@ msgstr "fois par jour"
 #: includes/user-interface/class-wppfm-feed-form-control.php:189
 msgid "read this article on how to use performance prioritizing"
 msgstr ""
-"Lisez cet article pour savoir comment utiliser la priorisation des "
+"lisez cet article pour savoir comment utiliser la priorisation des "
 "performances (anglais)"
 
 #: includes/user-interface/class-wppfm-feed-list-page.php:48
@@ -1327,12 +1427,6 @@ msgstr "Afficher"
 #: includes/user-interface/class-wppfm-i18n-scripts.php:133
 msgid "Other"
 msgstr "Autre"
-
-#: includes/user-interface/class-wppfm-i18n-scripts.php:134
-#: includes/user-interface/class-wppfm-list-table.php:150
-#: includes/user-interface/class-wppfm-list-table.php:206
-msgid "Unknown"
-msgstr "Inconnu"
 
 #: includes/user-interface/class-wppfm-i18n-scripts.php:135
 #: includes/user-interface/class-wppfm-list-table.php:191

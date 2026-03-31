@@ -170,7 +170,7 @@ if ( ! class_exists( 'WPPFM_Main_Input_Selector_Element' ) ) :
 		 * @since 3.21.0
 		 */
 		public static function performance_enabled_checkbox_element() {
-			echo '<tr class="wppfm-main-feed-input-row" id="wppfm-performance-enabled-row">
+			echo '<tr class="wppfm-main-feed-input-row" id="wppfm-performance-enabled-row" style="display:none">
 					<th id="wppfm-main-feed-input-label"><label for="wppfm-performance-enabled">' .
 						esc_html__( 'Use Performance Prioritizing', 'wp-product-feed-manager' ) . '</label> :
 					</th><td>';
@@ -184,7 +184,7 @@ if ( ! class_exists( 'WPPFM_Main_Input_Selector_Element' ) ) :
 		 * @since 3.21.0
 		 */
 		public static function performance_period_days_element() {
-			echo '<tr class="wppfm-main-feed-input-row" id="wppfm-performance-period-row">
+			echo '<tr class="wppfm-main-feed-input-row" id="wppfm-performance-period-row" style="display:none">
 					<th id="wppfm-main-feed-input-label"><label for="wppfm-performance-period-days">' .
 						esc_html__( 'Period (days)', 'wp-product-feed-manager' ) . '</label> :
 					</th><td><input type="number" name="wppfm-performance-period-days" id="wppfm-performance-period-days" min="7" max="365" value="30" /></td></tr>';
@@ -196,7 +196,7 @@ if ( ! class_exists( 'WPPFM_Main_Input_Selector_Element' ) ) :
 		 * @since 3.21.0
 		 */
 		public static function performance_high_percentage_element() {
-			echo '<tr class="wppfm-main-feed-input-row" id="wppfm-performance-high-percentage-row">
+			echo '<tr class="wppfm-main-feed-input-row" id="wppfm-performance-high-percentage-row" style="display:none">
 					<th id="wppfm-main-feed-input-label"><label for="wppfm-performance-high-percentage">' .
 						esc_html__( 'High tier percentage', 'wp-product-feed-manager' ) . '</label> :
 					</th><td><input type="number" name="wppfm-performance-high-percentage" id="wppfm-performance-high-percentage" min="1" max="100" value="20" /></td></tr>';

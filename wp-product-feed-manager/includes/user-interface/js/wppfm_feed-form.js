@@ -179,6 +179,12 @@ function wppfm_constructNewFeed() {
 	var utmSourcePlatform = document.getElementById( 'wppfm-google-utm-source-platform' ) === null ? '' : document.getElementById( 'wppfm-google-utm-source-platform' ).value;
 	var utmTerm           = document.getElementById( 'wppfm-google-utm-term' ) === null ? '' : document.getElementById( 'wppfm-google-utm-term' ).value;
 	var utmContent        = document.getElementById( 'wppfm-google-utm-content' ) === null ? '' : document.getElementById( 'wppfm-google-utm-content' ).value;
+	var performanceEnabledElement = document.getElementById( 'wppfm-performance-enabled' );
+	var performancePeriodElement  = document.getElementById( 'wppfm-performance-period-days' );
+	var performanceHighElement    = document.getElementById( 'wppfm-performance-high-percentage' );
+	var performanceEnabled        = performanceEnabledElement && performanceEnabledElement.checked ? 'true' : 'false';
+	var performancePeriod         = performancePeriodElement && performancePeriodElement.value !== '' ? performancePeriodElement.value : '30';
+	var performanceHigh           = performanceHighElement && performanceHighElement.value !== '' ? performanceHighElement.value : '20';
 
 	// make the url to the feed file
 	var url     = jQuery( '#wppfm-feed-editor-page-data-storage' ).data( 'wppfmFeedUrl' );
@@ -215,6 +221,11 @@ function wppfm_constructNewFeed() {
 			utmTerm,
 			utmContent
 	);
+
+	// Preserve performance prioritizing input state while rebuilding a new feed object.
+	_feedHolder[ 'wppfm_performance_enabled' ] = performanceEnabled;
+	_feedHolder[ 'wppfm_performance_period_days' ] = performancePeriod;
+	_feedHolder[ 'wppfm_performance_high_percentage' ] = performanceHigh;
 }
 
 /**
@@ -314,6 +325,8 @@ function wppfm_finishOrUpdateFeedPage( categoryChanged ) {
 
 				if ( _feedHolder !== 0 ) {
 					var isNew = _feedHolder[ 'feedId' ] === - 1;
+					// Keep the performance toggle hidden on a fresh editor load until the feed page has been fully initialized.
+					jQuery( '#wppfm-performance-enabled-row' ).show();
 					wppfm_fillFeedFields( isNew, categoryChanged );
 				}
 

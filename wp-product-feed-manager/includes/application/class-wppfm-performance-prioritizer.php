@@ -165,13 +165,26 @@ if ( ! class_exists( 'WPPFM_Performance_Prioritizer' ) ) :
 		 */
 		private function woocommerce_lookup_tables_exist() {
 			global $wpdb;
+			$cache_key   = 'wppfm_wc_lookup_tables_exist_' . md5( $wpdb->prefix );
+			$cache_group = 'wppfm';
+			$cached      = wp_cache_get( $cache_key, $cache_group );
+
+			if ( false !== $cached ) {
+				return (bool) $cached;
+			}
+
 			$product_table = $wpdb->prefix . 'wc_order_product_lookup';
 			$stats_table   = $wpdb->prefix . 'wc_order_stats';
 
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- SHOW TABLES is required for this schema availability check and the result is cached.
 			$product_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $product_table ) ) === $product_table;
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- SHOW TABLES is required for this schema availability check and the result is cached.
 			$stats_exists   = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $stats_table ) ) === $stats_table;
+			$tables_exist   = $product_exists && $stats_exists;
 
-			return $product_exists && $stats_exists;
+			wp_cache_set( $cache_key, $tables_exist, $cache_group, HOUR_IN_SECONDS );
+
+			return $tables_exist;
 		}
 
 		/**
@@ -214,10 +227,11 @@ if ( ! class_exists( 'WPPFM_Performance_Prioritizer' ) ) :
 		private function fetch_metrics_via_temp_table( $product_ids, $period_days, $include_variations ) {
 			global $wpdb;
 
-			$temp_table = $wpdb->prefix . 'wppfm_perf_ids_' . wp_rand( 10000, 99999 );
-			$create_sql = "CREATE TEMPORARY TABLE $temp_table ( product_id BIGINT UNSIGNED PRIMARY KEY )";
+			// Sanitize the generated temporary table identifier before binding it as a SQL identifier.
+			$temp_table = $this->sanitize_sql_identifier( $wpdb->prefix . 'wppfm_perf_ids_' . wp_rand( 10000, 99999 ) );
 
-			if ( false === $wpdb->query( $create_sql ) ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- Temporary table creation is required for the high-volume analytics optimization path.
+			if ( false === $wpdb->query( $wpdb->prepare( 'CREATE TEMPORARY TABLE %i ( product_id BIGINT UNSIGNED PRIMARY KEY )', $temp_table ) ) ) {
 				return null;
 			}
 
@@ -228,48 +242,86 @@ if ( ! class_exists( 'WPPFM_Performance_Prioritizer' ) ) :
 
 			foreach ( $chunks as $chunk ) {
 				$placeholders = implode( ',', array_fill( 0, count( $chunk ), '(%d)' ) );
-				$insert_sql = "INSERT IGNORE INTO $temp_table (product_id) VALUES $placeholders";
-				$wpdb->query( $wpdb->prepare( $insert_sql, $chunk ) );
+
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Temporary table inserts are request-local and intentionally bypass object caching.
+				$wpdb->query(
+					$wpdb->prepare(
+						'INSERT IGNORE INTO %i (product_id) VALUES ' . $placeholders,
+						$temp_table,
+						...$chunk
+					)
+				);
 			}
 
-			$lookup_table  = $wpdb->prefix . 'wc_order_product_lookup';
-			$stats_table   = $wpdb->prefix . 'wc_order_stats';
-			$order_statuses = apply_filters( 'wppfm_performance_order_statuses', array( 'wc-processing', 'wc-completed' ) );
-			$revenue_col   = apply_filters( 'wppfm_performance_revenue_column', 'product_net_revenue' );
+			$lookup_table   = $wpdb->prefix . 'wc_order_product_lookup';
+			$stats_table    = $wpdb->prefix . 'wc_order_stats';
+			$order_statuses = array_values(
+				array_filter(
+					array_map( 'strval', (array) apply_filters( 'wppfm_performance_order_statuses', array( 'wc-processing', 'wc-completed' ) ) )
+				)
+			);
+			$revenue_col    = apply_filters( 'wppfm_performance_revenue_column', 'product_net_revenue' );
 
 			$allowed_cols = array( 'product_net_revenue', 'product_gross_revenue' );
 			if ( ! in_array( $revenue_col, $allowed_cols, true ) ) {
 				$revenue_col = 'product_net_revenue';
 			}
 
+			if ( empty( $order_statuses ) ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- Temporary table teardown is paired with the create call above.
+				$wpdb->query( $wpdb->prepare( 'DROP TEMPORARY TABLE IF EXISTS %i', $temp_table ) );
+				return array();
+			}
+
 			$start_gmt = gmdate( 'Y-m-d H:i:s', strtotime( "-{$period_days} days" ) );
-			$placeholders = implode( ',', array_fill( 0, count( $order_statuses ), '%s' ) );
+			$status_placeholders = implode( ',', array_fill( 0, count( $order_statuses ), '%s' ) );
 
-			$id_expr = $include_variations
-				? "CASE WHEN opl.variation_id > 0 THEN opl.variation_id ELSE opl.product_id END"
-				: 'opl.product_id';
+			if ( $include_variations ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Analytics aggregation is an intentional direct read over WooCommerce lookup tables.
+				$results = $wpdb->get_results(
+					$wpdb->prepare(
+						'SELECT CASE WHEN opl.variation_id > 0 THEN opl.variation_id ELSE opl.product_id END AS feed_product_id,
+							SUM(opl.%i) AS revenue,
+							COUNT(DISTINCT opl.order_id) AS orders_count
+						FROM %i opl
+						INNER JOIN %i os ON opl.order_id = os.order_id
+						INNER JOIN %i t ON ( t.product_id = opl.product_id OR t.product_id = opl.variation_id )
+						WHERE os.date_created_gmt >= %s
+						AND os.status IN (' . $status_placeholders . ')
+						GROUP BY feed_product_id',
+						$revenue_col,
+						$lookup_table,
+						$stats_table,
+						$temp_table,
+						$start_gmt,
+						...$order_statuses
+					)
+				);
+			} else {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Analytics aggregation is an intentional direct read over WooCommerce lookup tables.
+				$results = $wpdb->get_results(
+					$wpdb->prepare(
+						'SELECT opl.product_id AS feed_product_id,
+							SUM(opl.%i) AS revenue,
+							COUNT(DISTINCT opl.order_id) AS orders_count
+						FROM %i opl
+						INNER JOIN %i os ON opl.order_id = os.order_id
+						INNER JOIN %i t ON t.product_id = opl.product_id
+						WHERE os.date_created_gmt >= %s
+						AND os.status IN (' . $status_placeholders . ')
+						GROUP BY feed_product_id',
+						$revenue_col,
+						$lookup_table,
+						$stats_table,
+						$temp_table,
+						$start_gmt,
+						...$order_statuses
+					)
+				);
+			}
 
-			// Join with temp table: match either product_id or variation_id for feed products.
-			$join_cond = $include_variations
-				? "( t.product_id = opl.product_id OR t.product_id = opl.variation_id )"
-				: "t.product_id = opl.product_id";
-
-			$sql = $wpdb->prepare(
-				"SELECT $id_expr AS feed_product_id,
-					SUM(opl.{$revenue_col}) AS revenue,
-					COUNT(DISTINCT opl.order_id) AS orders_count
-				FROM {$lookup_table} opl
-				INNER JOIN {$stats_table} os ON opl.order_id = os.order_id
-				INNER JOIN $temp_table t ON $join_cond
-				WHERE os.date_created_gmt >= %s
-				AND os.status IN ($placeholders)
-				GROUP BY feed_product_id",
-				array_merge( array( $start_gmt ), $order_statuses )
-			);
-
-			$results = $wpdb->get_results( $sql );
-
-			$wpdb->query( "DROP TEMPORARY TABLE IF EXISTS $temp_table" );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- Temporary table teardown is paired with the create call above.
+			$wpdb->query( $wpdb->prepare( 'DROP TEMPORARY TABLE IF EXISTS %i', $temp_table ) );
 
 			$metrics = array();
 			if ( $results ) {
@@ -301,22 +353,26 @@ if ( ! class_exists( 'WPPFM_Performance_Prioritizer' ) ) :
 			$chunk_size = (int) apply_filters( 'wppfm_performance_analytics_id_chunk_size', 2000 );
 			$chunk_size = max( 1, min( 5000, $chunk_size ) );
 
-			$lookup_table  = $wpdb->prefix . 'wc_order_product_lookup';
-			$stats_table   = $wpdb->prefix . 'wc_order_stats';
-			$order_statuses = apply_filters( 'wppfm_performance_order_statuses', array( 'wc-processing', 'wc-completed' ) );
-			$revenue_col   = apply_filters( 'wppfm_performance_revenue_column', 'product_net_revenue' );
+			$lookup_table   = $wpdb->prefix . 'wc_order_product_lookup';
+			$stats_table    = $wpdb->prefix . 'wc_order_stats';
+			$order_statuses = array_values(
+				array_filter(
+					array_map( 'strval', (array) apply_filters( 'wppfm_performance_order_statuses', array( 'wc-processing', 'wc-completed' ) ) )
+				)
+			);
+			$revenue_col    = apply_filters( 'wppfm_performance_revenue_column', 'product_net_revenue' );
 
 			$allowed_cols = array( 'product_net_revenue', 'product_gross_revenue' );
 			if ( ! in_array( $revenue_col, $allowed_cols, true ) ) {
 				$revenue_col = 'product_net_revenue';
 			}
 
-			$start_gmt = gmdate( 'Y-m-d H:i:s', strtotime( "-{$period_days} days" ) );
-			$status_placeholders = implode( ',', array_fill( 0, count( $order_statuses ), '%s' ) );
+			if ( empty( $order_statuses ) ) {
+				return array();
+			}
 
-			$id_expr = $include_variations
-				? "CASE WHEN opl.variation_id > 0 THEN opl.variation_id ELSE opl.product_id END"
-				: 'opl.product_id';
+			$start_gmt           = gmdate( 'Y-m-d H:i:s', strtotime( "-{$period_days} days" ) );
+			$status_placeholders = implode( ',', array_fill( 0, count( $order_statuses ), '%s' ) );
 
 			$metrics = array();
 			$product_ids_safe = array_map( 'absint', $product_ids );
@@ -324,22 +380,50 @@ if ( ! class_exists( 'WPPFM_Performance_Prioritizer' ) ) :
 
 			foreach ( $chunks as $chunk ) {
 				$id_placeholders = implode( ',', array_fill( 0, count( $chunk ), '%d' ) );
-				$query_args = array_merge( array( $start_gmt ), $order_statuses, $chunk, $chunk );
-
-				$sql = $wpdb->prepare(
-					"SELECT $id_expr AS feed_product_id,
-						SUM(opl.{$revenue_col}) AS revenue,
-						COUNT(DISTINCT opl.order_id) AS orders_count
-					FROM {$lookup_table} opl
-					INNER JOIN {$stats_table} os ON opl.order_id = os.order_id
-					WHERE os.date_created_gmt >= %s
-					AND os.status IN ($status_placeholders)
-					AND (opl.product_id IN ($id_placeholders) OR opl.variation_id IN ($id_placeholders))
-					GROUP BY feed_product_id",
-					$query_args
-				);
-
-				$results = $wpdb->get_results( $sql );
+				if ( $include_variations ) {
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Analytics aggregation is an intentional direct read over WooCommerce lookup tables.
+					$results = $wpdb->get_results(
+						$wpdb->prepare(
+							'SELECT CASE WHEN opl.variation_id > 0 THEN opl.variation_id ELSE opl.product_id END AS feed_product_id,
+								SUM(opl.%i) AS revenue,
+								COUNT(DISTINCT opl.order_id) AS orders_count
+							FROM %i opl
+							INNER JOIN %i os ON opl.order_id = os.order_id
+							WHERE os.date_created_gmt >= %s
+							AND os.status IN (' . $status_placeholders . ')
+							AND (opl.product_id IN (' . $id_placeholders . ') OR opl.variation_id IN (' . $id_placeholders . '))
+							GROUP BY feed_product_id',
+							$revenue_col,
+							$lookup_table,
+							$stats_table,
+							$start_gmt,
+							...$order_statuses,
+							...$chunk,
+							...$chunk
+						)
+					);
+				} else {
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Analytics aggregation is an intentional direct read over WooCommerce lookup tables.
+					$results = $wpdb->get_results(
+						$wpdb->prepare(
+							'SELECT opl.product_id AS feed_product_id,
+								SUM(opl.%i) AS revenue,
+								COUNT(DISTINCT opl.order_id) AS orders_count
+							FROM %i opl
+							INNER JOIN %i os ON opl.order_id = os.order_id
+							WHERE os.date_created_gmt >= %s
+							AND os.status IN (' . $status_placeholders . ')
+							AND opl.product_id IN (' . $id_placeholders . ')
+							GROUP BY feed_product_id',
+							$revenue_col,
+							$lookup_table,
+							$stats_table,
+							$start_gmt,
+							...$order_statuses,
+							...$chunk
+						)
+					);
+				}
 				if ( $results ) {
 					foreach ( $results as $row ) {
 						$pid = (int) $row->feed_product_id;
@@ -438,6 +522,7 @@ if ( ! class_exists( 'WPPFM_Performance_Prioritizer' ) ) :
 			// IMPORTANT: `$wpdb->query()` returns `0` for many successful statements (including START TRANSACTION),
 			// so we must only treat `false` as failure. Treating `0` as failure would leave an open transaction
 			// and can make subsequent option writes (like the background queue state) invisible to the async request.
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Transaction control statements are intentional and request-scoped.
 			$transaction_start_result = $wpdb->query( 'START TRANSACTION' );
 			$use_transaction          = ( false !== $transaction_start_result );
 
@@ -470,6 +555,7 @@ if ( ! class_exists( 'WPPFM_Performance_Prioritizer' ) ) :
 						throw new \RuntimeException( 'Failed to update performance meta after insert.' );
 					}
 
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Transaction control statements are intentional and request-scoped.
 					$commit_result = $wpdb->query( 'COMMIT' );
 					if ( false === $commit_result ) {
 						throw new \RuntimeException( 'Failed to commit performance transaction.' );
@@ -477,6 +563,7 @@ if ( ! class_exists( 'WPPFM_Performance_Prioritizer' ) ) :
 
 					return;
 				} catch ( \Throwable $e ) {
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Transaction control statements are intentional and request-scoped.
 					$wpdb->query( 'ROLLBACK' );
 					throw $e;
 				}
@@ -492,9 +579,12 @@ if ( ! class_exists( 'WPPFM_Performance_Prioritizer' ) ) :
 				$chunk_size = (int) apply_filters( 'wppfm_performance_insert_chunk_size', 1000 );
 				$chunk_size = max( 1, min( 5000, $chunk_size ) );
 
+				$table    = $this->sanitize_sql_identifier( $wpdb->prefix . 'feedmanager_product_performance' );
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- This stale-row lookup is intentionally scoped to the current write operation.
 				$existing = $wpdb->get_col(
 					$wpdb->prepare(
-						"SELECT product_id FROM {$wpdb->prefix}feedmanager_product_performance WHERE product_feed_id = %d AND period_days = %d",
+						'SELECT product_id FROM %i WHERE product_feed_id = %d AND period_days = %d',
+						$table,
 						$feed_id,
 						$period_days
 					)
@@ -504,13 +594,17 @@ if ( ! class_exists( 'WPPFM_Performance_Prioritizer' ) ) :
 
 				if ( ! empty( $to_delete ) ) {
 					$delete_chunks = array_chunk( array_values( $to_delete ), $chunk_size );
-					$table = $wpdb->prefix . 'feedmanager_product_performance';
 					foreach ( $delete_chunks as $chunk ) {
 						$placeholders = implode( ',', array_fill( 0, count( $chunk ), '%d' ) );
+
+						// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Cleanup writes are part of the current atomic refresh and should not be object cached.
 						$wpdb->query(
 							$wpdb->prepare(
-								"DELETE FROM $table WHERE product_feed_id = %d AND period_days = %d AND product_id IN ($placeholders)",
-								array_merge( array( $feed_id, $period_days ), $chunk )
+								'DELETE FROM %i WHERE product_feed_id = %d AND period_days = %d AND product_id IN (' . $placeholders . ')',
+								$table,
+								$feed_id,
+								$period_days,
+								...$chunk
 							)
 						);
 					}
@@ -543,6 +637,17 @@ if ( ! class_exists( 'WPPFM_Performance_Prioritizer' ) ) :
 		 */
 		private function clamp_high_percentage( $pct ) {
 			return max( 1, min( 100, (int) $pct ) );
+		}
+
+		/**
+		 * Sanitizes a dynamic SQL identifier before binding it with `%i`.
+		 *
+		 * @param string $identifier Raw identifier.
+		 *
+		 * @return string
+		 */
+		private function sanitize_sql_identifier( $identifier ) {
+			return preg_replace( '/[^A-Za-z0-9_]/', '', (string) $identifier );
 		}
 	}
 

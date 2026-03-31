@@ -52,6 +52,7 @@ if ( ! class_exists( 'WPPFM_Vehicle_Ads_Attributes_List' ) ) :
 		private static $optional_attributes = array(
 			'title',
 			'product_type',
+			'product_category_primary',
 			'additional_image_link',
 			'mobile_link_template',
 			'mobile_link',

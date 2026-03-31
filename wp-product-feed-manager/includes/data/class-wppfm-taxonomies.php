@@ -80,6 +80,52 @@ if ( ! class_exists( 'WPPFM_Taxonomies' ) ) :
 		}
 
 		/**
+		 * Single category path: Yoast/Rank Math primary breadcrumb, or the first assigned term's breadcrumb when no primary is set.
+		 *
+		 * Unlike {@see self::make_shop_taxonomies_string()}, this never merges paths from multiple categories.
+		 *
+		 * @param int|string $product_id Post ID.
+		 * @param string     $tax        Taxonomy slug.
+		 * @param string     $separator  Hierarchy separator.
+		 *
+		 * @since 3.22.0
+		 *
+		 * @return string
+		 */
+		public static function make_main_product_category_string( $product_id, $tax = 'product_cat', $separator = ' > ' ) {
+			$product_id = absint( $product_id );
+			if ( ! $product_id ) {
+				return '';
+			}
+
+			$term_id = 0;
+
+			if ( 'category' === $tax || 'product_cat' === $tax ) {
+				$primary = self::get_primary_cat( $product_id );
+				if ( $primary && isset( $primary[0]->term_id ) ) {
+					$term_id = absint( $primary[0]->term_id );
+				}
+			}
+
+			if ( ! $term_id ) {
+				$terms = wp_get_post_terms(
+					$product_id,
+					$tax,
+					array(
+						'orderby' => 'term_id',
+						'order'   => 'ASC',
+					)
+				);
+				if ( is_wp_error( $terms ) || empty( $terms ) ) {
+					return '';
+				}
+				$term_id = absint( $terms[0]->term_id );
+			}
+
+			return self::get_single_term_taxonomy_breadcrumb_string( $term_id, $tax, $separator );
+		}
+
+		/**
 		 * Generates a string with all selected categories
 		 *
 		 * @param string $post_id
@@ -154,6 +200,33 @@ if ( ! class_exists( 'WPPFM_Taxonomies' ) ) :
 			$args = apply_filters( 'wppfm_category_mapping_args', $args );
 
 			return self::get_cat_hierarchy( 0, $args );
+		}
+
+		/**
+		 * Builds root-to-leaf names for a single taxonomy term (same ordering as make_shop_taxonomies_string per term).
+		 *
+		 * @param int    $term_id   Term ID.
+		 * @param string $tax       Taxonomy slug.
+		 * @param string $separator String used between segments.
+		 *
+		 * @return string
+		 */
+		private static function get_single_term_taxonomy_breadcrumb_string( $term_id, $tax, $separator ) {
+			$result     = array();
+			$term_id    = absint( $term_id );
+			$cat_string = function ( $id ) use ( &$result, &$cat_string, $tax ) {
+				$term = get_term_by( 'id', absint( $id ), $tax, 'ARRAY_A' );
+				if ( ! $term ) {
+					return;
+				}
+				if ( ! empty( $term['parent'] ) ) {
+					$cat_string( $term['parent'] );
+				}
+				$result[] = $term['name'];
+			};
+			$cat_string( $term_id );
+
+			return implode( $separator, $result );
 		}
 
 		private static function get_cat_hierarchy( $parent, $args ) {

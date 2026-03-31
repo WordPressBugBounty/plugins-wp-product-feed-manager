@@ -340,3 +340,103 @@ add_action( 'wppfm_feed_watchdog_cron', 'wppfm_handle_feed_watchdog_cron' );
 
 add_filter( 'cron_schedules', 'wppfm_register_feed_update_schedule' ); // phpcs:disable WordPress.WP.CronInterval.ChangeDetected
 add_action( 'init', 'wppfm_schedule_feed_update_event' );
+
+/**
+ * Transient key storing the Unix time a watchdog failure was first observed for a feed.
+ *
+ * @param string $feed_id Feed ID.
+ *
+ * @return string
+ */
+function wppfm_deferred_feed_failure_transient_key( $feed_id ) {
+	return 'wppfm_deferred_failure_detected_' . sanitize_key( (string) $feed_id );
+}
+
+/**
+ * Schedules a delayed failure notice so email is only sent if the feed is still failed
+ * after a quiet period (avoids mail when generation later completes successfully).
+ *
+ * @param string $feed_id     Feed ID.
+ * @param int    $detected_at Unix timestamp when the stall was detected.
+ */
+function wppfm_schedule_deferred_feed_failure_notice( $feed_id, $detected_at ) {
+	$feed_id = (string) $feed_id;
+
+	if ( '' === $feed_id ) {
+		return;
+	}
+
+	$key = wppfm_deferred_feed_failure_transient_key( $feed_id );
+	set_transient( $key, max( 1, (int) $detected_at ), DAY_IN_SECONDS );
+
+	$hook = 'wppfm_send_deferred_feed_failure_notice';
+	wp_clear_scheduled_hook( $hook, array( $feed_id ) );
+
+	$delay = apply_filters( 'wppfm_feed_failure_notice_delay_seconds', 10 * MINUTE_IN_SECONDS, $feed_id );
+	$delay = max( 120, intval( $delay ) );
+
+	wp_schedule_single_event( time() + $delay, $hook, array( $feed_id ) );
+}
+
+/**
+ * Clears a pending deferred failure notice (e.g. after a successful completion or an immediate terminal failure email).
+ *
+ * @param string $feed_id Feed ID.
+ */
+function wppfm_cancel_deferred_feed_failure_notice( $feed_id ) {
+	$feed_id = (string) $feed_id;
+
+	if ( '' === $feed_id ) {
+		return;
+	}
+
+	delete_transient( wppfm_deferred_feed_failure_transient_key( $feed_id ) );
+	wp_clear_scheduled_hook( 'wppfm_send_deferred_feed_failure_notice', array( $feed_id ) );
+}
+
+/**
+ * Sends the deferred watchdog failure email only when the failure is still the final state.
+ *
+ * @param string $feed_id Feed ID.
+ */
+function wppfm_send_deferred_feed_failure_notice_cb( $feed_id ) {
+	$feed_id = (string) $feed_id;
+
+	if ( '' === $feed_id || ! class_exists( 'WPPFM_Data' ) || ! class_exists( 'WPPFM_Email' ) || ! class_exists( 'WPPFM_Feed_Controller' ) ) {
+		return;
+	}
+
+	$key         = wppfm_deferred_feed_failure_transient_key( $feed_id );
+	$detected_at = (int) get_transient( $key );
+
+	if ( $detected_at <= 0 ) {
+		$detected_at = time();
+	}
+
+	$data_class = new WPPFM_Data();
+	$status     = $data_class->get_feed_status( $feed_id );
+
+	// Status 6 = failed processing; anything else means the run recovered.
+	if ( null === $status || '6' !== (string) $status ) {
+		delete_transient( $key );
+		return;
+	}
+
+	// Worker still active — do not send a terminal failure notice yet.
+	if ( WPPFM_Feed_Controller::background_process_heartbeat_is_fresh() || WPPFM_Feed_Controller::feed_is_processing() ) {
+		delete_transient( $key );
+		return;
+	}
+
+	delete_transient( $key );
+
+	WPPFM_Email::send_feed_failed_message(
+		$feed_id,
+		array(
+			'detected_at' => $detected_at,
+			'source'      => 'watchdog_stall',
+		)
+	);
+}
+
+add_action( 'wppfm_send_deferred_feed_failure_notice', 'wppfm_send_deferred_feed_failure_notice_cb', 10, 1 );
