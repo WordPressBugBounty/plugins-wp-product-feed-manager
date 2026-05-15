@@ -14,11 +14,17 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Activates the feed update schedules using Cron Jobs.
  */
 function wppfm_update_feeds() {
-	// Include the required WordPress files.
-	defined( 'WP_CLI' ) || require_once ABSPATH . 'wp-load.php'; // @since 3.13.0 - Added defined( 'WP_CLI' ) || to prevent a reloading wp-config.php.
-	require_once ABSPATH . 'wp-admin/includes/admin.php';
-	require_once ABSPATH . 'wp-admin/includes/file.php'; // Required for using the file system.
-	require_once ABSPATH . 'wp-admin/includes/plugin.php'; // Required to prevent a fatal error about not finding the is_plugin_active function.
+	/*
+	 * This callback runs from the wppfm_feed_update_schedule action after WordPress (and this plugin)
+	 * are loaded.
+	 */
+	if ( ! function_exists( 'is_plugin_active' ) ) {
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+	}
+
+	if ( ! function_exists( 'WP_Filesystem' ) ) {
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+	}
 
 	// Include all product feed manager files.
 	require_once __DIR__ . '/../wppfm-wpincludes.php';
@@ -50,8 +56,8 @@ function wppfm_update_feeds() {
 	WC_Post_types::register_post_types(); // Make sure the WooCommerce post types are loaded.
 
 	// Include all required classes.
-	include_classes();
-	include_channels();
+	wppfm_include_classes();
+	wppfm_include_channels();
 
 	do_action( 'wppfm_automatic_feed_processing_triggered' );
 
@@ -203,11 +209,11 @@ function wppfm_handle_feed_watchdog_cron() {
 		return;
 	}
 
-	if ( ! function_exists( 'include_classes' ) ) {
+	if ( ! function_exists( 'wppfm_include_classes' ) ) {
 		require_once __DIR__ . '/../wppfm-wpincludes.php';
 	}
 
-	include_classes();
+	wppfm_include_classes();
 
 	$lock_value   = get_site_transient( 'wppfm_feed_generation_process_process_lock' );
 	$lock_exists  = ! empty( $lock_value );
@@ -219,12 +225,31 @@ function wppfm_handle_feed_watchdog_cron() {
 	$heartbeat_fresh = method_exists( 'WPPFM_Feed_Controller', 'background_process_heartbeat_is_fresh' )
 		? WPPFM_Feed_Controller::background_process_heartbeat_is_fresh()
 		: false;
+	$handoff_active = method_exists( 'WPPFM_Feed_Controller', 'background_process_handoff_is_active' )
+		? WPPFM_Feed_Controller::background_process_handoff_is_active()
+		: false;
 
 	$lock_missing_since_key = 'wppfm_watchdog_lock_missing_since';
 	$lock_timeout           = apply_filters( 'wppfm_feed_watchdog_lock_timeout', 5 * MINUTE_IN_SECONDS );
 	$lock_timeout           = max( 60, intval( $lock_timeout ) ); // Minimum 1 minute.
 
 	if ( ! $queue_empty && ! $is_processing && ! $lock_exists ) {
+		if ( $handoff_active ) {
+			do_action(
+				'wppfm_feed_generation_message',
+				'unknown',
+				sprintf(
+					'Feed watchdog detected an unlocked queue during a marked batch handoff; skipping restart to avoid duplicate feed startup. (queue_count=%d, active_key=%s)',
+					intval( $queue_count ),
+					$active_key ? $active_key : 'none'
+				),
+				'WARNING'
+			);
+
+			delete_site_transient( $lock_missing_since_key );
+			return;
+		}
+
 		do_action(
 			'wppfm_feed_generation_message',
 			'unknown',

@@ -489,6 +489,11 @@ div.wppfm-main-product-filter-section__body {
     padding: 2px 10px;
 }
 
+input.wppfm-filter-input-control {
+    position: relative;
+    top: 3px;
+}
+
 /*******************************************/
 /* Product Feed Editor - attribute mapping */
 /*******************************************/

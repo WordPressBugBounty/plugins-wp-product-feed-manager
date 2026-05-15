@@ -18,6 +18,54 @@ if ( ! class_exists( 'WPPFM_Email' ) ) :
 	 * @since 2.3.0.
 	 */
 	class WPPFM_Email {
+		/**
+		 * Builds a validated, de-duplicated recipient list from raw input.
+		 *
+		 * @since 3.24.0
+		 *
+		 * @param string|array $raw_recipients Single email, comma-separated emails, or an array of emails.
+		 * @return array
+		 */
+		public static function parse_recipients( $raw_recipients ) {
+			$recipient_candidates = is_array( $raw_recipients ) ? $raw_recipients : explode( ',', (string) $raw_recipients );
+			$valid_recipients     = array();
+
+			foreach ( $recipient_candidates as $recipient_candidate ) {
+				$sanitized_recipient = sanitize_email( trim( (string) $recipient_candidate ) );
+				if ( $sanitized_recipient && is_email( $sanitized_recipient ) ) {
+					$valid_recipients[] = strtolower( $sanitized_recipient );
+				}
+			}
+
+			return array_values( array_unique( $valid_recipients ) );
+		}
+
+		/**
+		 * Sanitizes a recipient list and returns a normalized comma-separated string.
+		 *
+		 * @since 3.24.0
+		 *
+		 * @param string|array $raw_recipients Raw notice recipients value.
+		 * @return string
+		 */
+		public static function sanitize_recipient_list( $raw_recipients ) {
+			return implode( ',', self::parse_recipients( $raw_recipients ) );
+		}
+
+		/**
+		 * Formats a recipient list for readable UI display.
+		 *
+		 * Uses the same sanitized/validated recipient parsing as storage, but joins
+		 * recipients with a comma-space delimiter for better readability in inputs.
+		 *
+		 * @since 3.24.0
+		 *
+		 * @param string|array $raw_recipients Raw notice recipients value.
+		 * @return string
+		 */
+		public static function format_recipient_list_for_display( $raw_recipients ) {
+			return implode( ', ', self::parse_recipients( $raw_recipients ) );
+		}
 
 		/**
 		 * Sends a notice email to the notice mail address containing a feed failed processing message.
@@ -42,12 +90,13 @@ if ( ! class_exists( 'WPPFM_Email' ) ) :
 			$args     = wp_parse_args( $args, $defaults );
 			$feed_id  = is_scalar( $feed_id ) ? (string) $feed_id : '';
 
-			$to = get_option( 'wppfm_notice_mailaddress', '' );
-			// Fall back to admin email when notice recipient is not configured or invalid.
-			if ( empty( $to ) || ! is_email( $to ) ) {
-				$to = get_bloginfo( 'admin_email' );
+			$to = self::parse_recipients( get_option( 'wppfm_notice_mailaddress', '' ) );
+
+			// Fall back to admin email when notice recipients are not configured or invalid.
+			if ( empty( $to ) ) {
+				$to = self::parse_recipients( get_bloginfo( 'admin_email' ) );
 			}
-			if ( empty( $to ) || ! is_email( $to ) ) {
+			if ( empty( $to ) ) {
 				return false;
 			}
 
@@ -185,11 +234,12 @@ If the problem continues, open a support ticket and include this message.',
 		/**
 		 * Sends a test email to the given address to verify email delivery is working.
 		 *
-		 * @param string $to Recipient email address.
+		 * @param string|array $to Recipient email address, comma-separated list, or array.
 		 * @return bool Whether the test email was sent successfully.
 		 */
 		public static function send_test_email( $to ) {
-			if ( empty( $to ) || ! is_email( $to ) ) {
+			$recipients = self::parse_recipients( $to );
+			if ( empty( $recipients ) ) {
 				return false;
 			}
 
@@ -209,24 +259,25 @@ If the problem continues, open a support ticket and include this message.',
 				get_bloginfo( 'name' )
 			);
 
-			return self::send( $to, $subject, $message );
+			return self::send( $recipients, $subject, $message );
 		}
 
 		/**
 		 * Sends an email.
 		 *
-		 * @param string $to to address.
+		 * @param string|array $to to address(es).
 		 * @param string $subject the subject.
 		 * @param string $message the message.
 		 *
 		 * @return bool whether the mail contents were sent successfully.
 		 */
 		private static function send( $to, $subject, $message ) {
-			if ( is_email( $to ) ) {
-				return (bool) wp_mail( $to, $subject, $message );
-			} else {
+			$recipients = self::parse_recipients( $to );
+			if ( empty( $recipients ) ) {
 				return false;
 			}
+
+			return (bool) wp_mail( $recipients, $subject, $message );
 		}
 	}
 

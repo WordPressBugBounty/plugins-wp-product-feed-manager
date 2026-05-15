@@ -12,8 +12,6 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 
 global $wpdb;
 
-$upload_dir = wp_get_upload_dir();
-
 require_once __DIR__ . '/includes/data/wppfm-admin-functions.php';
 
 if ( ! class_exists( 'WPPFM_Folders' ) ) {
@@ -32,11 +30,12 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) {
 wp_clear_scheduled_hook( 'wppfm_feed_update_schedule' );
 
 // Remove the support folders.
-WPPFM_Folders::delete_folder( $upload_dir['basedir'] . '/wppfm-channels' );
-WPPFM_Folders::delete_folder( $upload_dir['basedir'] . '/wppfm-feeds' );
-WPPFM_Folders::delete_folder( $upload_dir['basedir'] . '/wppfm-logs' );
+$wppfm_upload_dir = wp_get_upload_dir();
+WPPFM_Folders::delete_folder( $wppfm_upload_dir['basedir'] . '/wppfm-channels' );
+WPPFM_Folders::delete_folder( $wppfm_upload_dir['basedir'] . '/wppfm-feeds' );
+WPPFM_Folders::delete_folder( $wppfm_upload_dir['basedir'] . '/wppfm-logs' );
 
-$tables = array(
+$wppfm_tables = array(
 	$wpdb->prefix . 'feedmanager_country',
 	$wpdb->prefix . 'feedmanager_feed_status',
 	$wpdb->prefix . 'feedmanager_field_categories',
@@ -49,9 +48,9 @@ $tables = array(
 );
 
 // Remove the feedmanager tables.
-foreach ( $tables as $table ) {
+foreach ( $wppfm_tables as $wppfm_table ) {
 	//phpcs:ignore
-	$wpdb->query( "DROP TABLE IF EXISTS $table" );
+	$wpdb->query( "DROP TABLE IF EXISTS $wppfm_table" );
 }
 
 // Reset the keyed options @since 3.11.0.
@@ -85,7 +84,6 @@ function wppfm_remove_custom_capabilities() {
  */
 function wppfm_unregister_plugin() {
 	// Retrieve the license from the database.
-	$license = get_option( 'wppfm_lic_key' );
 
 	foreach( wp_load_alloptions() as $option => $value ) {
 		if( false !== strpos( $option, 'wppfm_' ) ) { delete_option( $option );	}

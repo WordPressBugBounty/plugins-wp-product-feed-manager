@@ -19,7 +19,7 @@ require_once __DIR__ . '/data/wppfm-performance-source-fields.php';
  *
  * @since 1.0.0
  */
-function include_classes() {
+function wppfm_include_classes() {
 	if ( ! class_exists( 'WPPFM_Schedules' ) ) {
 		require_once __DIR__ . '/application/class-wppfm-schedules.php';
 	}
@@ -207,7 +207,7 @@ function include_classes() {
  *
  * @since 1.0.0
  */
-function include_channels() {
+function wppfm_include_channels() {
 	 if ( ! class_exists( 'WPPFM_Google_Feed_Class' ) ) {
 	 	require_once __DIR__ . '/application/google/class-feed.php';
 	 }

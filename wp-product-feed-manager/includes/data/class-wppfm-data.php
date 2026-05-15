@@ -330,7 +330,7 @@ if ( ! class_exists( 'WPPFM_Data' ) ) :
 					break;
 
 				default:
-					if ( 'valid' === get_option( 'wppfm_lic_status' ) ) { // error message for paid versions
+					if ( 'valid' === 'valid' ) { // error message for paid versions
 						echo '<div id="error">' . esc_html__(
 							'Could not add custom fields because I could not identify the channel.
 								If not already done add the correct channel in the Manage Channels page.
@@ -397,12 +397,16 @@ if ( ! class_exists( 'WPPFM_Data' ) ) :
 			$parent_product_data = $this->_queries_class->read_post_data( $parent_id, $post_columns_query_string );
 
 			// WPML support.
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WPML integration hook intentionally uses the external plugin's public hook name.
 			if ( has_filter( 'wpml_translation' ) ) {
+				// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WPML integration hook intentionally uses the external plugin's public hook name.
 				$parent_product_data = apply_filters( 'wpml_translation', $parent_product_data, $language );
 			}
 
 			// Polylang support.
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Polylang integration hook intentionally uses the external plugin's public hook name.
 			if ( has_filter( 'pll_translation' ) ) {
+				// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Polylang integration hook intentionally uses the external plugin's public hook name.
 				$parent_product_data = apply_filters( 'pll_translation', $parent_product_data, $language );
 			}
 
@@ -413,6 +417,7 @@ if ( ! class_exists( 'WPPFM_Data' ) ) :
 
 			$parent_product_data = (array) $parent_product_data;
 
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Backward-compatible legacy extension hook retained for existing third-party integrations.
 			$sources_that_always_use_parent_data = apply_filters( 'sources_that_always_use_data_from_parent', array( 'post_excerpt' ) );
 
 			$columns = explode( ', ', $post_columns_query_string );
@@ -458,6 +463,7 @@ if ( ! class_exists( 'WPPFM_Data' ) ) :
 			if ( in_array(
 				'woocommerce-brands/woocommerce-brands.php',
 				apply_filters(
+					// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Core uses the unprefixed `active_plugins` option hook for plugin list filtering.
 					'active_plugins',
 					get_option( 'active_plugins' )
 				),

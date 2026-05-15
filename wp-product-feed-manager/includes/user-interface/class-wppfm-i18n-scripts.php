@@ -53,7 +53,6 @@ if ( ! class_exists( 'WPPFM_i18n_Scripts' ) ) :
 				/* translators: %feedname%: name of the feed */
 				'feed_status_failed'                => esc_html__( 'Product feed %feedname% has failed!', 'wp-product-feed-manager' ),
 				/* translators: %s: URL to WP Marketing Robot */
-				'variation_only_for_premium'        => sprintf( esc_html__( 'The option to add product variations to the feed is not available in the free version. Unlock this option by upgrading to the Premium plugin. For more information goto %s.', 'wp-product-feed-manager' ), $wpmr_url ),
 				'select_a_sub_category'             => esc_html__( 'Select a sub-category', 'wp-product-feed-manager' ),
 				'select_by_category_number'         => esc_html__( 'Select by category number', 'wp-product-feed-manager' ),
 				/* translators: %feedname%: name of the feed */
@@ -63,7 +62,6 @@ if ( ! class_exists( 'WPPFM_i18n_Scripts' ) ) :
 				'select_a_source_field_warning'     => esc_html__( 'Please select a source field first before you select the conditions.', 'wp-product-feed-manager' ),
 				'select_a_valid_source_warning'     => esc_html__( 'Please select a valid source before adding a condition to that source.', 'wp-product-feed-manager' ),
 				/* translators: %s: URL to WP Marketing Robot */
-				'advanced_filter_only_for_premium'  => sprintf( esc_html__( 'The Advanced Filter option is not available in the free version. Unlock the Advanced Filter option by upgrading to the Premium plugin. For more information goto %s.', 'wp-product-feed-manager' ), $wpmr_url ),
 				'all_products_except'               => esc_html__( 'except the ones where', 'wp-product-feed-manager' ),
 				'fill_filter_warning'               => esc_html__( 'Please fill in the filter values before adding a new one', 'wp-product-feed-manager' ),
 				'no_separator'                      => esc_html__( 'No separator', 'wp-product-feed-manager' ),
@@ -198,7 +196,7 @@ if ( ! class_exists( 'WPPFM_i18n_Scripts' ) ) :
 				'could_not_write_file'                 => esc_html__( '1433 - Could not write the %backup_file_name% file.', 'wp-product-feed-manager' ),
 				'no_backup'                            => esc_html__( 'No backup found', 'wp-product-feed-manager' ),
 				'how_to_import_backup_file'            => esc_html__( 'To restore the exported backup file, please upload it to the "wp-content/uploads/wppfm-backups" folder of the server where you want to restore it on.', 'wp-product-feed-manager' ),
-				'invalid_email_address'                => esc_html__( 'The input is not a valid email address. Please try again.', 'wp-product-feed-manager' ),
+				'invalid_email_address'                => esc_html__( 'The input does not contain valid email addresses. Enter one or more comma-separated email addresses and try again.', 'wp-product-feed-manager' ),
 				'test_email_sent'                      => esc_html__( 'Notice recipient saved. A test email has been sent — check your inbox and spam folder. If you do not receive it within a few minutes, consider using an SMTP plugin as your server may not be configured for reliable email delivery.', 'wp-product-feed-manager' ),
 				'test_email_failed'                    => esc_html__( 'Notice recipient saved, but the test email could not be delivered. Consider using an SMTP plugin to improve email delivery.', 'wp-product-feed-manager' ),
 				'notice_recipient_saved'               => esc_html__( 'Notice recipient saved.', 'wp-product-feed-manager' ),

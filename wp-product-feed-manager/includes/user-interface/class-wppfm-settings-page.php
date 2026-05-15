@@ -73,6 +73,7 @@ if ( ! class_exists( 'WPPFM_Settings_Page' ) ) :
 
 			$third_party_attribute_keywords = get_option( 'wppfm_third_party_attribute_keywords', '%wpmr%,%cpf%,%unit%,%bto%,%yoast%' );
 			$notice_mailaddress             = get_option( 'wppfm_notice_mailaddress' ) ? get_option( 'wppfm_notice_mailaddress' ) : get_bloginfo( 'admin_email' );
+			$notice_mailaddress             = class_exists( 'WPPFM_Email' ) ? WPPFM_Email::format_recipient_list_for_display( $notice_mailaddress ) : sanitize_text_field( $notice_mailaddress );
 
 			echo '<tr vertical-align="top" class="wppfm-setting-selector">
 				<th scope="row" class="titledesc">' . esc_html__( 'Auto feed fix', 'wp-product-feed-manager' ) . '</th>
@@ -182,10 +183,10 @@ if ( ! class_exists( 'WPPFM_Settings_Page' ) ) :
 				<th scope="row" class="titledesc">' . esc_html__( 'Notice recipient', 'wp-product-feed-manager' ) . '</th>
 				<td class="forminp forminp-input">
 				<fieldset>
-				<input name="wppfm-notice-mailaddress" id="wppfm-notice-mailaddress" type="email" class="wppfm-wide-text-input-field" value="' . esc_html( sanitize_email( $notice_mailaddress ) ) . '"> 
+				<input name="wppfm-notice-mailaddress" id="wppfm-notice-mailaddress" type="text" class="wppfm-wide-text-input-field" value="' . esc_html( $notice_mailaddress ) . '"> 
 				<label for="wppfm-notice-mailaddress">'
-				. esc_html__( 'Email address of the feed manager.', 'wp-product-feed-manager' ) . '</label></fieldset>
-				<p><i>' . esc_html__('Enter the email address of the person you want to be notified when a feed fails during an automatic feed update. This option requires an SMTP server for WordPress to be installed on your server. If no emails are received, consider using an SMTP plugin to improve email delivery.', 'wp-product-feed-manager') . '</i></p></fieldset>
+				. esc_html__( 'Email address(es) of the feed manager.', 'wp-product-feed-manager' ) . '</label></fieldset>
+				<p><i>' . esc_html__('Enter one or more comma-separated email addresses to be notified when a feed fails during an automatic feed update. This option requires an SMTP server for WordPress to be installed on your server. If no emails are received, consider using an SMTP plugin to improve email delivery.', 'wp-product-feed-manager') . '</i></p></fieldset>
 				</td></tr>';
 
 			echo '<tr vertical-align="top" class="wppfm-setting-selector">

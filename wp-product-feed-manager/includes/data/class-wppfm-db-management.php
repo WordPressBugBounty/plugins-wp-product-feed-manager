@@ -343,6 +343,16 @@ if ( ! class_exists( 'WPPFM_Db_Management' ) ) :
 		 * Clears several options that could hinder a new feed process.
 		 */
 		public static function clean_options_table() {
+			// Retry removal of temp artifacts that could not be deleted during promotion failure handling.
+			if ( function_exists( 'wppfm_purge_orphan_temporary_feed_cleanup_paths' ) ) {
+				wppfm_purge_orphan_temporary_feed_cleanup_paths();
+			}
+
+			// Remove any in-progress temporary feed file while batch metadata is still available.
+			if ( function_exists( 'wppfm_delete_active_batch_temporary_feed_file_if_present' ) ) {
+				wppfm_delete_active_batch_temporary_feed_file_if_present();
+			}
+
 			// @since 2.10.0.
 			delete_option( 'wppfm_processed_products' );
 
@@ -402,6 +412,8 @@ if ( ! class_exists( 'WPPFM_Db_Management' ) ) :
 				defined( 'WPPFM_TRANSIENT_LIVE' ) ? WPPFM_TRANSIENT_LIVE : DAY_IN_SECONDS
 			);
 
+			// Ensure deprecated queue cursor state does not leak into the next feed run.
+			delete_transient( 'wppfm_start_product_id' );
 			delete_transient( 'wppfm_feed_file_size' );
 		}
 

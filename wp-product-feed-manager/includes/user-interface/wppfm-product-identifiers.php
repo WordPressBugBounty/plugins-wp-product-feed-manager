@@ -57,6 +57,10 @@ add_action( 'wppfm_woocommerce_product_feed_panel', 'wppfm_create_gtin_wc_suppor
  * @since 3.12.0 - Switched to using an input filter to sanitize the input.
  */
 function wppfm_save_custom_fields( $post_id ) {
+	if ( ! wp_verify_nonce( filter_input( INPUT_POST, 'wppfm_exclude_from_feed_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm_exclude_from_feed_nonce_action' ) || ! current_user_can( 'edit_post', $post_id ) ) {
+		return;
+	}
+
 	$product = wc_get_product( $post_id );
 
 	// Get the custom fields' data.
@@ -122,6 +126,9 @@ add_action( 'woocommerce_variation_options', 'wppfm_create_mpn_wc_variation_supp
  * @since 3.12.0 - Switched to using an input filter to sanitize the input.
  */
 function wppfm_save_variation_custom_fields( $variation_id, $id ) {
+	if ( ! wp_verify_nonce( filter_input( INPUT_POST, 'wppfm_exclude_from_feed_nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm_exclude_from_feed_nonce_action' ) || ! current_user_can( 'edit_post', $variation_id ) ) {
+		return;
+	}
 
 	// Get the variations mpn and gtin.
 	$woocommerce_mpn_input = filter_input_array( INPUT_POST, ['wppfm_product_mpn' => [
@@ -193,6 +200,10 @@ add_action( 'woocommerce_product_quick_edit_start', 'wppfm_show_wc_quick_edit_cu
  */
 function wppfm_save_wc_quick_edit_custom_fields( $product ) {
 	if ( function_exists('wppfm_create_gtin_wc_support_field' ) ) {
+		if ( ! check_admin_referer( 'inlineeditnonce', '_inline_edit' ) || ! current_user_can( 'edit_post', $product->get_id() ) ) {
+			return;
+		}
+
 		// Get the custom fields' data.
 		$brand = filter_input( INPUT_POST, 'wppfm_product_brand', FILTER_SANITIZE_SPECIAL_CHARS ) ?? '';
 		$gtin  = filter_input( INPUT_POST, 'wppfm_product_gtin', FILTER_SANITIZE_SPECIAL_CHARS ) ?? '';

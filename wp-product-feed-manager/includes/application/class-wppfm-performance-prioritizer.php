@@ -226,6 +226,7 @@ if ( ! class_exists( 'WPPFM_Performance_Prioritizer' ) ) :
 		 */
 		private function fetch_metrics_via_temp_table( $product_ids, $period_days, $include_variations ) {
 			global $wpdb;
+			// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Dynamic placeholder token lists are composed of placeholders only; values are still bound via prepare().
 
 			// Sanitize the generated temporary table identifier before binding it as a SQL identifier.
 			$temp_table = $this->sanitize_sql_identifier( $wpdb->prefix . 'wppfm_perf_ids_' . wp_rand( 10000, 99999 ) );
@@ -322,6 +323,7 @@ if ( ! class_exists( 'WPPFM_Performance_Prioritizer' ) ) :
 
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- Temporary table teardown is paired with the create call above.
 			$wpdb->query( $wpdb->prepare( 'DROP TEMPORARY TABLE IF EXISTS %i', $temp_table ) );
+			// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 
 			$metrics = array();
 			if ( $results ) {
@@ -349,6 +351,7 @@ if ( ! class_exists( 'WPPFM_Performance_Prioritizer' ) ) :
 		 */
 		private function fetch_metrics_via_chunked_analytics( $product_ids, $period_days, $include_variations ) {
 			global $wpdb;
+			// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Dynamic IN() placeholder lists are composed of placeholders only; all values are still bound via prepare().
 
 			$chunk_size = (int) apply_filters( 'wppfm_performance_analytics_id_chunk_size', 2000 );
 			$chunk_size = max( 1, min( 5000, $chunk_size ) );
@@ -436,6 +439,7 @@ if ( ! class_exists( 'WPPFM_Performance_Prioritizer' ) ) :
 				}
 			}
 
+			// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 			return $metrics;
 		}
 
@@ -594,6 +598,7 @@ if ( ! class_exists( 'WPPFM_Performance_Prioritizer' ) ) :
 
 				if ( ! empty( $to_delete ) ) {
 					$delete_chunks = array_chunk( array_values( $to_delete ), $chunk_size );
+					// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Dynamic IN() placeholder lists are composed of placeholders only; values are still bound via prepare().
 					foreach ( $delete_chunks as $chunk ) {
 						$placeholders = implode( ',', array_fill( 0, count( $chunk ), '%d' ) );
 
@@ -608,6 +613,7 @@ if ( ! class_exists( 'WPPFM_Performance_Prioritizer' ) ) :
 							)
 						);
 					}
+					// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 				}
 			} else {
 				$this->_queries->delete_performance_rows_for_feed( $feed_id, $period_days );

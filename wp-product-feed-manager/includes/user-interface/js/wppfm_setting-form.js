@@ -1,65 +1,62 @@
 /*global wppfm_setting_form_vars */
-function wppfm_auto_feed_fix_changed() {
-	wppfm_auto_feed_fix_mode(
-		jQuery( '#wppfm-auto-feed-fix-mode' ).is( ':checked' ),
+/**
+ * Normalizes an Ajax "true"/"false" response string to a strict boolean.
+ *
+ * @param {*} response Raw response from the settings Ajax endpoint.
+ * @returns {boolean} True when the response indicates an enabled setting.
+ */
+function wppfm_isTrueResponse( response ) {
+	return 'true' === String( response ).trim().toLowerCase();
+}
+
+/**
+ * Persists a checkbox setting and synchronizes the control with the saved value.
+ *
+ * @param {string} checkboxSelector Checkbox selector.
+ * @param {Function} updater Ajax updater function.
+ * @param {string} settingLabel Label used in debug logs.
+ * @returns {void}
+ */
+function wppfm_updateCheckboxSetting( checkboxSelector, updater, settingLabel ) {
+	var checkboxElement = jQuery( checkboxSelector );
+	var requestedState = checkboxElement.is( ':checked' );
+
+	updater(
+		requestedState,
 		function( response ) {
-			console.log( 'Auto feed fix setting changed to ' + response );
+			var storedState = wppfm_isTrueResponse( response );
+			checkboxElement.prop( 'checked', storedState );
+			console.log( settingLabel + ' changed to ' + ( storedState ? 'true' : 'false' ) );
 		}
 	);
+}
+
+function wppfm_auto_feed_fix_changed() {
+	wppfm_updateCheckboxSetting( '#wppfm-auto-feed-fix-mode', wppfm_auto_feed_fix_mode, 'Auto feed fix setting' );
 }
 
 function wppfm_background_processing_mode_changed() {
-	wppfm_background_processing_mode(
-		jQuery( '#wppfm-background-processing-mode' ).is( ':checked' ),
-		function( response ) {
-			console.log( 'Background processing setting changed to ' + response );
-		}
-	);
+	wppfm_updateCheckboxSetting( '#wppfm-background-processing-mode', wppfm_background_processing_mode, 'Background processing setting' );
 }
 
 function wppfm_feed_logger_status_changed() {
-	wppfm_feed_logger_status(
-		jQuery( '#wppfm-process-logging-mode' ).is( ':checked' ),
-		function( response ) {
-			console.log( 'Feed process logger status changed to ' + response );
-		}
-	);
+	wppfm_updateCheckboxSetting( '#wppfm-process-logging-mode', wppfm_feed_logger_status, 'Feed process logger status' );
 }
 
 function wppfm_show_product_identifiers_changed() {
-	wppfm_show_pi_status(
-		jQuery( '#wppfm-product-identifiers' ).is( ':checked' ),
-		function( response ) {
-			console.log( 'Show Product Identifiers setting changed to ' + response );
-		}
-	);
+	wppfm_updateCheckboxSetting( '#wppfm-product-identifiers', wppfm_show_pi_status, 'Show Product Identifiers setting' );
 }
 
 function wppfm_manual_channel_update_changed() {
-	wppfm_switch_to_manual_channel_update(
-		jQuery( '#wppfm-manual-channel-update' ).is( ':checked' ),
-		function( response ) {
-			console.log( 'Manual Channels Update setting changed to ' + response );
-		}
-	);
+	wppfm_updateCheckboxSetting( '#wppfm-manual-channel-update', wppfm_switch_to_manual_channel_update, 'Manual Channels Update setting' );
 }
 
 function wppfm_wpml_use_full_resolution_urls_changed() {
-	wppfm_wpml_use_full_url_resolution(
-		jQuery( '#wppfm-wpml-use-full-resolution-urls' ).is( ':checked' ),
-		function( response ) {
-			console.log( 'WPML Use full resolution URLs setting changed to ' + response );
-		}
-	);
+	wppfm_updateCheckboxSetting( '#wppfm-wpml-use-full-resolution-urls', wppfm_wpml_use_full_url_resolution, 'WPML Use full resolution URLs setting' );
 }
 
 function wppfm_omit_price_filters_changed() {
-	wppfm_omit_price_filters(
-		jQuery( '#wppfm-omit-price-filters' ).is( ':checked' ),
-		function( response ) {
-			console.log( 'Omit price filters setting changed to ' + response );
-		}
-	);
+	wppfm_updateCheckboxSetting( '#wppfm-omit-price-filters', wppfm_omit_price_filters, 'Omit price filters setting' );
 }
 
 
@@ -74,7 +71,7 @@ function wppfm_third_party_attributes_changed() {
 }
 
 function wppfm_notice_mailaddress_changed() {
-	var newNoticeEmail = wppfm_sanitizeEmail( jQuery( '#wppfm-notice-mailaddress' ).val() );
+	var newNoticeEmail = wppfm_sanitizeNoticeRecipientList( jQuery( '#wppfm-notice-mailaddress' ).val() );
 	if ( newNoticeEmail ) {
 		wppfm_change_notice_mailaddress(
 				newNoticeEmail,
@@ -94,6 +91,40 @@ function wppfm_notice_mailaddress_changed() {
 	} else {
 		alert( wppfm_setting_form_vars.invalid_email_address );
 	}
+}
+
+/**
+ * Sanitizes and validates a comma-separated list of email addresses.
+ *
+ * @param {string} rawRecipients Raw recipient input.
+ * @returns {string} Normalized comma-separated email list or an empty string.
+ */
+function wppfm_sanitizeNoticeRecipientList( rawRecipients ) {
+	var recipients = String( rawRecipients || '' )
+		.split( ',' )
+		.map(
+			function( recipient ) {
+				return wppfm_sanitizeEmail( recipient.trim() );
+			}
+		)
+		.filter(
+			function( recipient ) {
+				return recipient !== '';
+			}
+		);
+
+	var uniqueRecipients = [];
+
+	// Keep the original order while removing duplicates.
+	recipients.forEach(
+		function( recipient ) {
+			if ( uniqueRecipients.indexOf( recipient ) === -1 ) {
+				uniqueRecipients.push( recipient );
+			}
+		}
+	);
+
+	return uniqueRecipients.join( ',' );
 }
 
 function wppfm_clear_feed_process() {

@@ -55,7 +55,15 @@ function wppfm_on_own_main_plugin_page() {
 }
 
 function wppfm_get_url_parameter( $parameter_name ) {
-	$result = filter_input( INPUT_GET, $parameter_name, FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+	// URL parameters are only used to resolve admin-view context.
+	// Guard against early bootstrap calls where pluggable auth functions are not loaded yet.
+	if ( ! is_admin() ) {
+		return null;
+	}
+
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- This helper resolves read-only UI context from query args and does not trigger state-changing actions.
+	$result = isset( $_GET[ $parameter_name ] ) ? sanitize_text_field( wp_unslash( $_GET[ $parameter_name ] ) ) : null;
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	switch ( $parameter_name ) {
 		case 'id':

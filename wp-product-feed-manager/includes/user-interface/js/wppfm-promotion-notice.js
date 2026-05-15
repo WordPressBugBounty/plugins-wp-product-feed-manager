@@ -1,5 +1,3 @@
-var ajax_object;
-
 ( function() {
 
 	jQuery( '#wppfm-dismiss-promotion-notice, #wppfm-dismiss-promotion-notice-link' ).on(
@@ -11,6 +9,7 @@ var ajax_object;
 						ajax_object.ajax_url,
 						{
 							action: 'wppfm-ajax-cancel-promotion-notice',
+							cancelPromotionNonce: ajax_object.cancelPromotionNonce,
 						},
 						function( response ) {
 							console.log(response);

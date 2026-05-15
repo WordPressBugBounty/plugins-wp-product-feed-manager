@@ -81,4 +81,4 @@ if ( ! class_exists( 'WPPPFM_Register_Scripts' ) ) :
 
 endif;
 
-$my_wpppfm_ajax_registration_class = new WPPPFM_Register_Scripts();
+$wpppfm_ajax_registration_class = new WPPPFM_Register_Scripts();

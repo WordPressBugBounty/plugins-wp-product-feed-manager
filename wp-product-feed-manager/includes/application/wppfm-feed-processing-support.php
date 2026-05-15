@@ -153,7 +153,7 @@ trait WPPFM_Processing_Support {
 
 		$value_object = json_decode( $value_string );
 
-		if ( $value_object && property_exists( $value_object, 'm' ) ) {
+		if ( is_object( $value_object ) && property_exists( $value_object, 'm' ) ) {
 			foreach ( $value_object->m as $source ) {
 				// TODO: I guess I should further reduce the "if" loops by combining them more then now
 				if ( is_object( $source ) && property_exists( $source, 's' ) ) {
@@ -185,7 +185,7 @@ trait WPPFM_Processing_Support {
 
 		$value_object = json_decode( $value_string );
 
-		if ( $value_object && property_exists( $value_object, 'm' ) ) {
+		if ( is_object( $value_object ) && property_exists( $value_object, 'm' ) ) {
 			foreach ( $value_object->m as $source ) {
 				if ( is_object( $source ) && property_exists( $source, 'c' ) ) {
 					for ( $i = 0; $i < count( $source->c ); $i ++ ) {
@@ -210,9 +210,9 @@ trait WPPFM_Processing_Support {
 
 		$value_object = json_decode( $value_string );
 
-		if ( $value_object && property_exists( $value_object, 'v' ) ) {
+		if ( is_object( $value_object ) && property_exists( $value_object, 'v' ) ) {
 			foreach ( $value_object->v as $changed_value ) {
-				if ( property_exists( $changed_value, 'q' ) ) {
+				if ( is_object( $changed_value ) && property_exists( $changed_value, 'q' ) ) {
 					for ( $i = 0; $i < count( $changed_value->q ); $i ++ ) {
 						$query_columns[] = $this->get_names_from_string( $changed_value->q[ $i ]->{$i + 1} );
 					}
@@ -1370,7 +1370,9 @@ trait WPPFM_Processing_Support {
 			return '';
 		}
 
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WPML exposes this public hook name for object translation lookup.
 		if ( has_filter( 'wpml_object_id' ) && is_plugin_active( 'wpml-media-translation/plugin.php' ) ) {
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WPML exposes this public hook name for object translation lookup.
 			$translated_id = apply_filters( 'wpml_object_id', $attachment_id, 'attachment', true, $selected_language );
 			$attachment_id = $translated_id ? $translated_id : $attachment_id;
 		}
@@ -1451,6 +1453,7 @@ trait WPPFM_Processing_Support {
 		}
 
 		// WooCommerce Brands plugin.
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Core uses the unprefixed `active_plugins` option hook for plugin list filtering.
 		if ( in_array( 'woocommerce-brands/woocommerce-brands.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ), true ) ) {
 
 			if ( has_term( '', 'product_brand', $product_id ) ) {
@@ -2263,6 +2266,7 @@ private function get_localized_price_for_country( $product, $raw_price, $feed_co
     $converted_price   = $raw_price;
     $resolved_currency = $feed_currency ? $feed_currency : get_woocommerce_currency();
     if ( defined( 'ICL_SITEPRESS_VERSION' ) ) {
+        // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WCML exposes this public hook for raw currency conversion.
         $converted_price = apply_filters( 'wcml_raw_price_amount', $raw_price, $resolved_currency );
     }
 
@@ -2351,6 +2355,7 @@ private function get_localized_price_ex_tax_for_country( $product, $raw_price, $
     }
 
     $net_converted = defined( 'ICL_SITEPRESS_VERSION' )
+        // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WCML exposes this public hook for raw currency conversion.
         ? apply_filters( 'wcml_raw_price_amount', $net_store_currency, $resolved_currency )
         : $net_store_currency;
 

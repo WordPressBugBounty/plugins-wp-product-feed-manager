@@ -87,24 +87,54 @@ function wppfm_handle_wp_errors_response( $response, $message ) {
 }
 
 /**
- * Enables writing log files in the plugin folder.
+ * Returns an absolute path for a log file under the uploads directory (WPPFM_LOGGINGS_DIR / wppfm-logs).
+ *
+ * Plugin review: logs must never be written under the plugin package directory. This uses the same
+ * uploads-backed folder as feed process logging.
+ *
+ * @since 3.23.0
+ *
+ * @param string $filename_base Log file base name without extension (e.g. debug, http_request_error).
+ * @return string Full path to the .log file.
+ */
+function wppfm_get_plugin_log_file_path( $filename_base ) {
+	$safe_base = sanitize_file_name( (string) $filename_base );
+
+	if ( '' === $safe_base ) {
+		$safe_base = 'debug';
+	}
+
+	if ( defined( 'WPPFM_LOGGINGS_DIR' ) ) {
+		$log_dir = WPPFM_LOGGINGS_DIR;
+	} else {
+		$upload = wp_upload_dir( null, false );
+
+		if ( ! empty( $upload['error'] ) ) {
+			// Avoid the plugin directory if uploads are misconfigured; still keep outside wp-content/plugins.
+			$log_dir = WP_CONTENT_DIR . '/wppfm-logs';
+		} else {
+			$log_dir = trailingslashit( $upload['basedir'] ) . 'wppfm-logs';
+		}
+	}
+
+	$log_dir = untrailingslashit( $log_dir );
+	wp_mkdir_p( $log_dir );
+
+	return $log_dir . '/' . $safe_base . '.log';
+}
+
+/**
+ * Writes a line to a log file under the uploads directory (never inside the plugin folder).
  *
  * @since 1.5.1
- * @since 2.41.0 error log files should go to the wp-content folder.
- * @since 2.42.0 fixed an error where the error file was not placed in the wp-content folder.
+ * @since 2.41.0 Error log files moved toward wp-content; @since 2.42.0 path fixes.
+ * @since 3.23.0 All log names use WPPFM_LOGGINGS_DIR / uploads (Plugin Directory guideline).
  *
  * @param string $error_message The error message to write.
- * @param string $filename      The file name in which the error message is written (default 'error').
+ * @param string $filename      Base log file name without extension (default 'debug').
  */
 function wppfm_write_log_file( $error_message, $filename = 'debug' ) {
-	if ( 'error' === $filename ) {
-		// Get content directory using wp_upload_dir() and navigating up one level.
-		$upload_dir = wp_upload_dir();
-		$content_dir = dirname( $upload_dir['basedir'] );
-		$file = $content_dir . '/' . $filename . '.log';
-	} else {
-		$file = WPPFM_PLUGIN_DIR . $filename . '.log';
-	}
+	$file = wppfm_get_plugin_log_file_path( $filename );
 
 	if ( is_null( $error_message ) || is_string( $error_message ) || is_int( $error_message ) || is_bool( $error_message ) || is_float( $error_message ) ) {
 		$message_line = $error_message;
@@ -171,19 +201,20 @@ function wppfm_you_have_no_woocommerce_installed_message() {
 }
 
 /**
- * Writes an http_requests_error.log file in the plugin folder when there is a normal http request failed.
+ * Appends failed HTTP request details to http_request_error.log under the uploads log directory.
  *
  * @since 1.9.0
+ * @since 3.23.0 Log file stored in WPPFM_LOGGINGS_DIR instead of the plugin directory.
  *
- * @param string $response
- * @param array  $args
- * @param string $url
+ * @param string|WP_Error $response HTTP response or WP_Error.
+ * @param array           $args     Request arguments.
+ * @param string          $url      Request URL.
  *
- * @return string
+ * @return string|WP_Error Unchanged $response.
  */
 function wppfm_log_http_requests( $response, $args, $url ) {
-	if ( false !== is_wp_error( $response ) && wppfm_on_any_own_plugin_page() ) {
-		$logfile = WPPFM_PLUGIN_DIR . 'http_request_error.log';
+	if ( is_wp_error( $response ) && wppfm_on_any_own_plugin_page() ) {
+		$logfile = wppfm_get_plugin_log_file_path( 'http_request_error' );
 		wppfm_append_line_to_file( $logfile, sprintf( "### %s, URL: %s\r\nREQUEST: %sRESPONSE: %s\r\n", gmdate( 'c' ), $url, wp_json_encode( $args, true ), wp_json_encode( $response, true ) ) );
 	}
 

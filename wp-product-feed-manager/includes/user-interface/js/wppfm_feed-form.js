@@ -157,7 +157,8 @@ function wppfm_constructNewFeed() {
 	var mainCategory      = mainCategorySelectElement && mainCategorySelectElement.options[ mainCategorySelectedIndex ] ? mainCategorySelectElement.options[ mainCategorySelectedIndex ].text : 'dummy_category_for_supplemental_feeds';
 	var categoryMapping   = [];
 	var channel           = document.getElementById( 'wppfm-merchants-selector' ).value;
-	var variations        = document.getElementById( 'variations' ).checked ? 1 : 0;
+	var variationElement  = document.getElementById( 'variations' );
+	var variations        = variationElement && variationElement.checked ? 1 : 0;
 	var aggregator        = document.getElementById( 'aggregator' ).checked ? 1 : 0;
 	var country           = document.getElementById( 'wppfm-countries-selector' ).value;
 	var language          = document.getElementById( 'language' ) === null ? '' : document.getElementById( 'language' ).value;
@@ -303,8 +304,7 @@ function wppfm_finishOrUpdateFeedPage( categoryChanged ) {
 				// set the correct level of the attributes
 				_feedHolder = wppfm_setOutputAttributeLevels( selectedChannelValue, _feedHolder, attributeLevelArgs );
 
-				wppfm_makeFeedFilterWrapper( _feedHolder[ 'feedId' ], _feedHolder[ 'feedFilter' ] );
-
+			
 				if ( categoryChanged ) {
 					_feedHolder[ 'mainCategory' ] = lvl0Element.val() ? lvl0Element.val() : jQuery( '#free-category-text-input' ).val();
 					_feedHolder.setMainCategory( 'lvl_0', lvl0Element.val(), selectedChannelValue );
@@ -520,7 +520,6 @@ function wppfm_editExistingFeed( feedId ) {
 	// set the correct level of the attributes
 	_feedHolder = wppfm_setOutputAttributeLevels( _feedHolder[ 'channel' ], _feedHolder, attributeLevelArgs );
 
-	wppfm_makeFeedFilterWrapper( _feedHolder[ 'feedId' ], _feedHolder[ 'feedFilter' ] );
 
 	// draws the attribute mapping section on the form
 	wppfm_drawAttributeMappingSection();
@@ -1058,6 +1057,7 @@ function wppfm_feedProcessStatusCheck( feedId, repeatTime ) {
 
 			var feedTypes = [ 'products', 'reviews', 'promotions', 'products',  'products', 'cars', 'products'];
 			var itemName = feedTypes[ parseInt( status[ 'feed_type_id' ] ) - 1 ];
+			var validationFailureMessage = status[ 'validation_failure_message' ] ? String( status[ 'validation_failure_message' ] ) : '';
 
 			wppfm_enableFeedActionButtons( wppfm_getUrlParameter( 'feed-type' ) );
 
@@ -1066,6 +1066,20 @@ function wppfm_feedProcessStatusCheck( feedId, repeatTime ) {
 			var isFeedProcessActive = ( '3' === status[ 'status_id' ] || '4' === status[ 'status_id' ] );
 			if ( isFeedProcessActive ) {
 				wppfm_disableViewFeedButtons();
+			}
+
+			if ( validationFailureMessage ) {
+				successErrorMessageElement.hide();
+				wppfm_closeProgressBar();
+				wppfm_storeFeedUrlInSourceData( status[ 'url' ] );
+				wppfm_enableViewFeedButtons();
+				wppfm_showErrorMessage( validationFailureMessage );
+				window.clearInterval( wppfmStatusCheck );
+				_wppfmFeedStatusCheckIntervalId = null;
+				if ( _wppfmFeedGenerationSession && String( _wppfmFeedGenerationSession.feedId ) === String( feedId ) ) {
+					_wppfmFeedGenerationSession = null;
+				}
+				return;
 			}
 
 			switch ( status[ 'status_id' ] ) {
@@ -1314,13 +1328,7 @@ function wppfm_getCategoryChildren( parentCategoryId ) {
 	return feedSelectorElement.attr( 'data-children' ) ? JSON.parse( feedSelectorElement.attr( 'data-children' ) ) : [];
 }
 
- function wppfm_variationSelectionChanged() {
- 	alert( wppfm_feed_settings_form_vars.variation_only_for_premium );
- 	_feedHolder.changeIncludeVariations( false );
- 	jQuery( '#variations' ).prop( 'checked', false );
- }
-
-function wppfm_aggregatorChanged() {
+ function wppfm_aggregatorChanged() {
 	if ( jQuery( '#aggregator' ).is( ':checked' ) ) {
 		_feedHolder.changeAggregator( true );
 		_feedHolder.attributes[ 8 ][ 'fieldLevel' ] = '1';
@@ -3265,17 +3273,11 @@ function wppfm_hideFeedFormMainInputs() {
 	jQuery( '#add-product-variations-row' ).hide();
 }
 
- function wppfm_editFeedFilter( feedId ) {
- 	alert( wppfm_feed_settings_form_vars.advanced_filter_only_for_premium );
- }
-
  function wppfm_makeFeedFilterWrapper( feedId, filter ) {
- 	var	htmlCode = wppfm_feed_settings_form_vars.all_products_included;
- 	htmlCode += '<span id="wppfm-filter-edit-text" style="display:initial;"> (<a class="edit-feed-filter wppfm-btn wppfm-btn-small" href="javascript:void(0)" id="wppfm-edit-feed-filters';
- 	htmlCode += '" onclick="wppfm_editFeedFilter(' + feedId + ')">' + wppfm_feed_settings_form_vars.edit + '</a>)</span>';
- 	jQuery( '#wppfm-main-product-filter-section-body' ).html( htmlCode );
- 	jQuery( '#wppfm-main-product-filter-wrapper' ).show();
- }
+	// Product Filter UI is disabled in free builds; keep this as a no-op for shared JS callers.
+	return;
+}
+
 
 function wppfm_getCombinedSeparatorList( selectedValue ) {
 
@@ -3332,7 +3334,9 @@ function updateFeedFormAfterInputChanged( feedId, categoryChanged ) {
  */
 function wppfm_resetFormElementIds( feedId ) {
 	var filterSelector = document.getElementById( 'wppfm-edit-feed-filters' );
-	filterSelector.setAttribute( 'onclick', 'wppfm_editFeedFilter(' + feedId + ')' );
+	if ( filterSelector ) {
+		filterSelector.setAttribute( 'onclick', 'wppfm_editFeedFilter(' + feedId + ')' );
+	}
 }
 
 function wppfm_showCorrectInputElementsForFeedType( feedType ) {

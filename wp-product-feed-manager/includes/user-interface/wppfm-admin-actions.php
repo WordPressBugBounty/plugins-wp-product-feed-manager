@@ -83,7 +83,7 @@ add_action( 'wppfm_daily_event', 'wppfm_check_backups' );
  *
  * @global WPPFM_Feed_Processor $wppfm_background_process
  */
-function initiate_background_process() {
+function wppfm_initiate_background_process() {
 	global $wppfm_background_process;
 
 	$feed_type = filter_input( INPUT_GET, 'feed-type', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
@@ -127,7 +127,7 @@ function initiate_background_process() {
 	}
 }
 
-add_action( 'wp_loaded', 'initiate_background_process' );
+add_action( 'wp_loaded', 'wppfm_initiate_background_process' );
 
 /**
  * Sets a day event schedule that can be used to activate important actions that need to run only once a day. Gets triggered by the wp_loaded action.

@@ -15,9 +15,10 @@
 				option_name = attr_value.join( '-' );
 
 				data = {
-				'action': 'wppfm_dismiss_admin_notice',
+					'action': 'wppfm_dismiss_admin_notice',
 					'option_name': option_name,
 					'dismissible_length': dismissible_length,
+					'nonce': typeof wppfmDismissNotice !== 'undefined' ? wppfmDismissNotice.nonce : '',
 				};
 
 				// We can also pass the url value separately from ajax url for front end AJAX implementations.

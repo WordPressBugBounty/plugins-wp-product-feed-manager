@@ -36,7 +36,6 @@ if ( ! class_exists( 'WPPFM_Product_Feed_Category_Wrapper' ) ) :
 			echo '</tbody></table></section>';
 
 			// Add the product filter element.
-			$this->product_filter();
 
 			echo '</section>';
 		}

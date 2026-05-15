@@ -102,6 +102,34 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	protected $heartbeat_key = null;
 
 	/**
+	 * Final published feed path when the batch writes to a temporary file first (regular product feeds).
+	 *
+	 * @var string
+	 */
+	protected $batch_final_feed_file_path = '';
+
+	/**
+	 * Temporary processing path paired with {@see WPPFM_Background_Process::$batch_final_feed_file_path}.
+	 *
+	 * @var string
+	 */
+	protected $batch_temporary_feed_file_path = '';
+
+	/**
+	 * Incremental queue runtime state persisted in batch metadata.
+	 *
+	 * @var array
+	 */
+	protected $incremental_state = array();
+
+	/**
+	 * Whether this batch uses a temporary feed file that maps to {@see WPPFM_Background_Process::$batch_temporary_feed_file_path}.
+	 *
+	 * @var bool
+	 */
+	protected $use_temporary_feed_file_for_batch = false;
+
+	/**
 	 * Cached process-lock key for this background process identifier.
 	 *
 	 * @var string|null
@@ -120,6 +148,13 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	 * @var string|null
 	 */
 	protected $process_owner_id = null;
+
+	/**
+	 * Sanitized feed identifier captured from the validated background request.
+	 *
+	 * @var string
+	 */
+	protected $request_feed_id = '';
 
 	/**
 	 * Initiate a new background process
@@ -192,6 +227,7 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	 * @return int
 	 */
 	protected function get_process_heartbeat_ttl() {
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Dynamic hook is intentionally namespaced by this process identifier to allow per-process overrides.
 		$ttl = apply_filters( $this->identifier . '_process_heartbeat_ttl', 10 * MINUTE_IN_SECONDS );
 
 		return max( 60, intval( $ttl ) );
@@ -203,6 +239,7 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	 * @return int
 	 */
 	protected function get_process_lock_stale_seconds() {
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Dynamic hook is intentionally namespaced by this process identifier to allow per-process overrides.
 		$stale = apply_filters( $this->identifier . '_process_lock_stale_seconds', 15 * MINUTE_IN_SECONDS );
 
 		return max( 60, intval( $stale ) );
@@ -327,6 +364,23 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	}
 
 	/**
+	 * Stores final and temporary output paths for batch metadata (regular product feeds).
+	 *
+	 * @param string $final_path      Absolute path to the published feed file.
+	 * @param string $temporary_path  Absolute path to the active processing file (same as file_path when using a temp artifact).
+	 * @param bool   $use_temporary   True when generation writes to the temporary path first.
+	 *
+	 * @return $this
+	 */
+	public function set_temporary_feed_batch_paths( $final_path, $temporary_path, $use_temporary ) {
+		$this->batch_final_feed_file_path      = (string) $final_path;
+		$this->batch_temporary_feed_file_path  = (string) $temporary_path;
+		$this->use_temporary_feed_file_for_batch = (bool) $use_temporary;
+
+		return $this;
+	}
+
+	/**
 	 * Set the language of the feed
 	 *
 	 * @param object $feed_data  The feed data.
@@ -379,6 +433,19 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	}
 
 	/**
+	 * Stores incremental queue runtime state for metadata persistence.
+	 *
+	 * @param array $incremental_state Runtime state used by incremental feed discovery.
+	 *
+	 * @return $this
+	 */
+	public function set_incremental_state( $incremental_state ) {
+		$this->incremental_state = is_array( $incremental_state ) ? $incremental_state : array();
+
+		return $this;
+	}
+
+	/**
 	 * Save queue data.
 	 *
 	 * @param string $feed_id   The feed id.
@@ -402,6 +469,19 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 				'channel_details' => $this->channel_details,
 				'relations_table' => $this->relations_table,
 			);
+
+			if ( isset( $this->incremental_state ) && is_array( $this->incremental_state ) ) {
+				$batch_metadata['incremental_state'] = $this->incremental_state;
+			}
+
+			// Regular product feeds: persist both paths so completion can promote the temp file without touching the live feed mid-run.
+			$raw_feed_type_id = isset( $this->feed_data->feedTypeId ) ? (string) $this->feed_data->feedTypeId : '1';
+			$normalized_type  = ( '' === $raw_feed_type_id ) ? '1' : $raw_feed_type_id;
+			if ( '1' === $normalized_type && $this->use_temporary_feed_file_for_batch ) {
+				$batch_metadata['final_file_path']      = $this->batch_final_feed_file_path;
+				$batch_metadata['temporary_file_path']  = $this->batch_temporary_feed_file_path;
+				$batch_metadata['use_temporary_file']   = true;
+			}
 
 			update_site_option( 'wppfm_background_process_key', $key );
 			update_site_option( $key, $this->data );
@@ -457,11 +537,22 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	/**
 	 * Delete queue and properties stored in the options table
 	 *
+	 * When a regular feed uses a temporary artifact, batch metadata and the background key must stay
+	 * available until {@see WPPFM_Feed_Processor::complete()} finishes promotion (watchdog + failure cleanup).
+	 *
 	 * @param string $key Key.
 	 */
 	public function delete( $key ) {
-		delete_site_option( 'wppfm_background_process_key' );
+		$batch_metadata = get_site_option( 'wppfm_batch_metadata_' . $key, array() );
+		$defer_cleanup  = is_array( $batch_metadata ) && ! empty( $batch_metadata['use_temporary_file'] );
+
+		// Always drop the drained product queue option; metadata/key may be retained for the completion window.
 		delete_site_option( $key );
+
+		if ( ! $defer_cleanup ) {
+			delete_site_option( 'wppfm_background_process_key' );
+			delete_site_option( 'wppfm_batch_metadata_' . $key );
+		}
 
 		if ( apply_filters( 'wppfm_enable_feed_state_logging', false ) ) {
 			do_action(
@@ -502,30 +593,48 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 		// Don't lock up other requests while processing.
 		session_write_close();
 
+		$feed_id = filter_input( INPUT_GET, 'feed_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$this->request_feed_id = is_string( $feed_id ) ? $feed_id : '';
+
 		$background_mode_disabled = get_option( 'wppfm_disabled_background_mode', 'false' );
 
 		if ( $this->is_queue_empty() ) {
-			$feed_id = filter_input( INPUT_GET, 'feed_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 			$message = 'Tried to start a new batch but the queue is empty!';
 			do_action( 'wppfm_feed_generation_message', $feed_id, $message, 'ERROR' );
 			// No data to process.
 			wp_die();
 		}
 
-		if ( 'false' === $background_mode_disabled ) {
-			check_ajax_referer( $this->identifier, 'nonce' );
+		// Always enforce authorization for external AJAX entrypoints.
+		// Foreground mode dispatches internally in the same request and therefore has no standalone nonce payload.
+		if ( ! $this->is_internal_dispatch_context() ) {
+			$nonce = filter_input( INPUT_GET, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+
+			if ( ! is_string( $nonce ) || '' === $nonce || ! wp_verify_nonce( $nonce, $this->identifier ) ) {
+				do_action( 'wppfm_feed_generation_message', $feed_id, 'Unauthorized background-process request rejected due to invalid nonce.', 'ERROR' );
+				wp_die( esc_html__( 'You are not allowed to do this.', 'wp-product-feed-manager' ) );
+			}
+
+			if ( ! current_user_can( 'edit_feeds' ) ) {
+				do_action( 'wppfm_feed_generation_message', $feed_id, 'Unauthorized background-process request rejected due to missing capability.', 'ERROR' );
+				wp_die( esc_html__( 'You are not allowed to do this.', 'wp-product-feed-manager' ) );
+			}
 		}
 
 		// Acquire the existing process lock before entering handle() so two accepted
 		// loopback requests cannot both pass the pre-flight checks and start processing.
 		$this->lock_process();
 
+		// The next worker successfully took over, so the previous batch handoff is no longer pending.
+		if ( $feed_id && class_exists( 'WPPFM_Feed_Controller' ) ) {
+			WPPFM_Feed_Controller::clear_feed_handoff_marker( $feed_id );
+		}
+
 		// Another request may have drained the queue while this request was waiting for
 		// the lock, so validate again before we start reading batch state.
 		if ( $this->is_queue_empty() ) {
-			$feed_id = filter_input( INPUT_GET, 'feed_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 			$message = 'Tried to start a new batch after acquiring the process lock, but the queue is empty!';
-			do_action( 'wppfm_feed_generation_message', $feed_id, $message, 'WARNING' );
+			do_action( 'wppfm_feed_generation_message', $this->request_feed_id, $message, 'WARNING' );
 			$this->unlock_process();
 			wp_die();
 		}
@@ -720,6 +829,7 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 		$this->start_time = time(); // Set start time of a current process.
 
 		$lock_duration = ( property_exists( $this, 'queue_lock_time' ) ) ? $this->queue_lock_time : 120; // 2 minutes
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Dynamic hook is intentionally namespaced by this process identifier to allow per-process lock TTL overrides.
 		$lock_duration = apply_filters( $this->identifier . '_queue_lock_time', $lock_duration );
 		$lock_duration = max( 60, intval( $lock_duration ) );
 
@@ -835,6 +945,7 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 		}
 
 		$lock_duration = ( property_exists( $this, 'queue_lock_time' ) ) ? $this->queue_lock_time : 120;
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Dynamic hook is intentionally namespaced by this process identifier to allow per-process lock TTL overrides.
 		$lock_duration = apply_filters( $this->identifier . '_queue_lock_time', $lock_duration );
 		$lock_duration = max( 60, intval( $lock_duration ) );
 
@@ -940,9 +1051,8 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 			$batch = $this->get_batch();
 
 			if ( ! $batch ) { // @since 2.10.0
-				$feed_id = filter_input( INPUT_GET, 'feed_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 				$message = 'Could not get the next batch data!';
-				do_action( 'wppfm_feed_generation_message', $feed_id, $message, 'ERROR' );
+				do_action( 'wppfm_feed_generation_message', $this->request_feed_id, $message, 'ERROR' );
 				$this->end_batch( 'unknown', 'failed' );
 				return false;
 			}
@@ -984,9 +1094,8 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 
 			// @since 2.10.0
 			if ( ! $properties_key ) {
-				$feed_id = filter_input( INPUT_GET, 'feed_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 				$message = 'Tried to get the next batch but the batch key is empty.';
-				do_action( 'wppfm_feed_generation_message', $feed_id, $message, 'ERROR' );
+				do_action( 'wppfm_feed_generation_message', $this->request_feed_id, $message, 'ERROR' );
 				$this->end_batch( 'unknown', 'failed' );
 				return false;
 			}
@@ -998,7 +1107,7 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 				$message = sprintf( 'Could not load batch metadata for key: %s. Aborting feed processing.', $properties_key );
 				do_action( 'wppfm_feed_generation_message', 'unknown', $message, 'ERROR' );
 
-				$feed_id_from_request = filter_input( INPUT_GET, 'feed_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+				$feed_id_from_request = $this->request_feed_id;
 				$resolved_feed_id     = $feed_id_from_request ? $feed_id_from_request : get_transient( 'wppfm_active_feed_id' );
 
 				$this->end_batch( $resolved_feed_id ? $resolved_feed_id : 'unknown', 'failed' );
@@ -1035,6 +1144,9 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 				return false;
 			}
 
+			// Incremental mode keeps only runtime state in metadata and loads product slices on demand.
+			$batch = $this->maybe_prepare_incremental_batch_data( $batch, $batch_metadata, $properties_key, $feed_data );
+
 			// @since 2.12.0
 			$this->products_handled_in_batch = 0;
 
@@ -1070,11 +1182,11 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 					$this->last_lock_refresh = $current_time;
 				}
 
-				// Every queue entry that reaches this point is considered a handled item,
-				// regardless of whether it will eventually be added to the feed or filtered out.
-				// This allows the feed watchdog to detect forward progress even when the file
-				// no longer grows because all remaining products are filtered out.
-				$handled_items_count++;
+				// Only product queue items are counted as handled work so remaining-work totals
+				// stay aligned with product-only discovery totals.
+				if ( $this->is_product_queue_item( $value ) ) {
+					$handled_items_count++;
+				}
 
 				// Persist the handled-items counter periodically to reduce database writes.
 				if ( $handled_items_count % $this->progress_update_interval === 0 ) {
@@ -1117,7 +1229,6 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 					if ( method_exists( $this, 'flush_file_buffer' ) ) {
 						$this->flush_file_buffer();
 					}
-					$this->delete( $batch->key );
 					break;
 				}
 			}
@@ -1127,7 +1238,7 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 				$message = sprintf( 'Updated the batch data in the site options store for the next batch. Using key %s', $batch->key );
 				do_action( 'wppfm_feed_generation_message', $feed_id, $message ); // @since 2.35.0
 				$this->update( $batch->key, $batch->data );
-			} else {
+			} elseif ( $this->can_finalize_incremental_batch( $batch_metadata ) ) {
 				// Queue is about to be cleared, preserve feed context so complete() can restore it even if a loopback fails.
 				if ( method_exists( $this, 'preserve_feed_context_for_completion' ) ) {
 					$this->preserve_feed_context_for_completion( $feed_id, $batch->key );
@@ -1137,7 +1248,11 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 				$message = sprintf( 'No more products in the batch, so we can clear the batch data from the site options. Used key = %s', $batch->key );
 				do_action( 'wppfm_feed_generation_message', $feed_id, $message ); // @since 2.35.0
 				$this->delete( $batch->key );
-				WPPFM_Feed_Controller::remove_id_from_feed_queue( $feed_id );
+				// Defer remove_id_from_feed_queue until complete() or terminal failure handlers so wppfm_clear_feed_process_data()
+				// does not wipe batch metadata before temporary-file promotion runs.
+			} else {
+				// Keep incremental batches alive until discovery and footer processing are fully complete.
+				$this->update( $batch->key, array( array( 'load_next_slice' => true ) ) );
 			}
 		} while ( ! $this->time_exceeded( $feed_id, true ) && ! $this->memory_exceeded( $feed_id ) && ! $this->is_queue_empty() );
 
@@ -1145,8 +1260,6 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 		if ( method_exists( $this, 'flush_file_buffer' ) ) {
 			$this->flush_file_buffer();
 		}
-
-		$this->unlock_process();
 
 		// Persist the final processed counter for both continuation and completion paths.
 		// The completion routine reads this transient to store the final product count on the feed record.
@@ -1160,13 +1273,16 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 			set_transient( 'wppfm_nr_of_processed_products', $total_handled_products );
 			set_transient( 'wppfm_nr_of_handled_items', $handled_items_count );
 
-			// @since 2.3.0
-			do_action( 'wppfm_activated_next_batch', $feed_id );
 
 			// @since 2.11.0
 			// The feed process is still running so update the file grow monitor to prevent it from initiating a failed feed.
 			WPPFM_Feed_Controller::update_file_grow_monitoring_timer();
 
+			// Mark the intentional lock gap so startup and watchdog logic do not treat this handoff as an idle queue.
+			WPPFM_Feed_Controller::mark_feed_handoff_pending( $feed_id );
+
+			// Release lock before dispatch so the next async request can acquire it immediately.
+			$this->unlock_process();
 			$this->dispatch( $feed_id );
 		} else {
 			// Queue is empty - finalize the feed.
@@ -1203,6 +1319,7 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 			$return = true;
 		}
 
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Dynamic hook is intentionally namespaced by this process identifier to allow per-process memory checks.
 		return apply_filters( $this->identifier . '_memory_exceeded', $return );
 	}
 
@@ -1251,6 +1368,7 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 			$return = true;
 		}
 
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Dynamic hook is intentionally namespaced by this process identifier to allow per-process timeout checks.
 		return apply_filters( $this->identifier . '_time_exceeded', $return );
 	}
 
@@ -1264,6 +1382,10 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	 */
 	protected function end_batch( $feed_id, $status = 'ready' ) {
 		$this->clear_the_queue();
+
+		if ( $feed_id && class_exists( 'WPPFM_Feed_Controller' ) ) {
+			WPPFM_Feed_Controller::clear_feed_handoff_marker( $feed_id );
+		}
 
 		// Check for silent mode before any cleanup (used for failure email below).
 		$was_running_silent = (bool) get_transient( 'wppfm_running_silent' );
@@ -1294,6 +1416,9 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 				);
 			}
 		}
+
+		// Release the processing lock only after completion/failure handling has settled queue metadata.
+		$this->unlock_process();
 
 		if ( ! WPPFM_Feed_Controller::feed_queue_is_empty() ) {
 			do_action( 'wppfm_activated_next_feed', WPPFM_Feed_Controller::get_next_id_from_feed_queue() );
@@ -1334,9 +1459,11 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	 * @return mixed
 	 */
 	public function schedule_cron_health_check( $schedules ) {
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Dynamic hook is intentionally namespaced by this process identifier to allow per-process cron interval overrides.
 		$interval = apply_filters( $this->identifier . '_cron_interval', 5 );
 
 		if ( property_exists( $this, 'cron_interval' ) ) {
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Dynamic hook is intentionally namespaced by this process identifier to allow per-process cron interval overrides.
 			$interval = apply_filters( $this->identifier . '_cron_interval', $this->cron_interval_identifier );
 		}
 
@@ -1527,6 +1654,225 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 
 		return array_values( array_unique( array_filter( $product_ids ) ) );
 	}
+
+	/**
+	 * Loads active queue data from incremental metadata when the queue only has control items.
+	 *
+	 * @param stdClass $batch          Current batch object.
+	 * @param array    $batch_metadata Batch metadata array.
+	 * @param string   $properties_key Active batch option key.
+	 * @param object   $feed_data      Feed data object.
+	 *
+	 * @return stdClass
+	 */
+	protected function maybe_prepare_incremental_batch_data( $batch, &$batch_metadata, $properties_key, $feed_data ) {
+		if ( ! is_array( $batch_metadata ) || empty( $batch_metadata['incremental_state'] ) || ! is_array( $batch_metadata['incremental_state'] ) ) {
+			return $batch;
+		}
+
+		$state = $batch_metadata['incremental_state'];
+		if ( ! isset( $state['mode'] ) || 'incremental' !== $state['mode'] ) {
+			return $batch;
+		}
+
+		$discovery_complete = ! empty( $state['discovery_complete'] );
+		$should_load_slice  = $this->batch_needs_incremental_slice( $batch->data );
+
+		if ( $discovery_complete && ! $should_load_slice ) {
+			return $batch;
+		}
+
+		if ( ! $should_load_slice && ! $discovery_complete ) {
+			return $batch;
+		}
+
+		$queries_class         = new WPPFM_Queries();
+		$selected_categories   = apply_filters( 'wppfm_selected_categories', $this->get_category_selection_string_from_feed_data( $feed_data ), $feed_data->feedId );
+		$include_variations    = isset( $feed_data->includeVariations ) && '1' === (string) $feed_data->includeVariations;
+		$last_main_product_id  = isset( $state['last_main_product_id'] ) ? intval( $state['last_main_product_id'] ) : -1;
+		$slice_limit           = isset( $state['slice_limit'] ) ? max( 1, absint( $state['slice_limit'] ) ) : max( 1, absint( apply_filters( 'wppfm_product_query_limit', 1000 ) ) );
+		$discovery_result      = $queries_class->discover_post_ids_by_cursor( $selected_categories, $last_main_product_id, $include_variations, $slice_limit );
+		$slice_item_ids        = isset( $discovery_result['item_ids'] ) && is_array( $discovery_result['item_ids'] ) ? $discovery_result['item_ids'] : array();
+		$slice_item_ids        = array_values( array_unique( array_filter( array_map( 'absint', $slice_item_ids ) ) ) );
+		$next_last_main_id     = isset( $discovery_result['last_main_product_id'] ) ? intval( $discovery_result['last_main_product_id'] ) : $last_main_product_id;
+		$discovery_is_complete = ! empty( $discovery_result['discovery_complete'] );
+
+		$slice_item_ids = apply_filters( 'wppfm_products_in_feed_queue', $slice_item_ids, $feed_data->feedId );
+		if ( ! is_array( $slice_item_ids ) ) {
+			$slice_item_ids = array();
+		}
+		$slice_item_ids = array_values( array_unique( array_filter( array_map( 'absint', $slice_item_ids ) ) ) );
+
+		$reordered_slice_item_ids = apply_filters( 'wppfm_feed_ids_in_queue', $slice_item_ids, $feed_data->feedId );
+		if ( is_array( $reordered_slice_item_ids ) ) {
+			if ( count( $reordered_slice_item_ids ) === count( $slice_item_ids ) ) {
+				// Keep this hook limited to product IDs so control lines cannot be reordered into invalid positions.
+				$slice_item_ids = array_values( array_unique( array_filter( array_map( 'absint', $reordered_slice_item_ids ) ) ) );
+			} else {
+				do_action(
+					'wppfm_feed_generation_message',
+					$feed_data->feedId,
+					'The wppfm_feed_ids_in_queue filter changed the active slice item count. The mutated slice was ignored to keep progress totals exact.',
+					'WARNING'
+				);
+			}
+		}
+
+		$queue_items = array();
+		$header_written = ! empty( $state['header_written'] );
+
+		if ( ! $header_written && ( ! empty( $slice_item_ids ) || $discovery_is_complete ) ) {
+			$header_line = isset( $state['header_string'] ) ? (string) $state['header_string'] : '';
+			if ( '' !== $header_line ) {
+				$queue_items[] = array( 'file_format_line' => $header_line );
+			}
+			$state['header_written'] = true;
+			$header_written          = true;
+		}
+
+		foreach ( $slice_item_ids as $product_id ) {
+			$queue_items[] = array( 'product_id' => $product_id );
+		}
+
+		$file_extension = isset( $state['file_extension'] ) ? $state['file_extension'] : ( function_exists( 'wppfm_get_file_type' ) ? wppfm_get_file_type( $feed_data->channel ) : 'xml' );
+		// Ensure XML footer is appended in the same final slice when discovery completes.
+		if ( $discovery_is_complete && $header_written && 'xml' === $file_extension && empty( $state['footer_written'] ) ) {
+			$footer_line = isset( $state['footer_string'] ) ? (string) $state['footer_string'] : '';
+			if ( '' !== $footer_line ) {
+				$queue_items[] = array( 'file_format_line' => $footer_line );
+				$state['footer_written'] = true;
+			}
+		}
+
+		if ( empty( $queue_items ) && ! $discovery_is_complete ) {
+			$queue_items[] = array( 'load_next_slice' => true );
+		}
+
+		$state['last_main_product_id'] = $next_last_main_id;
+		$state['discovery_complete']   = $discovery_is_complete;
+		$state['active_slice_loaded']  = ! empty( $slice_item_ids );
+		$batch_metadata['incremental_state'] = $state;
+		$batch->data = $queue_items;
+
+		$this->update_batch_incremental_metadata( $properties_key, $batch_metadata );
+		update_site_option( $properties_key, $batch->data );
+
+		return $batch;
+	}
+
+	/**
+	 * Persists updated batch metadata after incremental-state changes.
+	 *
+	 * @param string $properties_key Active batch option key.
+	 * @param array  $batch_metadata Consolidated batch metadata payload.
+	 *
+	 * @return void
+	 */
+	private function update_batch_incremental_metadata( $properties_key, $batch_metadata ) {
+		if ( ! is_string( $properties_key ) || '' === $properties_key ) {
+			return;
+		}
+
+		if ( ! is_array( $batch_metadata ) ) {
+			return;
+		}
+
+		update_site_option( 'wppfm_batch_metadata_' . $properties_key, $batch_metadata );
+	}
+
+	/**
+	 * Determines whether an incremental batch can be safely finalized.
+	 *
+	 * @param array $batch_metadata Consolidated batch metadata payload.
+	 *
+	 * @return bool
+	 */
+	private function can_finalize_incremental_batch( $batch_metadata ) {
+		if ( ! is_array( $batch_metadata ) || empty( $batch_metadata['incremental_state'] ) || ! is_array( $batch_metadata['incremental_state'] ) ) {
+			return true;
+		}
+
+		$state = $batch_metadata['incremental_state'];
+		if ( empty( $state['mode'] ) || 'incremental' !== $state['mode'] ) {
+			return true;
+		}
+
+		$discovery_complete = ! empty( $state['discovery_complete'] );
+		if ( ! $discovery_complete ) {
+			return false;
+		}
+
+		$file_extension = isset( $state['file_extension'] ) ? strtolower( (string) $state['file_extension'] ) : 'xml';
+		if ( 'xml' === $file_extension && empty( $state['footer_written'] ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Determines if the current batch contains only incremental control items.
+	 *
+	 * @param mixed $batch_data Current queue payload.
+	 *
+	 * @return bool
+	 */
+	protected function batch_needs_incremental_slice( $batch_data ) {
+		if ( ! is_array( $batch_data ) || empty( $batch_data ) ) {
+			return true;
+		}
+
+		if ( 1 === count( $batch_data ) && is_array( $batch_data[0] ) && ! empty( $batch_data[0]['load_next_slice'] ) ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Determines if a queue item represents product work (not control lines).
+	 *
+	 * @param mixed $item Queue entry to evaluate.
+	 *
+	 * @return bool
+	 */
+	private function is_product_queue_item( $item ) {
+		if ( is_array( $item ) ) {
+			return array_key_exists( 'product_id', $item ) && is_numeric( $item['product_id'] );
+		}
+
+		return is_numeric( $item );
+	}
+
+	/**
+	 * Builds category selection string from feed category mapping.
+	 *
+	 * @param object $feed_data Feed data object.
+	 *
+	 * @return string
+	 */
+	protected function get_category_selection_string_from_feed_data( $feed_data ) {
+		if ( ! isset( $feed_data->categoryMapping ) || empty( $feed_data->categoryMapping ) ) {
+			return '';
+		}
+
+		$category_mapping = json_decode( $feed_data->categoryMapping );
+		if ( empty( $category_mapping ) || ! is_array( $category_mapping ) ) {
+			return '';
+		}
+
+		$category_ids = array();
+		foreach ( $category_mapping as $category ) {
+			if ( isset( $category->shopCategoryId ) ) {
+				$category_ids[] = absint( $category->shopCategoryId );
+			}
+		}
+
+		$category_ids = array_values( array_unique( array_filter( $category_ids ) ) );
+
+		return implode( ', ', $category_ids );
+	}
+
 
 	/**
 	 * Task

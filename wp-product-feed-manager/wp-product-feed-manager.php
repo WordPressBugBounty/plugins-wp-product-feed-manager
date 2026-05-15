@@ -7,10 +7,10 @@
  * Author URI: https://www.wpmarketingrobot.com
  * Developer: Michel Jongbloed
  * Developer URI: https://www.wpmarketingrobot.com
- * Version: 2.22.0
- * Modified: 29-03-2026
+ * Version: 2.23.4
+ * Modified: 09-05-2026
  * WC requires at least: 8.4
- * WC tested up to: 10.6.1
+ * WC tested up to: 10.7.0
  * License: GPL-3.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  *
@@ -54,7 +54,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		 *
 		 * @var string  Containing the version number of the plugin.
 		 */
-		public $version = '2.22.0';
+		public $version = '2.23.4';
 
 		/**
 		 * Author Name.
@@ -128,10 +128,13 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 			add_action( 'wp_ajax_wppfm_dismiss_admin_notice', array( $this, 'wppfm_dismiss_admin_notice' ) );
 
 			// Set up localisation.
-			// @since 3.11.0.- Changed from the plugins_loaded to the  after_setup_theme action to prevent a "Translation loading was triggered too early" error message.
-			add_action( 'after_setup_theme', array( $this, 'load_text_domain' ) );
+			// WordPress loads plugin translations just-in-time from Text Domain/Domain Path metadata;
+			// keep only the mofile override so bundled translations are preferred when available.
 			// @since 3.18.0 Force premium builds to use bundled translations.
 			add_filter( 'load_textdomain_mofile', array( $this, 'prefer_bundled_translations' ), 10, 2 );
+
+			// @since 3.23.0 Prevent stale translation cache paths from causing transient include warnings.
+			add_filter( 'pre_get_language_files_from_path', array( $this, 'sanitize_cached_language_file_paths' ), 10, 2 );
 
 			// Declare compatibility with custom order tables.
 			add_action( 'before_woocommerce_init', array( $this, 'declare_compatibility_for_custom_order_tables' ) );
@@ -139,6 +142,8 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 			// Invalidate custom product fields cache when third-party keywords option changes.
 			add_action( 'update_option_wppfm_third_party_attribute_keywords', array( $this, 'invalidate_custom_product_fields_cache' ), 10, 3 );
 
+			do_action( 'wppfm_product_feed_manager_loaded' );
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Legacy hook retained for backward compatibility with existing third-party integrations.
 			do_action( 'wp_product_feed_manager_loaded' );
 		}
 
@@ -243,9 +248,10 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 				define( 'WPPFM_UPLOADS_URL', apply_filters( 'wppfm_corrected_uploads_url', $url ) );
 			}
 
-			// Store the folder that contains the channels' data.
+			// Channel packages (unzipped definitions, taxonomies): always under uploads — same base as
+			// wp_upload_dir()['basedir'], multisite-aware via WPPFM_UPLOADS_DIR — never under WPPFM_PLUGIN_DIR.
 			if ( ! defined( 'WPPFM_CHANNEL_DATA_DIR' ) ) {
-				 define( 'WPPFM_CHANNEL_DATA_DIR', WPPFM_PLUGIN_DIR . 'includes/application' );
+				define( 'WPPFM_CHANNEL_DATA_DIR', WPPFM_UPLOADS_DIR . '/wppfm-channels' );
 			}
 
 			// Store the folder that contains the backup files.
@@ -263,7 +269,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 				define( 'WPPFM_FEEDS_DIR', WPPFM_UPLOADS_DIR . '/wppfm-feeds' );
 			}
 
-			// Store the folder that contains the loggings.
+			// Debug / HTTP / general plugin logs (uploads-backed; not inside the plugin package directory).
 			if ( ! defined( 'WPPFM_LOGGINGS_DIR' ) ) {
 				define( 'WPPFM_LOGGINGS_DIR', WPPFM_UPLOADS_DIR . '/wppfm-logs' );
 			}
@@ -309,17 +315,14 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 			require_once __DIR__ . '/includes/wppfm-wpincludes.php';
 			require_once __DIR__ . '/includes/packages/logger/wp-product-feed-manager-logger.php';
 
-			// Include performance monitor for feed optimization testing
-			// @since 3.16.0.0
-			require_once __DIR__ . '/includes/application/class-wppfm-feed-performance-monitor.php';
 
 			if ( 'true' === get_option( 'wppfm_show_product_identifiers', 'false' ) ) {
 			require_once __DIR__ . '/includes/user-interface/wppfm-product-identifiers.php'; // @since 2.10.0
 			}
 
 			// Include all required classes.
-			include_classes();
-			include_channels();
+			wppfm_include_classes();
+			wppfm_include_channels();
 
 
 			// Include the integrated Product Review Feed Manager package.
@@ -346,6 +349,12 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		 * @since 1.9.8
 		 */
 		public function wppfm_dismiss_admin_notice() {
+			check_ajax_referer( 'wppfm-dismiss-admin-notice', 'nonce' );
+
+			if ( ! current_user_can( 'manage_options' ) ) {
+				wp_die( esc_html__( 'You are not allowed to do this.', 'wp-product-feed-manager' ), '', 403 );
+			}
+
 			if ( is_admin() ) {
 				update_option( 'wppfm_license_notice_suppressed', true );
 			}
@@ -398,15 +407,6 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		}
 
 		/**
-		 * Registers the text domain.
-		 *
-		 * @since 2.1.6
-		 */
-		public function load_text_domain() {
-			load_plugin_textdomain( 'wp-product-feed-manager', false, WPPFM_PLUGIN_NAME . '/languages' );
-		}
-
-		/**
 		 * Forces the plugin to load bundled translation files when available.
 		 *
 		 * @since 3.19.0
@@ -429,6 +429,55 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 			}
 
 			return $mofile;
+		}
+
+		/**
+		 * Removes stale translation file paths from the WordPress translation cache.
+		 *
+		 * WordPress caches language file lists for up to one hour. During translation package updates,
+		 * a cached `.l10n.php` path can briefly point to a file that no longer exists. This callback
+		 * sanitizes the cached list for the plugins language directory before WordPress reads it.
+		 *
+		 * @since 3.23.0.3
+		 *
+		 * @param array|null $files Cached language files from earlier filters, or null.
+		 * @param string     $path  Directory path currently being scanned for translation files.
+		 *
+		 * @return array|null
+		 */
+		public function sanitize_cached_language_file_paths( $files, $path ) {
+			// Respect earlier filters that intentionally provide a custom file list.
+			if ( null !== $files ) {
+				return $files;
+			}
+
+			$plugins_language_path = trailingslashit( WP_LANG_DIR ) . 'plugins/';
+			if ( $plugins_language_path !== $path ) {
+				return null;
+			}
+
+			$cache_key    = md5( $path );
+			$cached_files = wp_cache_get( $cache_key, 'translation_files' );
+
+			if ( false === $cached_files || ! is_array( $cached_files ) ) {
+				return null;
+			}
+
+			$valid_cached_files = array_values(
+				array_filter(
+					$cached_files,
+					static function( $file_path ) {
+						return is_string( $file_path ) && '' !== $file_path && file_exists( $file_path ) && is_readable( $file_path );
+					}
+				)
+			);
+
+			// Keep cache in sync so subsequent requests avoid the same stale-file warning.
+			if ( count( $valid_cached_files ) !== count( $cached_files ) ) {
+				wp_cache_set( $cache_key, $valid_cached_files, 'translation_files', HOUR_IN_SECONDS );
+			}
+
+			return $valid_cached_files;
 		}
 
 		/**

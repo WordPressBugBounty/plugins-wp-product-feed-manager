@@ -312,7 +312,7 @@ function switchToGoogleFeedFormMainInputs( isNew, channel ) {
 	jQuery( '#google-feed-title-row' ).show();
 	jQuery( '#google-feed-description-row' ).show();
 	jQuery( '#aggregator-selector-row' ).hide();
-	jQuery( '#wppfm-add-google-analytics-row' ).show();
+	//jQuery( '#wppfm-add-google-analytics-row' ).show();
 
 	// For backwards compatibility. Remove after plugin version 3.0.0 is common.
 	jQuery( '#country-list-row' ).show()

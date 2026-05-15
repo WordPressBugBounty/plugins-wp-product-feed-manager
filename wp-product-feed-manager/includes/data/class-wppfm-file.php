@@ -238,7 +238,9 @@ if ( ! class_exists( 'WPPFM_File' ) ) :
 		}
 
 		/**
-		 * Takes the installed channel .zip file and unzips it in the channel folder.
+		 * Takes the installed channel .zip file and unzips it into the uploads channel directory.
+		 *
+		 * WPPFM_CHANNEL_DATA_DIR is `{uploads basedir}/wppfm-channels` (see main plugin bootstrap).
 		 *
 		 * @param string $channel_name the name of the channel.
 		 *
@@ -251,8 +253,9 @@ if ( ! class_exists( 'WPPFM_File' ) ) :
 
 			wppfm_get_wp_filesystem();
 
-			$zip_file         = WPPFM_CHANNEL_DATA_DIR . '/' . $channel_name . '.zip';
-			$destination_path = WPPFM_CHANNEL_DATA_DIR . '/';
+			$zip_file = WPPFM_CHANNEL_DATA_DIR . '/' . $channel_name . '.zip';
+			// Destination is uploads/wppfm-channels (constant).
+			$destination_path = trailingslashit( WPPFM_CHANNEL_DATA_DIR );
 
 			if ( ! file_exists( $zip_file ) ) {
 				wppfm_write_log_file( sprintf( 'Failed installing the Channel %s. Could not download the .zip file from the server.', $channel_name ) );

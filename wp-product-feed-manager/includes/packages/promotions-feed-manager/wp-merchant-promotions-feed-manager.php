@@ -18,9 +18,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Only activate wpprfm support if all requirements are met.
 if ( wppfm_pf_prerequisites() ) {
-	$package_version = '1.0.0';
+	$wpppfm_package_version = '1.0.0';
 
-    wppfm_pf_define_constants( $package_version );
+    wppfm_pf_define_constants( $wpppfm_package_version );
 
     wppfm_pf_includes();
 } else {

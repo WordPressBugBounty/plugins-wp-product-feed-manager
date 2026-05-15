@@ -18,6 +18,61 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WPPFM_Feed_Process_Logging {
 	/**
+	 * Returns the transient key that stores the last feed-start timestamp for a feed id.
+	 *
+	 * @param string $feed_id Feed id.
+	 *
+	 * @return string
+	 */
+	private static function get_last_started_transient_key( $feed_id ) {
+		return 'wppfm_feed_log_last_started_' . sanitize_key( (string) $feed_id );
+	}
+
+	/**
+	 * Returns the append window in seconds for reusing an existing log file for the same feed.
+	 *
+	 * @return int
+	 */
+	private static function get_log_append_window_seconds() {
+		return max( MINUTE_IN_SECONDS, intval( apply_filters( 'wppfm_feed_log_append_window_seconds', HOUR_IN_SECONDS ) ) );
+	}
+
+	/**
+	 * Returns true when a new start should append to the current log instead of clearing it.
+	 *
+	 * We only append when the same feed restarts within a recent time window so mid-run restarts
+	 * preserve their earlier evidence, while older unrelated runs still get a fresh log file.
+	 *
+	 * @param string $feed_id Feed id.
+	 *
+	 * @return bool
+	 */
+	private static function should_append_to_existing_log( $feed_id ) {
+		$last_started = get_transient( self::get_last_started_transient_key( $feed_id ) );
+
+		if ( false === $last_started ) {
+			return false;
+		}
+
+		return ( time() - intval( $last_started ) ) <= self::get_log_append_window_seconds();
+	}
+
+	/**
+	 * Stores the current feed-start timestamp for restart-aware log initialization.
+	 *
+	 * @param string $feed_id Feed id.
+	 *
+	 * @return void
+	 */
+	private static function record_feed_log_started_at( $feed_id ) {
+		set_transient(
+			self::get_last_started_transient_key( $feed_id ),
+			time(),
+			self::get_log_append_window_seconds()
+		);
+	}
+
+	/**
 	 * Returns the active client request id for a feed (if any).
 	 *
 	 * The feed editor can send a `client_request_id` that we store in a transient when a generation
@@ -61,9 +116,26 @@ class WPPFM_Feed_Process_Logging {
 			$background_processing,
 			$client_request_tag
 		);
+		$file_path             = WPPFM_LOGGINGS_DIR . '/' . $log_file_name;
+		$append_to_existing    = self::should_append_to_existing_log( $feed_id );
 
-		$wp_filesystem->put_contents( WPPFM_LOGGINGS_DIR . '/' . $log_file_name, '', FS_CHMOD_FILE ); // start with a clear log
-		$wp_filesystem->put_contents( WPPFM_LOGGINGS_DIR . '/' . $log_file_name, $log_header . "\r\n", FS_CHMOD_FILE );
+		if ( $append_to_existing ) {
+			$restart_notice = sprintf(
+				'%sAppending to the existing feed log because feed %s restarted within the last %d seconds.',
+				self::generate_log_tag( 'WARNING' ),
+				$feed_id,
+				self::get_log_append_window_seconds()
+			);
+
+			wppfm_append_line_to_file( $file_path, '', true );
+			wppfm_append_line_to_file( $file_path, $restart_notice, true );
+			wppfm_append_line_to_file( $file_path, $log_header, true );
+		} else {
+			$wp_filesystem->put_contents( $file_path, '', FS_CHMOD_FILE ); // start with a clear log
+			$wp_filesystem->put_contents( $file_path, $log_header . "\r\n", FS_CHMOD_FILE );
+		}
+
+		self::record_feed_log_started_at( $feed_id );
 	}
 
 	/**

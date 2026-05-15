@@ -42,7 +42,6 @@ if ( ! class_exists( 'WPPFM_Product_Feed_Main_Input_Wrapper' ) ) :
 			// Aggregator selector
 			WPPFM_Main_Input_Selector_Element::aggregator_selector_element();
 			// Include product variations selector
-			WPPFM_Main_Input_Selector_Element::product_variation_selector_element();
 			// Add Google Analytics tracking
 			WPPFM_Google_Analytics_Selector_Element::google_analytics_selector_element();
 			// Google product feed title input

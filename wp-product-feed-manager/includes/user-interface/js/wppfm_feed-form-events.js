@@ -138,13 +138,6 @@ jQuery( '#google-feed-description-selector' ).on(
 	}
 );
 
-jQuery( '#variations' ).on(
-	'change',
-	function() {
-		wppfm_variationSelectionChanged();
-	}
-);
-
 jQuery( '#aggregator' ).on(
 	'change',
 	function() {

@@ -75,13 +75,19 @@ abstract class WPPFM_Async_Request {
 	protected $relations_table;
 
 	/**
+	 * Indicates whether maybe_handle() was invoked internally (not by an external AJAX request).
+	 *
+	 * @var bool
+	 */
+	protected $internal_dispatch_context = false;
+
+	/**
 	 * Initiate new async request
 	 */
 	public function __construct() {
 		$this->identifier = $this->prefix . '_' . $this->action;
 
 		add_action( 'wp_ajax_' . $this->identifier, array( $this, 'maybe_handle' ) );
-		add_action( 'wp_ajax_nopriv_' . $this->identifier, array( $this, 'maybe_handle' ) );
 	}
 
 	/**
@@ -152,8 +158,20 @@ abstract class WPPFM_Async_Request {
 
 			do_action( 'wppfm_wp_remote_post_response', $feed_id, $response );
 		} else {
+			// Foreground mode runs in the same authenticated request context.
+			$this->internal_dispatch_context = true;
 			$this->maybe_handle();
+			$this->internal_dispatch_context = false;
 		}
+	}
+
+	/**
+	 * Indicates whether the current maybe_handle() run is an internal foreground dispatch.
+	 *
+	 * @return bool
+	 */
+	protected function is_internal_dispatch_context() {
+		return true === $this->internal_dispatch_context;
 	}
 
 	/**

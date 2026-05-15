@@ -47,12 +47,16 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_read_next_categories() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'nextCategoryNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-next-category-nonce' ) ) {
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'nextCategoryNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-next-category-nonce' ) && current_user_can( 'edit_feeds' ) && is_admin() ) {
 				$file_class = new WPPFM_File();
 
 				$channel_id      = filter_input( INPUT_POST, 'channelId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 				$requested_level = filter_input( INPUT_POST, 'requestedLevel', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-				$parent_category = filter_input( INPUT_POST, 'parentCategory', FILTER_CALLBACK, ['options' => [$this, 'sanitize_string_with_ampersand']] ); // Categories can contain an ampersand.
+				// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce and capability are validated above before reading request payload.
+				$parent_category = isset( $_POST['parentCategory'] ) && is_string( $_POST['parentCategory'] )
+					? $this->sanitize_string_with_ampersand( wp_unslash( $_POST['parentCategory'] ) )
+					: '';
+				// phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				$file_language   = filter_input( INPUT_POST, 'fileLanguage', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 				$categories      = $file_class->get_categories_for_list( $channel_id, $requested_level, $parent_category, $file_language );
 
@@ -77,11 +81,15 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_read_category_lists() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'categoryListsNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-category-lists-nonce' ) ) {
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'categoryListsNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-category-lists-nonce' ) && current_user_can( 'edit_feeds' ) && is_admin() ) {
 				$file_class = new WPPFM_File();
 
-				$channel_id             = filter_input( INPUT_POST, 'channelId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-				$main_categories_string = filter_input( INPUT_POST, 'mainCategories', FILTER_CALLBACK, ['options' => [$this, 'sanitize_string_with_ampersand']] ); // Categories can contain an ampersand.
+				$channel_id = filter_input( INPUT_POST, 'channelId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+				// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce and capability are validated above before reading request payload.
+				$main_categories_string = isset( $_POST['mainCategories'] ) && is_string( $_POST['mainCategories'] )
+					? $this->sanitize_string_with_ampersand( wp_unslash( $_POST['mainCategories'] ) )
+					: '';
+				// phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				$file_language          = filter_input( INPUT_POST, 'fileLanguage', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 				$categories_array       = explode( ' > ', $main_categories_string );
 				$categories             = array();
@@ -111,8 +119,12 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_delete_feed_file() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'deleteFeedNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-delete-feed-nonce', 'delete_feeds' ) ) {
-				$file_name = filter_input( INPUT_POST, 'fileTitle', FILTER_CALLBACK, ['options' => [$this, 'sanitize_title_string']] );
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'deleteFeedNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-delete-feed-nonce' ) && current_user_can( 'delete_feeds' ) && is_admin() ) {
+				// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce and capability are validated above before reading request payload.
+				$file_name = isset( $_POST['fileTitle'] ) && is_string( $_POST['fileTitle'] )
+					? $this->sanitize_title_string( wp_unslash( $_POST['fileTitle'] ) )
+					: '';
+				// phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
 				$file = realpath( WPPFM_FEEDS_DIR . '/' . basename( $file_name ) );
 
@@ -135,7 +147,7 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_update_feed_file() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'updateFeedFileNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-update-feed-file-nonce', 'edit_feeds' ) ) {
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'updateFeedFileNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-update-feed-file-nonce' ) && current_user_can( 'edit_feeds' ) && is_admin() ) {
 
 				// Fetch the data from $_POST.
 				$feed_id                  = filter_input( INPUT_POST, 'feedId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
@@ -203,16 +215,28 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_log_message() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'logMessageNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-log-message-nonce' ) ) {
-				// Fetch the data from $_POST.
-				$message      = filter_input( INPUT_POST, 'messageList', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-				$file_name    = filter_input( INPUT_POST, 'fileName', FILTER_CALLBACK, ['options' => [$this, 'sanitize_title_string']] );
-				$text_message = wp_strip_all_tags( $message );
+			$nonce = filter_input( INPUT_POST, 'logMessageNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
-				wppfm_write_log_file( $text_message, $file_name );
-			} else {
+			if ( ! is_string( $nonce ) || ! wp_verify_nonce( $nonce, 'wppfm-ajax-log-message-nonce' ) || ! current_user_can( 'edit_feeds' ) ) {
 				$this->show_not_allowed_error_message();
+				exit;
 			}
+
+			if ( ! is_admin() ) {
+				$this->show_not_allowed_error_message();
+				exit;
+			}
+
+			// Fetch the data from $_POST.
+			$message = filter_input( INPUT_POST, 'messageList', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+			// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce and capability are validated above before reading request payload.
+			$file_name = isset( $_POST['fileName'] ) && is_string( $_POST['fileName'] )
+				? $this->sanitize_title_string( wp_unslash( $_POST['fileName'] ) )
+				: '';
+			// phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$text_message = wp_strip_all_tags( $message );
+
+			wppfm_write_log_file( $text_message, $file_name );
 
 			// IMPORTANT: don't forget to exit.
 			exit;
@@ -225,11 +249,8 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_auto_feed_fix_mode_selection() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'updateAutoFeedFixNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-auto-feed-fix-nonce', 'manage_options' ) ) {
-				$selection = filter_input( INPUT_POST, 'fix_selection', FILTER_CALLBACK, ['options' => [$this, 'sanitize_true_false_string']] );
-				update_option( 'wppfm_auto_feed_fix', $selection );
-
-				echo esc_html( get_option( 'wppfm_auto_feed_fix' ) );
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'updateAutoFeedFixNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-auto-feed-fix-nonce' ) && current_user_can( 'manage_options' ) && is_admin() ) {
+				echo esc_html( $this->update_boolean_setting_option( 'fix_selection', 'wppfm_auto_feed_fix' ) );
 			} else {
 				$this->show_not_allowed_error_message();
 			}
@@ -245,11 +266,8 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_background_processing_mode_selection() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'backgroundModeNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-background-mode-nonce', 'manage_options' ) ) {
-				$selection = filter_input( INPUT_POST, 'mode_selection', FILTER_CALLBACK, ['options' => [$this, 'sanitize_true_false_string']] );
-				update_option( 'wppfm_disabled_background_mode', $selection );
-
-				echo esc_html( get_option( 'wppfm_disabled_background_mode' ) );
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'backgroundModeNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-background-mode-nonce' ) && current_user_can( 'manage_options' ) && is_admin() ) {
+				echo esc_html( $this->update_boolean_setting_option( 'mode_selection', 'wppfm_disabled_background_mode' ) );
 			} else {
 				$this->show_not_allowed_error_message();
 			}
@@ -265,11 +283,8 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_feed_logger_status_selection() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'feedLoggerStatusNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-logger-status-nonce', 'manage_options' ) ) {
-				$selection = filter_input( INPUT_POST, 'statusSelection', FILTER_CALLBACK, ['options' => [$this, 'sanitize_true_false_string']] );
-				update_option( 'wppfm_process_logger_status', $selection );
-
-				echo esc_html( get_option( 'wppfm_process_logger_status' ) );
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'feedLoggerStatusNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-logger-status-nonce' ) && current_user_can( 'manage_options' ) && is_admin() ) {
+				echo esc_html( $this->update_boolean_setting_option( 'statusSelection', 'wppfm_process_logger_status' ) );
 			} else {
 				$this->show_not_allowed_error_message();
 			}
@@ -285,14 +300,14 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_show_product_identifiers_selection() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'showPINonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-show-pi-nonce', 'manage_options' ) ) {
-				$selection = filter_input( INPUT_POST, 'showPiSelection', FILTER_CALLBACK, ['options' => [$this, 'sanitize_true_false_string']] );
-				update_option( 'wppfm_show_product_identifiers', $selection );
+			$nonce = filter_input( INPUT_POST, 'showPINonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
-				echo esc_html( get_option( 'wppfm_show_product_identifiers' ) );
-			} else {
+			if ( ! is_string( $nonce ) || ! wp_verify_nonce( $nonce, 'wppfm-ajax-show-pi-nonce' ) || ! current_user_can( 'manage_options' ) || ! is_admin() ) {
 				$this->show_not_allowed_error_message();
+				exit;
 			}
+
+			echo esc_html( $this->update_boolean_setting_option( 'showPiSelection', 'wppfm_show_product_identifiers' ) );
 
 			// IMPORTANT: don't forget to exit.
 			exit;
@@ -305,14 +320,14 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_switch_to_manual_channel_update() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'manualChannelUpdateNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-manual-channel-update-nonce', 'manage_options' ) ) {
-				$selection = filter_input( INPUT_POST, 'manualChannelUpdateSelection', FILTER_CALLBACK, ['options' => [$this, 'sanitize_true_false_string']] );
-				update_option( 'wppfm_manual_channel_update', $selection );
+			$nonce = filter_input( INPUT_POST, 'manualChannelUpdateNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
-				echo esc_html( get_option( 'wppfm_manual_channel_update' ) );
-			} else {
+			if ( ! is_string( $nonce ) || ! wp_verify_nonce( $nonce, 'wppfm-ajax-manual-channel-update-nonce' ) || ! current_user_can( 'manage_options' ) || ! is_admin() ) {
 				$this->show_not_allowed_error_message();
+				exit;
 			}
+
+			echo esc_html( $this->update_boolean_setting_option( 'manualChannelUpdateSelection', 'wppfm_manual_channel_update' ) );
 
 			// IMPORTANT: don't forget to exit.
 			exit;
@@ -325,11 +340,8 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_wpml_use_full_url_resolution_selection() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'urlResolutionNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-use-full-url-resolution-nonce', 'manage_options' ) ) {
-				$selection = filter_input( INPUT_POST, 'urlResolutionSelection', FILTER_CALLBACK, ['options' => [$this, 'sanitize_true_false_string']] );
-				update_option( 'wppfm_use_full_url_resolution', $selection );
-
-				echo esc_html( get_option( 'wppfm_use_full_url_resolution' ) );
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'urlResolutionNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-use-full-url-resolution-nonce' ) && current_user_can( 'manage_options' ) && is_admin() ) {
+				echo esc_html( $this->update_boolean_setting_option( 'urlResolutionSelection', 'wppfm_use_full_url_resolution' ) );
 			} else {
 				$this->show_not_allowed_error_message();
 			}
@@ -345,11 +357,8 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_omit_price_filters_selection() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'omitPriceFiltersNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-omit-price-filters-nonce', 'manage_options' ) ) {
-				$selection = filter_input( INPUT_POST, 'omitPriceFiltersSelection', FILTER_CALLBACK, ['options' => [$this, 'sanitize_true_false_string']] );
-				update_option( 'wppfm_omit_price_filters', $selection );
-
-				echo esc_html( get_option( 'wppfm_omit_price_filters' ) );
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'omitPriceFiltersNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-omit-price-filters-nonce' ) && current_user_can( 'manage_options' ) && is_admin() ) {
+				echo esc_html( $this->update_boolean_setting_option( 'omitPriceFiltersSelection', 'wppfm_omit_price_filters' ) );
 			} else {
 				$this->show_not_allowed_error_message();
 			}
@@ -363,8 +372,12 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_set_third_party_attribute_keywords() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'thirdPartyKeywordsNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-set-third-party-keywords-nonce', 'manage_options' ) ) {
-				$new_keywords = filter_input( INPUT_POST, 'keywords', FILTER_CALLBACK, ['options' => [$this, 'sanitize_third_party_attributes_string']] );
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'thirdPartyKeywordsNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-set-third-party-keywords-nonce' ) && current_user_can( 'manage_options' ) && is_admin() ) {
+				// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce and capability are validated above before reading request payload.
+				$new_keywords = isset( $_POST['keywords'] ) && is_string( $_POST['keywords'] )
+					? $this->sanitize_third_party_attributes_string( wp_unslash( $_POST['keywords'] ) )
+					: '';
+				// phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				$clean_keywords = sanitize_option( 'wppfm_third_party_attribute_keywords', $new_keywords );
 				update_option( 'wppfm_third_party_attribute_keywords', $clean_keywords );
 
@@ -382,15 +395,18 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_set_notice_mailaddress() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'noticeMailaddressNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-set-notice-mailaddress-nonce', 'manage_options' ) ) {
-				$mailaddress = filter_input( INPUT_POST, 'mailaddress', FILTER_SANITIZE_EMAIL );
-				update_option( 'wppfm_notice_mailaddress', $mailaddress );
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'noticeMailaddressNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-set-notice-mailaddress-nonce' ) && current_user_can( 'manage_options' ) && is_admin() ) {
+				// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce verification is handled above before reading request payload.
+				$mailaddress = isset( $_POST['mailaddress'] ) ? sanitize_text_field( wp_unslash( $_POST['mailaddress'] ) ) : '';
+				// phpcs:enable WordPress.Security.NonceVerification.Missing
+				$saved_email = class_exists( 'WPPFM_Email' ) ? WPPFM_Email::sanitize_recipient_list( $mailaddress ) : sanitize_text_field( $mailaddress );
 
-				$saved_email = get_option( 'wppfm_notice_mailaddress' );
+				update_option( 'wppfm_notice_mailaddress', $saved_email );
+
 				$test_sent  = false;
 
-				// Send test email when a valid address is configured.
-				if ( ! empty( $saved_email ) && is_email( $saved_email ) && class_exists( 'WPPFM_Email' ) ) {
+				// Send test email when at least one valid address is configured.
+				if ( ! empty( $saved_email ) && class_exists( 'WPPFM_Email' ) ) {
 					$test_sent = WPPFM_Email::send_test_email( $saved_email );
 				}
 
@@ -415,7 +431,7 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_reinitiate_plugin() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'reInitiateNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-reinitiate-nonce', 'update_plugins' ) ) {
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'reInitiateNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-reinitiate-nonce' ) && current_user_can( 'update_plugins' ) && is_admin() ) {
 
 				if ( wppfm_reinitiate_plugin() ) {
 					echo 'Plugin re-initiated';
@@ -437,7 +453,7 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 		 */
 		public function myajax_clear_feed_process_data() {
 			// Make sure this call is legal.
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'clearFeedNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-clear-feed-nonce', 'manage_options' ) ) {
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'clearFeedNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-clear-feed-nonce' ) && current_user_can( 'manage_options' ) && is_admin() ) {
 
 				if ( wppfm_clear_feed_process_data() ) {
 					echo esc_html__( 'Feed processing data cleared', 'wp-product-feed-manager' );
@@ -452,10 +468,96 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 			// IMPORTANT: don't forget to exit.
 			exit;
 		}
+
+		/**
+		 * Updates a boolean option based on posted input and verifies the stored value.
+		 *
+		 * @param string $post_key   Posted field key.
+		 * @param string $option_key Option name to update.
+		 *
+		 * @return string Normalized stored value ('true' or 'false').
+		 */
+		private function update_boolean_setting_option( $post_key, $option_key ) {
+			global $wpdb;
+
+			$raw_selection = 'false';
+			// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce and capability verification are handled in caller methods.
+			if ( isset( $_POST[ $post_key ] ) ) {
+				$raw_selection = sanitize_text_field( wp_unslash( $_POST[ $post_key ] ) );
+			}
+			// phpcs:enable WordPress.Security.NonceVerification.Missing
+			$selection = $this->sanitize_true_false_string( $raw_selection );
+
+			update_option( $option_key, $selection );
+
+			// Validate both filtered and raw database values so filter interference becomes visible in logs.
+			$stored_filtered = $this->sanitize_true_false_string( (string) get_option( $option_key, 'false' ) );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Reads raw option_value intentionally to detect option filter interference during this request-scoped settings update.
+			$raw_db_value_before = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT option_value FROM {$wpdb->options} WHERE option_name = %s LIMIT 1",
+					$option_key
+				)
+			);
+			$stored_raw = $this->sanitize_true_false_string( (string) $raw_db_value_before );
+
+			if ( $stored_raw !== $selection ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Raw options table write is intentional to reconcile filtered option values with stored values.
+				$updated_rows = $wpdb->update(
+					$wpdb->options,
+					array( 'option_value' => $selection ),
+					array( 'option_name' => $option_key ),
+					array( '%s' ),
+					array( '%s' )
+				);
+
+				if ( false === $updated_rows || 0 === (int) $updated_rows ) {
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Insert fallback is required when the option row is missing while enforcing a normalized boolean value.
+					$wpdb->insert(
+						$wpdb->options,
+						array(
+							'option_name'  => $option_key,
+							'option_value' => $selection,
+							'autoload'     => 'yes',
+						),
+						array( '%s', '%s', '%s' )
+					);
+				}
+
+				wp_cache_delete( $option_key, 'options' );
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Reads raw option_value after reconciliation to confirm persisted state in the same request.
+				$raw_db_value_after = $wpdb->get_var(
+					$wpdb->prepare(
+						"SELECT option_value FROM {$wpdb->options} WHERE option_name = %s LIMIT 1",
+						$option_key
+					)
+				);
+				$stored_raw = $this->sanitize_true_false_string( (string) $raw_db_value_after );
+			}
+
+			$stored_filtered_after = $this->sanitize_true_false_string( (string) get_option( $option_key, 'false' ) );
+
+			if ( ( $stored_filtered_after !== $selection || $stored_raw !== $selection ) && function_exists( 'wppfm_write_log_file' ) ) {
+				wppfm_write_log_file(
+					sprintf(
+						'Settings write mismatch for option "%1$s". Requested=%2$s, filtered_before=%3$s, raw_before=%4$s, filtered_after=%5$s, raw_after=%6$s.',
+						$option_key,
+						$selection,
+						$stored_filtered,
+						$this->sanitize_true_false_string( (string) $raw_db_value_before ),
+						$stored_filtered_after,
+						$stored_raw
+					)
+				);
+			}
+
+			// Return the raw stored value so UI reflects the actual database state.
+			return $stored_raw;
+		}
 	}
 
 	// End of WPPFM_Ajax_File_Class.
 
 endif;
 
-$myajax_file_class = new WPPFM_Ajax_File();
+$wppfm_ajax_file_class = new WPPFM_Ajax_File();

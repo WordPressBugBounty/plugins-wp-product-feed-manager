@@ -692,11 +692,13 @@ function getSourceData( rowId ) {
 	if ( attributeString ) {
 
 		var attributeDataObject = JSON.parse( attributeString );
+		var isMappingObject     = attributeDataObject && typeof attributeDataObject === 'object' && ! Array.isArray( attributeDataObject );
 
-		data.mapping         = attributeDataObject && 'm' in attributeDataObject ? attributeDataObject.m : [];
-		data.changeValues    = attributeDataObject && 'v' in attributeDataObject ? attributeDataObject.v : [];
+		// Guard against scalar JSON values (for example "30" from feed-level performance settings).
+		data.mapping         = isMappingObject && 'm' in attributeDataObject ? attributeDataObject.m : [];
+		data.changeValues    = isMappingObject && 'v' in attributeDataObject ? attributeDataObject.v : [];
 		data.customCondition = ! ! (
-			attributeDataObject && 't' in attributeDataObject
+			isMappingObject && 't' in attributeDataObject
 		);
 	} else {
 

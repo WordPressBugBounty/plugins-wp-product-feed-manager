@@ -1,6 +1,8 @@
 // noinspection JSUnresolvedReference
 
-var myAjaxNonces;
+// Keep a backward-compatible alias while using a plugin-unique localized object name.
+var wppfmAjaxNonces = window.wppfmAjaxNonces || window.myAjaxNonces || {};
+var myAjaxNonces = wppfmAjaxNonces;
 
 function wppfm_getFeedList( callback ) {
 
@@ -287,13 +289,23 @@ function wppfm_logMessageOnServer( message, fileName, callback ) {
 	);
 }
 
+/**
+ * Normalizes checkbox/boolean-like values to "true" or "false" for stable server handling.
+ *
+ * @param {*} selection Checkbox-like value.
+ * @returns {string} "true" when selected, otherwise "false".
+ */
+function wppfm_normalizeBooleanSelection( selection ) {
+	return true === selection || 'true' === selection || 1 === selection || '1' === selection || 'on' === selection ? 'true' : 'false';
+}
+
 function wppfm_auto_feed_fix_mode( selection, callback ) {
 
 	jQuery.post(
 		myAjaxNonces.ajaxurl,
 		{
 			action: 'wppfm-ajax-auto-feed-fix-mode-selection',
-			fix_selection: selection,
+			fix_selection: wppfm_normalizeBooleanSelection( selection ),
 			updateAutoFeedFixNonce: myAjaxNonces.setAutoFeedFixNonce,
 
 		},
@@ -310,7 +322,7 @@ function wppfm_background_processing_mode( selection, callback ) {
 		myAjaxNonces.ajaxurl,
 		{
 			action: 'wppfm-ajax-background-processing-mode-selection',
-			mode_selection: selection,
+			mode_selection: wppfm_normalizeBooleanSelection( selection ),
 			backgroundModeNonce: myAjaxNonces.setBackgroundModeNonce,
 
 		},
@@ -327,7 +339,7 @@ function wppfm_feed_logger_status( selection, callback ) {
 		myAjaxNonces.ajaxurl,
 		{
 			action: 'wppfm-ajax-feed-logger-status-selection',
-			statusSelection: selection,
+			statusSelection: wppfm_normalizeBooleanSelection( selection ),
 			feedLoggerStatusNonce: myAjaxNonces.setFeedLoggerStatusNonce,
 
 		},
@@ -352,7 +364,7 @@ function wppfm_show_pi_status( selection, callback ) {
 		myAjaxNonces.ajaxurl,
 		{
 			action: 'wppfm-ajax-show-product-identifiers-selection',
-			showPiSelection: selection,
+			showPiSelection: wppfm_normalizeBooleanSelection( selection ),
 			showPINonce: myAjaxNonces.setShowPINonce,
 
 		},
@@ -370,7 +382,7 @@ function wppfm_switch_to_manual_channel_update( selection, callback ) {
 			myAjaxNonces.ajaxurl,
 			{
 				action: 'wppfm-ajax-switch-to-manual-channel-update-selection',
-				manualChannelUpdateSelection: selection,
+				manualChannelUpdateSelection: wppfm_normalizeBooleanSelection( selection ),
 				manualChannelUpdateNonce: myAjaxNonces.setManualChannelUpdateNonce,
 
 			},
@@ -395,7 +407,7 @@ function wppfm_wpml_use_full_url_resolution( selection, callback ) {
 		myAjaxNonces.ajaxurl,
 		{
 			action: 'wppfm-ajax-wpml-use-full-url-resolution-selection',
-			urlResolutionSelection: selection,
+			urlResolutionSelection: wppfm_normalizeBooleanSelection( selection ),
 			urlResolutionNonce: myAjaxNonces.setUseFullResolutionNonce,
 
 		},
@@ -420,7 +432,7 @@ function wppfm_omit_price_filters( selection, callback ) {
 		myAjaxNonces.ajaxurl,
 		{
 			action: 'wppfm-ajax-omit-price-filters-selection',
-			omitPriceFiltersSelection: selection,
+			omitPriceFiltersSelection: wppfm_normalizeBooleanSelection( selection ),
 			omitPriceFiltersNonce: myAjaxNonces.setOmitPriceFiltersNonce,
 
 		},

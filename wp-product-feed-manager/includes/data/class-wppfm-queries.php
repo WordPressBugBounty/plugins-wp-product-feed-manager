@@ -113,7 +113,7 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 
 		/**
 		 * Reads installed channels from the database. Uses request-level caching to avoid
-		 * duplicate queries when called from multiple places (e.g. include_channels,
+		 * duplicate queries when called from multiple places (e.g. wppfm_include_channels,
 		 * wppfm_register_full_version_channels, channel_selector).
 		 *
 		 * @return array Installed channels with channel_id, name, and short keys.
@@ -253,84 +253,119 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 		}
 
 		/**
-		 * Returns the post-ids that belong to the selected categories
+		 * Discovers one product slice based on a main-product cursor.
 		 *
-		 * @param   string $category_string    A string that contains the selected categories.
-		 * @param   bool   $with_variation     True if product variations should be included in the feed. Default false.
+		 * @param string $category_string       Comma-separated selected category IDs.
+		 * @param int    $last_main_product_id  Last discovered main product ID.
+		 * @param bool   $with_variation        True to include product variations.
+		 * @param int    $limit                 Maximum number of main products in this slice.
 		 *
-		 * @return array    With the post-ids.
+		 * @return array
 		 */
-		public function get_post_ids( $category_string, $with_variation = false ) {
-			// If the user has not selected a category, return an empty array.
-			if ( empty( $category_string ) ) {
-				return array();
+		public function discover_post_ids_by_cursor( $category_string, $last_main_product_id, $with_variation, $limit ) {
+			$category_ids = $this->sanitize_category_ids( $category_string );
+			$cursor       = max( -1, intval( $last_main_product_id ) );
+			$slice_limit  = max( 1, absint( $limit ) );
+
+			if ( empty( $category_ids ) ) {
+				return array(
+					'item_ids'             => array(),
+					'last_main_product_id' => $cursor,
+					'discovery_complete'   => true,
+				);
 			}
 
-			$category_string = wp_strip_all_tags( $category_string );
+			$term_placeholders = implode( ',', array_fill( 0, count( $category_ids ), '%d' ) );
+			$main_query_args   = array_merge( $category_ids, array( $cursor, $slice_limit ) );
 
-			$start_product_id = get_transient( 'wppfm_start_product_id' ) ? get_transient( 'wppfm_start_product_id' ) : -1;
+			$main_products_ids = $this->_wpdb->get_col(
+				$this->_wpdb->prepare(
+					"SELECT DISTINCT p.ID
+					FROM {$this->_table_prefix}posts AS p
+					INNER JOIN {$this->_table_prefix}term_relationships AS tr ON ( p.ID = tr.object_id )
+					INNER JOIN {$this->_table_prefix}term_taxonomy AS tt ON ( tr.term_taxonomy_id = tt.term_taxonomy_id )
+					WHERE p.post_type = 'product'
+					AND p.post_status = 'publish'
+					AND p.post_password = ''
+					AND tt.term_id IN ($term_placeholders)
+					AND p.ID > %d
+					ORDER BY p.ID
+					LIMIT %d",
+					...$main_query_args
+				)
+			);
 
-			// Limit the number of products per query to 1000 to prevent a result that is too large to handle by the server.
-			// When the limit is reached, the next batch will be requested by the fill_the_background_queue function.
-			// @since 2.11.0.
-			$product_query_limit = apply_filters( 'wppfm_product_query_limit', 1000 );
+			$main_products_ids = array_values( array_unique( array_filter( array_map( 'absint', $main_products_ids ) ) ) );
+			$next_cursor       = ! empty( $main_products_ids ) ? intval( end( $main_products_ids ) ) : $cursor;
 
-			// @since 2.20.0 excluded password protected products from the feed.
-			$products_query = "SELECT DISTINCT {$this->_table_prefix}posts.ID
-				FROM {$this->_table_prefix}posts
-				LEFT JOIN {$this->_table_prefix}term_relationships ON ({$this->_table_prefix}posts.ID = {$this->_table_prefix}term_relationships.object_id)
-				LEFT JOIN {$this->_table_prefix}term_taxonomy ON ({$this->_table_prefix}term_relationships.term_taxonomy_id = {$this->_table_prefix}term_taxonomy.term_taxonomy_id)
-				WHERE {$this->_table_prefix}posts.post_type = 'product' AND {$this->_table_prefix}posts.post_status = 'publish' AND {$this->_table_prefix}posts.post_password = ''
-				AND {$this->_table_prefix}term_taxonomy.term_id IN ($category_string)
-				AND {$this->_table_prefix}posts.ID > $start_product_id
-				ORDER BY ID LIMIT $product_query_limit";
-
-			// Get all main product ids (simple and variable, but not the variations).
-			$main_products_ids = $this->_wpdb->get_col( $products_query );
-
-			set_transient( 'wppfm_start_product_id', end( $main_products_ids ), WPPFM_TRANSIENT_LIVE );
-
-			// If variations should not be included, return the main product ids.
-			if ( ! $with_variation || empty( $main_products_ids ) ) {
-				return $main_products_ids;
+			if ( empty( $main_products_ids ) ) {
+				return array(
+					'item_ids'             => array(),
+					'last_main_product_id' => $next_cursor,
+					'discovery_complete'   => true,
+				);
 			}
 
-			// Put the main ids in a string, so it can be attached to a query string.
-			$main_products_ids_string = implode( ', ', $main_products_ids );
+			$item_ids = $main_products_ids;
 
-			$variation_products_query = "SELECT DISTINCT post_parent FROM {$this->_table_prefix}posts
-				WHERE {$this->_table_prefix}posts.post_parent IN ($main_products_ids_string)
-				AND {$this->_table_prefix}posts.post_type = 'product_variation'
-				AND {$this->_table_prefix}posts.post_status = 'publish'
-				ORDER BY ID";
+			if ( $with_variation ) {
+				$main_placeholders = implode( ',', array_fill( 0, count( $main_products_ids ), '%d' ) );
 
-			// Get the ids of the variable products.
-			$variation_products = $this->_wpdb->get_col( $variation_products_query );
+				$variation_parents = $this->_wpdb->get_col(
+					$this->_wpdb->prepare(
+						"SELECT DISTINCT post_parent FROM {$this->_table_prefix}posts
+						WHERE post_parent IN ($main_placeholders)
+						AND post_type = 'product_variation'
+						AND post_status = 'publish'
+						ORDER BY ID",
+						...$main_products_ids
+					)
+				);
 
-			// If there are no variations, return the main product ids.
-			if ( count( $variation_products ) < 1 ) {
-				return $main_products_ids;
+				$variation_parents = array_values( array_unique( array_filter( array_map( 'absint', $variation_parents ) ) ) );
+
+				if ( ! empty( $variation_parents ) ) {
+					$item_ids = array_values( array_diff( $main_products_ids, $variation_parents ) );
+
+					$variation_parent_placeholders = implode( ',', array_fill( 0, count( $variation_parents ), '%d' ) );
+					$product_variations_ids        = $this->_wpdb->get_col(
+						$this->_wpdb->prepare(
+							"SELECT DISTINCT ID FROM {$this->_table_prefix}posts
+							WHERE post_parent IN ($variation_parent_placeholders)
+							AND post_type = 'product_variation'
+							AND post_status = 'publish'
+							ORDER BY ID",
+							...$variation_parents
+						)
+					);
+
+					$product_variations_ids = array_values( array_unique( array_filter( array_map( 'absint', $product_variations_ids ) ) ) );
+					$item_ids               = array_merge( $item_ids, $product_variations_ids );
+				}
 			}
 
-			$variation_products_ids_string = implode( ', ', $variation_products );
+			sort( $item_ids );
 
-			// Remove the main product ids of products that have a valid variable version from the list to keep only the ids of the simple products.
-			$simple_products_ids = array_diff( $main_products_ids, $variation_products );
+			return array(
+				'item_ids'             => array_values( array_unique( $item_ids ) ),
+				'last_main_product_id' => $next_cursor,
+				'discovery_complete'   => count( $main_products_ids ) < $slice_limit,
+			);
+		}
 
-			$product_variations_query = "SELECT DISTINCT ID FROM {$this->_table_prefix}posts
-				WHERE {$this->_table_prefix}posts.post_parent IN ($variation_products_ids_string)
-				AND {$this->_table_prefix}posts.post_type = 'product_variation'
-				AND {$this->_table_prefix}posts.post_status = 'publish'
-				ORDER BY ID";
+		/**
+		 * Sanitizes category IDs from the stored category mapping string.
+		 *
+		 * @param string $category_string Comma-separated category IDs.
+		 *
+		 * @return int[]
+		 */
+		private function sanitize_category_ids( $category_string ) {
+			$category_string = wp_strip_all_tags( (string) $category_string );
+			$category_parts  = array_map( 'trim', explode( ',', $category_string ) );
+			$category_ids    = array_filter( array_map( 'absint', $category_parts ) );
 
-			// Now get the variations.
-			$product_variations_ids = $this->_wpdb->get_col( $product_variations_query );
-
-			// Combine the variable product ids with the remaining simple product ids.
-			$all_product_ids = array_merge( $simple_products_ids, $product_variations_ids );
-			asort( $all_product_ids );
-
-			return $all_product_ids;
+			return array_values( array_unique( $category_ids ) );
 		}
 
 		/**
@@ -476,7 +511,7 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 		public function update_feed_performance_meta( $feed_id, $meta_key, $meta_value ) {
 			$main_table = $this->_table_prefix . 'feedmanager_product_feedmeta';
 
-			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Custom feed meta table with dedicated product_feed_id and meta_key indexes; this is not a wp_postmeta scan.
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key,WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Custom feed meta table with dedicated product_feed_id/meta_key indexes; required column names trigger generic meta sniff warnings.
 			$exists = $this->_wpdb->get_var(
 				$this->_wpdb->prepare(
 					"SELECT meta_id FROM $main_table WHERE product_feed_id = %d AND meta_key = %s",
@@ -489,9 +524,12 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key,WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Updating a keyed row in the custom feed meta table; these required column names trigger a generic meta sniff.
 				return $this->_wpdb->update(
 					$main_table,
+					// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Meta value storage is required for this custom feed meta table schema.
 					array( 'meta_value' => $meta_value ),
 					array(
+						// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- This is a keyed update against the plugin's custom feed meta table.
 						'product_feed_id' => $feed_id,
+						// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- This is a keyed update against the plugin's custom feed meta table.
 						'meta_key'        => $meta_key,
 					),
 					array( '%s' ),
@@ -504,7 +542,9 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 				$main_table,
 				array(
 					'product_feed_id' => $feed_id,
+					// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- This is an indexed key column in the plugin's custom feed meta table.
 					'meta_key'        => $meta_key,
+					// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Meta value storage is required for this custom feed meta table schema.
 					'meta_value'      => $meta_value,
 				),
 				array( '%d', '%s', '%s' )
@@ -814,7 +854,21 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 				$main_table = $this->_table_prefix . 'feedmanager_product_feedmeta';
 
 				return $this->_wpdb->get_results(
-					$this->_wpdb->prepare( "SELECT * FROM $main_table WHERE product_feed_id = %d AND meta_key != 'category_mapping' AND meta_key != 'product_filter_query' ORDER BY meta_id", $feed_id ), ARRAY_A );
+					$this->_wpdb->prepare(
+						"SELECT * FROM $main_table
+						WHERE product_feed_id = %d
+						AND meta_key != 'category_mapping'
+						AND meta_key != 'product_filter_query'
+						AND meta_key != 'wppfm_performance_enabled'
+						AND meta_key != 'wppfm_performance_period_days'
+						AND meta_key != 'wppfm_performance_high_percentage'
+						AND meta_key != 'wppfm_performance_last_update_gmt'
+						AND meta_key != 'wppfm_performance_last_analyzed_count'
+						ORDER BY meta_id",
+						$feed_id
+					),
+					ARRAY_A
+				);
 			} else {
 				return false;
 			}
@@ -892,6 +946,7 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 		public function clear_feed_batch_options() {
 			delete_site_option( 'wppfm_background_process_key' );
 			$this->_wpdb->query( "DELETE FROM {$this->_wpdb->options} WHERE option_name LIKE '%_batch_%'" );
+			$this->_wpdb->query( "DELETE FROM {$this->_wpdb->options} WHERE option_name LIKE 'wppfm_batch_metadata_%'" );
 		}
 
 		/**
@@ -899,6 +954,7 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 		 */
 		public function clear_feed_batch_sitemeta() {
 			$this->_wpdb->query( "DELETE FROM {$this->_wpdb->sitemeta} WHERE meta_key LIKE '%_batch_%'" );
+			$this->_wpdb->query( "DELETE FROM {$this->_wpdb->sitemeta} WHERE meta_key LIKE 'wppfm_batch_metadata_%'" );
 		}
 
 		public function get_own_variable_product_attributes( $variable_id ) {

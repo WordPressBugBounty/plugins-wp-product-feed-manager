@@ -470,6 +470,6 @@ function wppfm_filterInputCntrl( feedId, filterLevel, inputLevel, value ) {
 
 	var style = ! splitValue ? 'style="display:none"' : 'style="display:initial"';
 
-	return '<span id="filter-input-span-' + identString + '"' + style + '>' + andString + '<input type="text" name="filter-value" id="filter-input-control-' + identString
+	return '<span id="filter-input-span-' + identString + '"' + style + '>' + andString + '<input type="text" class="wppfm-filter-input-control" name="filter-value" id="filter-input-control-' + identString
 		+ '" onchange="wppfm_filterChanged(' + feedId + ', ' + filterLevel + ', ' + inputLevel + ')" value="' + splitValue + '"></span>';
 }

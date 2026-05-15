@@ -67,6 +67,23 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 			wp_enqueue_script( 'wppfm_message-handling-script', WPPFM_PLUGIN_URL . '/includes/user-interface/js/wppfm_msg_events' . $this->_js_min . '.js', array( 'jquery' ), $this->_version_stamp, true );
 			wp_enqueue_script( 'wppfm_notice-handling-script', WPPFM_PLUGIN_URL . '/includes/user-interface/js/wppfm-promotion-notice' . $this->_js_min . '.js', array( 'jquery' ), $this->_version_stamp, true );
 
+			// Nonces and AJAX URL for admin notice scripts (not tied to wppfm_data-handling-script, which only loads on plugin screens).
+			wp_localize_script(
+				'wppfm_message-handling-script',
+				'wppfmDismissNotice',
+				array(
+					'nonce' => wp_create_nonce( 'wppfm-dismiss-admin-notice' ),
+				)
+			);
+			wp_localize_script(
+				'wppfm_notice-handling-script',
+				'ajax_object',
+				array(
+					'ajax_url'             => admin_url( 'admin-ajax.php' ),
+					'cancelPromotionNonce' => wp_create_nonce( 'wppfm-ajax-cancel-promotion-notice-nonce' ),
+				)
+			);
+
 			// Do not load the other scripts unless a wppfm page is on.
 			if ( ! wppfm_on_own_main_plugin_page() ) {
 				return;
@@ -98,7 +115,7 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 			// Make unique nonce for all Ajax requests.
 			wp_localize_script(
 				'wppfm_data-handling-script',
-				'myAjaxNonces',
+				'wppfmAjaxNonces',
 				array(
 					// URL to wp-admin/admin-ajax.php to process the request
 					'ajaxurl'                        => admin_url( 'admin-ajax.php' ),
@@ -161,7 +178,7 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 			// Make unique nonce for all Ajax requests.
 			wp_localize_script(
 				'wppfm_data-handling-script',
-				'myAjaxNonces',
+				'wppfmAjaxNonces',
 				array(
 					// URL to wp-admin/admin-ajax.php to process the request.
 					'ajaxurl'                      => admin_url( 'admin-ajax.php' ),
@@ -202,7 +219,7 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 			// Make unique nonce for all Ajax requests.
 			wp_localize_script(
 				'wppfm_data-handling-script',
-				'myAjaxNonces',
+				'wppfmAjaxNonces',
 				array()
 			);
 		}
@@ -334,4 +351,4 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 
 endif;
 
-$my_ajax_registration_class = new WPPFM_Register_Scripts();
+$wppfm_ajax_registration_class = new WPPFM_Register_Scripts();

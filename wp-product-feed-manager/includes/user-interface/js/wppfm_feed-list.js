@@ -57,6 +57,9 @@ function wppfm_resetFeedList() {
 function wppfm_resetFeedStatus( feedData ) {
 	wppfm_checkNextFeedInQueue(
 		function() {
+			if ( feedData[ 'validation_failure_message' ] ) {
+				wppfm_showErrorMessage( feedData[ 'validation_failure_message' ] );
+			}
 			wppfm_updateFeedRowStatus( feedData[ 'product_feed_id' ], parseInt( feedData[ 'status_id' ] ) );
 			wppfm_updateFeedRowData( feedData );
 		}
@@ -110,10 +113,20 @@ function wppfm_feedListTable( list ) {
 	return htmlCode;
 }
 
+/**
+ * Converts a feed type label to the URL-safe slug used by the feed editor.
+ *
+ * @param {string} feedType Feed type label.
+ * @returns {string} Lowercase, dash-separated feed type slug.
+ */
+function wppfm_getFeedTypeSlug( feedType ) {
+	return ( feedType || '' ).toString().trim().replace( /\s+/g, '-' ).toLowerCase();
+}
+
 function feedReadyActions( feedId, feedUrl, status, title, feedTypeName, feedType ) {
 	var fileExists   = 'No feed generated' !== feedUrl;
 	var fileName     = feedUrl.lastIndexOf( '/' ) > 0 ? feedUrl.slice( feedUrl.lastIndexOf( '/' ) - feedUrl.length + 1 ) : title;
-	var tabTitle     = feedType.replace( / /g, '-' ).toLowerCase();
+	var tabTitle     = wppfm_getFeedTypeSlug( feedType );
 	var actionId     = title.replace( / /g, '-' ).toLowerCase();
 	var changeStatus = 'ok' === status ? wppfm_feed_list_form_vars.list_deactivate : wppfm_feed_list_form_vars.list_activate;
 
@@ -121,25 +134,26 @@ function feedReadyActions( feedId, feedUrl, status, title, feedTypeName, feedTyp
 	htmlCode    += fileExists ? ' | <a href="javascript:void(0);" id="wppfm-view-' + actionId + '-action" onclick="wppfm_viewFeed(\'' + feedUrl + '\')">' + wppfm_feed_list_form_vars.list_view + '</a>' : '';
 	htmlCode    += ' | <a href="javascript:void(0);" id="wppfm-delete-' + actionId + '-action" onclick="wppfm_deleteSpecificFeed(' + feedId + ', \'' + fileName + '\')">' + wppfm_feed_list_form_vars.list_delete + '</a>';
 	htmlCode    += fileExists ? '<a href="javascript:void(0);" id="wppfm-deactivate-' + actionId + '-action" onclick="wppfm_deactivateFeed(' + feedId + ')" id="feed-status-switch-' + feedId + '"> | ' + changeStatus + '</a>' : '';
-	htmlCode    += wppfmEndOfActionsCode( feedId, actionId, feedTypeName, title, feedType );
+	htmlCode    += wppfmEndOfActionsCode( feedId, actionId, title, feedType );
 	return htmlCode;
 }
 
 function feedNotReadyActions( feedId, feedUrl, title, feedType ) {
 	var fileName     = feedUrl.lastIndexOf( '/' ) > 0 ? feedUrl.slice( feedUrl.lastIndexOf( '/' ) - feedUrl.length + 1 ) : title;
+	var tabTitle     = wppfm_getFeedTypeSlug( feedType );
 	var actionId     = title.replace( / /g, '-' ).toLowerCase();
 
 	var htmlCode = '<strong>';
-	htmlCode    += '<a href="javascript:void(0);" id="wppfm-edit-' + actionId + '-action" onclick="parent.location=\'admin.php?page=wppfm-feed-editor-page&feed-type=' + feedType + '&id=' + feedId + '\'">' + wppfm_feed_list_form_vars.list_edit + '</a>';
+	htmlCode    += '<a href="javascript:void(0);" id="wppfm-edit-' + actionId + '-action" onclick="parent.location=\'admin.php?page=wppfm-feed-editor-page&feed-type=' + tabTitle + '&id=' + feedId + '\'">' + wppfm_feed_list_form_vars.list_edit + '</a>';
 	htmlCode    += ' | <a href="javascript:void(0);" id="wppfm-delete-' + actionId + '-action" onclick="wppfm_deleteSpecificFeed(' + feedId + ', \'' + fileName + '\')"> ' + wppfm_feed_list_form_vars.list_delete + '</a>';
-	htmlCode    += wppfmEndOfActionsCode( feedId, actionId, feedType, title );
+	htmlCode    += wppfmEndOfActionsCode( feedId, actionId, title, feedType );
 	htmlCode    += wppfm_addFeedStatusChecker( feedId );
 	return htmlCode;
 }
 
-function wppfmEndOfActionsCode( feedId, actionId, feedTypeName, title, feedType ) {
+function wppfmEndOfActionsCode( feedId, actionId, title, feedType ) {
 	var htmlCode = ' | <a href="javascript:void(0);" id="wppfm-duplicate-' + actionId + '-action" onclick="wppfm_duplicateFeed(' + feedId + ', \'' + title + '\')">' + wppfm_feed_list_form_vars.list_duplicate + '</a>';
-	htmlCode += 'Product Feed' === feedType ? ' | <a href="javascript:void(0);" id="wppfm-regenerate-' + actionId + '-action" onclick="wppfm_regenerateFeed(' + feedId + ')">' + wppfm_feed_list_form_vars.list_regenerate + '</a>' : '';
+	htmlCode += 'product-feed' === wppfm_getFeedTypeSlug( feedType ) ? ' | <a href="javascript:void(0);" id="wppfm-regenerate-' + actionId + '-action" onclick="wppfm_regenerateFeed(' + feedId + ')">' + wppfm_feed_list_form_vars.list_regenerate + '</a>' : '';
 	htmlCode += '</strong>';
 
 	return htmlCode;

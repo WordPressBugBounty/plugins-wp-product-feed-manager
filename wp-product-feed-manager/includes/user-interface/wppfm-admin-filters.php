@@ -38,12 +38,6 @@ function wppfm_plugins_action_links( $actions, $plugin_file, $plugin_data, $cont
 
 add_filter( 'plugin_action_links_' . WPPFM_PLUGIN_CONSTRUCTOR, 'wppfm_plugins_action_links', 10, 4 );
 
-function wppfm_change_query_filter() {
-	return 100;
-}
-
- add_filter( 'wppfm_product_query_limit', 'wppfm_change_query_filter' );
-
 /**
  * Removes the Visit plugin site item at the plugin description on the Plugins page if this is a WooCommerce plugin version.
  *
@@ -53,11 +47,11 @@ function wppfm_change_query_filter() {
  * @return  array   HTML code that adds a link to the plugin settings page.
  * @since 3.13.0
  */
-function remove_visit_plugin_site_link_for_woo_product_feed_manager( $plugin_meta, $plugin_file, $plugin_data, $status ) {
+function wppfm_remove_visit_plugin_site_link_for_woo_product_feed_manager( $plugin_meta, $plugin_file, $plugin_data, $status ) {
 	if ( $plugin_file === 'woo-product-feed-manager/woo-product-feed-manager.php' ) {
 		array_pop( $plugin_meta ); // Removes the last item in the array, which always is the Visit plugin site link.
 	}
 	return $plugin_meta;
 }
 
-add_filter( 'plugin_row_meta', 'remove_visit_plugin_site_link_for_woo_product_feed_manager', 10, 4 );
+add_filter( 'plugin_row_meta', 'wppfm_remove_visit_plugin_site_link_for_woo_product_feed_manager', 10, 4 );

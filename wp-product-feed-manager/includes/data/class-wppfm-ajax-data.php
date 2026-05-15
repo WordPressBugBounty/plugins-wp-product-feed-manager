@@ -47,7 +47,7 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * Returns a list of all active feeds to an ajax caller.
 		 */
 		public function wppfm_get_list_of_feeds() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'postFeedsListNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-post-feeds-list-nonce' ) ) {
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'postFeedsListNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-post-feeds-list-nonce' ) && current_user_can( 'edit_feeds' ) && is_admin() ) {
 				$list = $this->_queries_class->get_feeds_list();
 
 				// @since 2.1.0 due to implementation of i18n to the plugin and for backwards compatibility, we need to change
@@ -75,7 +75,7 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * Returns a list of backups the user has made.
 		 */
 		public function wppfm_get_list_of_backups() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'postBackupListNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-backups-list-nonce' ) ) {
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'postBackupListNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-backups-list-nonce' ) && current_user_can( 'manage_options' ) && is_admin() ) {
 				echo wp_json_encode( $this->_files_class->make_list_of_active_backups() );
 			} else {
 				$this->show_not_allowed_error_message();
@@ -89,14 +89,14 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * Returns a JSON string containing an array with the setting options.
 		 */
 		public function wppfm_get_settings_options() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'postSetupOptionsNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-setting-options-nonce' ) ) {
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'postSetupOptionsNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-setting-options-nonce' ) && current_user_can( 'manage_options' ) && is_admin() ) {
 				$auto_feed_fix_option = 'true' === get_option( 'wppfm_auto_feed_fix' ) ? 'true' : 'false';
 				$disabled_background_mode = 'true' === get_option( 'wppfm_disabled_background_mode' ) ? 'true' : 'false';
 				$feed_process_logger = 'true' === get_option( 'wppfm_process_logger_status' ) ? 'true' : 'false';
 				$show_product_identifiers = 'true' === get_option( 'wppfm_show_product_identifiers' ) ? 'true' : 'false';
 				$manual_channel_update = 'true' === get_option( 'wppfm_manual_channel_update' ) ? 'true' : 'false';
 				$third_party_attribute_keywords = sanitize_text_field( get_option( 'wppfm_third_party_attribute_keywords' ) );
-				$notice_mailaddress = sanitize_email( get_option( 'wppfm_notice_mailaddress' ) );
+				$notice_mailaddress = class_exists( 'WPPFM_Email' ) ? WPPFM_Email::format_recipient_list_for_display( get_option( 'wppfm_notice_mailaddress' ) ) : sanitize_text_field( get_option( 'wppfm_notice_mailaddress' ) );
 
 				$options = array(
 					$auto_feed_fix_option,
@@ -121,7 +121,7 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * also adds stored metadata to the output fields
 		 */
 		public function wppfm_get_output_fields() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'outputFieldsNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-output-fields-nonce' ) ) {
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'outputFieldsNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-output-fields-nonce' ) && current_user_can( 'edit_feeds' ) && is_admin() ) {
 				$data_class = new WPPFM_Data();
 
 				// Get the posted inputs.
@@ -163,7 +163,7 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * Gets all the different source fields from the custom products and third party sources and combines them into one list.
 		 */
 		public function wppfm_get_input_fields() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'inputFieldsNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-input-fields-nonce' ) ) {
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'inputFieldsNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-input-fields-nonce' ) && current_user_can( 'edit_feeds' ) && is_admin() ) {
 				$source_id = filter_input( INPUT_POST, 'sourceId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 				switch ( $source_id ) {
@@ -188,7 +188,7 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 						break;
 
 					default:
-						if ( 'valid' === get_option( 'wppfm_lic_status' ) ) { // error message for paid versions
+						if ( 'valid' === 'valid' ) { // error message for paid versions
 							echo '<div id="error">' . esc_html__(
 								'Could not add custom fields because I could not identify the channel.
 									If not already done add the correct channel in the Manage Channels page.
@@ -222,7 +222,7 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * Gets the stored main feed query string.
 		 */
 		public function wppfm_get_feed_filters() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'inputFeedFiltersNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-feed-filters-nonce' ) ) {
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'inputFeedFiltersNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-feed-filters-nonce' ) && current_user_can( 'edit_feeds' ) && is_admin() ) {
 				$feed_id = filter_input( INPUT_POST, 'feedId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 				$data_class = new WPPFM_Data();
@@ -241,7 +241,7 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * Gets the current feed status.
 		 */
 		public function wppfm_get_feed_status() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'feedStatusNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-feed-status-nonce' ) ) {
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'feedStatusNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-feed-status-nonce' ) && current_user_can( 'edit_feeds' ) && is_admin() ) {
 				$feed_id = filter_input( INPUT_POST, 'sourceId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 				$feed_master = new WPPFM_Feed_Master_Class( $feed_id );
@@ -260,9 +260,9 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * Updates the feed data to the database. Creates a new record if the feed data does not exist.
 		 */
 		public function wppfm_update_feed_data() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'updateFeedDataNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-update-feed-data-nonce', 'edit_feeds' ) ) {
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'updateFeedDataNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-update-feed-data-nonce' ) && current_user_can( 'edit_feeds' ) && is_admin() ) {
 				// Get the posted feed data.
-				// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce verification is handled by safe_ajax_call() above.
+				// phpcs:disable WordPress.Security.NonceVerification.Missing -- Nonce verification is handled above before reading request payload.
 				$ajax_feed_data = isset( $_POST['feed'] ) ? json_decode( sanitize_text_field( wp_unslash( $_POST['feed'] ) ) ) : array();
 				$feed_filter    = isset( $_POST['feedFilter'] ) ? sanitize_text_field( wp_unslash( $_POST['feedFilter'] ) ) : '';
 				$m_data         = isset( $_POST['metaData'] ) ? sanitize_text_field( wp_unslash( $_POST['metaData'] ) ) : '';
@@ -281,7 +281,7 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * Switches the status of a feed between hold and ok.
 		 */
 		public function wppfm_switch_feed_status_between_hold_and_ok() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'switchFeedStatusNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-switch-feed-status-nonce', 'edit_feeds' ) ) {
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'switchFeedStatusNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-switch-feed-status-nonce' ) && current_user_can( 'edit_feeds' ) && is_admin() ) {
 				$feed_id = filter_input( INPUT_POST, 'feedId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 				$feed_status    = $this->_queries_class->get_current_feed_status( $feed_id );
@@ -320,7 +320,7 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * Duplicates a feed.
 		 */
 		public function wppfm_duplicate_feed_data() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'duplicateFeedNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-duplicate-existing-feed-nonce', 'edit_feeds' ) ) {
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'duplicateFeedNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-duplicate-existing-feed-nonce' ) && current_user_can( 'edit_feeds' ) && is_admin() ) {
 				$feed_id = filter_input( INPUT_POST, 'feedId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 				WPPFM_Db_Management::duplicate_feed( $feed_id );
@@ -336,7 +336,7 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * Removes a feed from the feedmanager_product_feed table.
 		 */
 		public function wppfm_delete_feed() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'deleteFeedNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-delete-feed-nonce', 'delete_feeds' ) ) {
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'deleteFeedNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-delete-feed-nonce' ) && current_user_can( 'delete_feeds' ) && is_admin() ) {
 				$feed_id = filter_input( INPUT_POST, 'feedId', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 				WPPFM_Feed_Controller::remove_id_from_feed_queue( $feed_id );
@@ -355,7 +355,7 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * Generates a backup of the current feeds and plugin settings.
 		 */
 		public function wppfm_backup_current_data() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'backupNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-backup-nonce', 'manage_options' ) ) {
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'backupNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-backup-nonce' ) && current_user_can( 'manage_options' ) && is_admin() ) {
 				$backup_file_name = filter_input( INPUT_POST, 'fileName', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 				$result = WPPFM_Db_Management::backup_database_tables( $backup_file_name );
 				echo esc_html( $result );
@@ -371,7 +371,7 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * Removes a backup file from the backup folder.
 		 */
 		public function wppfm_delete_backup_file() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'deleteBackupNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-delete-backup-nonce', 'manage_options' ) ) {
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'deleteBackupNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-delete-backup-nonce' ) && current_user_can( 'manage_options' ) && is_admin() ) {
 				$backup_file_name = filter_input( INPUT_POST, 'fileName', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 				$result = WPPFM_Db_Management::delete_backup_file( $backup_file_name );
 				echo esc_html( $result );
@@ -387,7 +387,7 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * Restores a Feed Manager backup.
 		 */
 		public function wppfm_restore_backup_file() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'restoreBackupNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-restore-backup-nonce', 'manage_options' ) ) {
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'restoreBackupNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-restore-backup-nonce' ) && current_user_can( 'manage_options' ) && is_admin() ) {
 				$backup_file_name = filter_input( INPUT_POST, 'fileName', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 				$result = WPPFM_Db_Management::restore_backup( $backup_file_name );
 				echo esc_html( $result );
@@ -403,7 +403,7 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * Makes a duplicate of an existing backup.
 		 */
 		public function wppfm_duplicate_backup_file() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'duplicateBackupNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-duplicate-backup-nonce', 'manage_options' ) ) {
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'duplicateBackupNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-duplicate-backup-nonce' ) && current_user_can( 'manage_options' ) && is_admin() ) {
 				$backup_file_name = filter_input( INPUT_POST, 'fileName', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 				$result = WPPFM_Db_Management::duplicate_backup_file( $backup_file_name );
 				echo esc_html( $result );
@@ -419,7 +419,7 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * Gets the next feed if from the feed queue. Returns a false string if the feed queue is empty.
 		 */
 		public function wppfm_get_next_feed_in_queue() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'nextFeedInQueueNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-next-feed-in-queue-nonce' ) ) {
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'nextFeedInQueueNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-next-feed-in-queue-nonce' ) && current_user_can( 'edit_feeds' ) && is_admin() ) {
 				$next_feed_id = WPPFM_Feed_Controller::get_next_id_from_feed_queue();
 				echo false !== $next_feed_id ? esc_html( $next_feed_id ) : 'false';
 			} else {
@@ -434,7 +434,7 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * Registers a notice dismission.
 		 */
 		public function wppfm_register_notice_dismission() {
-			if ( $this->safe_ajax_call( filter_input( INPUT_POST, 'noticeDismissionNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-duplicate-backup-nonce', 'manage_options' ) ) {
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'noticeDismissionNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-notice-dismission-nonce' ) && current_user_can( 'manage_options' ) && is_admin() ) {
 
 				update_option( 'wppfm_license_notice_suppressed', true );
 				echo 'true';
@@ -450,10 +450,14 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 * Handling the cancellation of the summer promotion notice.
 		 */
 		public function wppfm_cancel_promotion() {
-			update_option( 'wppfm_black_friday_promotion_2024_dismissed', 'canceled' );
+			if ( wp_verify_nonce( filter_input( INPUT_POST, 'cancelPromotionNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-cancel-promotion-notice-nonce' ) && current_user_can( 'manage_options' ) && is_admin() ) {
+				update_option( 'wppfm_black_friday_promotion_2024_dismissed', 'canceled' );
 
-			$result = get_option( 'wppfm_black_friday_promotion_2024_dismissed' );
-			echo 'Removed black friday promotion ' . esc_html( $result ) . '!';
+				$result = get_option( 'wppfm_black_friday_promotion_2024_dismissed' );
+				echo 'Removed black friday promotion ' . esc_html( $result ) . '!';
+			} else {
+				$this->show_not_allowed_error_message();
+			}
 
 			// IMPORTANT: don't forget to exit.
 			exit;
@@ -555,4 +559,4 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 
 endif;
 
-$my_ajax_data_class = new WPPFM_Ajax_Data();
+$wppfm_ajax_data_class = new WPPFM_Ajax_Data();

@@ -85,12 +85,16 @@ trait WPPFM_Feed_Processor_Functions {
 		}
 
 		// WPML support.
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WPML integration hook intentionally uses the external plugin's public hook name.
 		if ( has_filter( 'wpml_translation' ) ) {
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WPML integration hook intentionally uses the external plugin's public hook name.
 			$product_data = apply_filters( 'wpml_translation', $product_data, $this->_feed_data->language );
 		}
 
 		// Polylang support.
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Polylang integration hook intentionally uses the external plugin's public hook name.
 		if ( has_filter( 'pll_translation' ) ) {
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Polylang integration hook intentionally uses the external plugin's public hook name.
 			$product_data = apply_filters( 'pll_translation', $product_data, $this->_feed_data->language );
 		}
 

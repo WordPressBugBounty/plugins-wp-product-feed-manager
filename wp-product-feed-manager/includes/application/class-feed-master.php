@@ -57,6 +57,13 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		protected $_feed_file_path;
 
 		/**
+		 * Final published feed path when generation writes to a temporary file first (regular product feeds).
+		 *
+		 * @var string
+		 */
+		protected $_final_published_feed_file_path = '';
+
+		/**
 		 * Constructor of the feed master class. Instantiates the correct background_process for the selected feed and data class.
 		 *
 		 * @param string $feed_id The id of the feed. Default 0.
@@ -150,12 +157,28 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 					return false;
 				}
 
+				// Refuse to re-prepare the same feed while the active batch still belongs to it and
+				// the worker is only between two intentional handoff requests.
+				if ( WPPFM_Feed_Controller::should_block_same_feed_startup( $this->_feed->feedId ) ) {
+					do_action(
+						'wppfm_feed_generation_message',
+						$this->_feed->feedId,
+						'Skipped feed start because the same feed is already in an active batch handoff window.',
+						'WARNING'
+					);
+
+					if ( ! $silent ) {
+						$queued_products = max( 0, intval( WPPFM_Feed_Controller::nr_ids_remaining_in_product_queue() ) );
+						echo 'started_processing-' . esc_html( $queued_products );
+					}
+
+					return false;
+				}
+
 				// Only one feed can be processing, so if other feeds than the current feed are on a processing
 				// status, set these to an error status.
 				$this->_data_class->check_for_failed_feeds( $this->_feed->feedId );
 
-				// Hook for performance monitoring - feed preparation starting
-				do_action( 'wppfm_feed_generation_preparing', $this->_feed->feedId );
 
 				$prepare_update = $this->prepare_feed_file_update();
 
@@ -171,22 +194,20 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 
 				$this->prepare_background_process();
 
-				$this->fill_the_background_queue();
+				$nr_of_products_in_feed = $this->fill_the_background_queue();
 
-				// Hook for performance monitoring - feed processing starting
-				do_action( 'wppfm_feed_generation_ready_to_start', $this->_feed->feedId );
-
-				$this->activate_feed_file_update( $this->_feed->feedId );
 
 				// Note: Do NOT delete wppfm_running_silent here. The transient must persist until the
 				// feed actually completes (success or failure), so that failure detection can send the
 				// notice email when running in silent/automatic mode. The transient is cleared in the
 				// background process complete() method when the batch finishes.
 
-				$nr_of_products_in_feed = $this->_background_process->nr_of_products_in_queue();
-
-				// Store the queued total so the UI can render progress as soon as processing starts.
+				// Store the queued total before switching status to processing so the UI can
+				// start the progress bar immediately when the status flips to "Started processing".
 				set_transient( 'wppfm_nr_of_products_to_process_' . $this->_feed->feedId, intval( $nr_of_products_in_feed ), HOUR_IN_SECONDS );
+				delete_transient( 'wppfm_feed_validation_failure_notice_' . $this->_feed->feedId );
+				$this->_data_class->update_feed_status( $this->_feed->feedId, 3 ); // Set status to "Processing".
+				$this->activate_feed_file_update( $this->_feed->feedId );
 
 				if ( ! $silent ) {
 					echo 'started_processing-' . esc_html( $nr_of_products_in_feed );
@@ -230,16 +251,24 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 
 			if ( array_key_exists( 'status_id', $current_feed_status ) && '3' === $current_feed_status['status_id'] ) { // Status still processing.
 				// Get file name, including a path.
-				$file_extension = function_exists( 'wppfm_get_file_type' ) ? wppfm_get_file_type( $current_feed_status['channel_id'] ) : 'xml';
-				$feed_file      = wppfm_get_file_path( $current_feed_status['title'] . '.' . $file_extension );
+				$file_extension   = function_exists( 'wppfm_get_file_type' ) ? wppfm_get_file_type( $current_feed_status['channel_id'] ) : 'xml';
+				$published_path   = wppfm_get_file_path( $current_feed_status['title'] . '.' . $file_extension );
+				$watchdog_path    = $published_path;
+				// Regular product feeds may write to a temporary file; monitor that path so the watchdog matches the worker.
+				if ( '1' === $type_key ) {
+					$active_from_batch = WPPFM_Feed_Controller::resolve_active_feed_generation_file_path_from_batch_metadata( $feed_id );
+					if ( '' !== $active_from_batch ) {
+						$watchdog_path = $active_from_batch;
+					}
+				}
 				$current_feed_status['products_in_queue'] = get_transient( 'wppfm_nr_of_processed_products' );
 				$current_feed_status['products_to_process'] = get_transient( 'wppfm_nr_of_products_to_process_' . $feed_id );
 
 				// If it is, set the feed status to fail and change the $current_feed_status['status_id'] to 6.
-				if ( WPPFM_Feed_Controller::feed_processing_failed( $feed_file ) ) {
+				if ( WPPFM_Feed_Controller::feed_processing_failed( $watchdog_path ) ) {
 
 					do_action( 'wppfm_feed_processing_failed_file_size_stopped_increasing', $feed_id, WPPFM_Feed_Controller::nr_ids_remaining_in_product_queue() );
-					do_action( 'wppfm_register_feed_url', $feed_id, $feed_file );
+					do_action( 'wppfm_register_feed_url', $feed_id, $published_path );
 
 					// Change the status of the feed to failed processing.
 					$this->_data_class->update_feed_status( $feed_id, 6 ); // Feed status to fail.
@@ -262,6 +291,12 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 						$this->initiate_update_next_feed_in_queue();
 					}
 				}
+			}
+
+			$validation_failure_notice = get_transient( 'wppfm_feed_validation_failure_notice_' . $feed_id );
+			if ( is_string( $validation_failure_notice ) && '' !== $validation_failure_notice ) {
+				$current_feed_status['validation_failure_message'] = $validation_failure_notice;
+				$current_feed_status['status_id']                  = '6';
 			}
 
 			return $current_feed_status;
@@ -307,14 +342,33 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 			}
 
 			$this->_data_class->set_nr_of_feed_products( $this->_feed->feedId, '0' ); // 0 products.
-			$this->_data_class->update_feed_status( $this->_feed->feedId, 3 ); // Set status to "Processing".
 
 			$file_extension = function_exists( 'wppfm_get_file_type' ) ? wppfm_get_file_type( $this->_feed->channel ) : 'xml';
 
-			$this->_feed_file_path = wppfm_get_file_path( $this->_feed->title . '.' . $file_extension );
+			$feed_file_name = $this->_feed->title . '.' . $file_extension;
+			$final_path     = wppfm_get_file_path( $feed_file_name );
 
-			// Clear the existing feed.
-			$wp_filesystem->put_contents( $this->_feed_file_path, '', FS_CHMOD_FILE );
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+			$raw_type_id = isset( $this->_feed->feedTypeId ) ? (string) $this->_feed->feedTypeId : '1';
+			$feed_type_id = ( '' === $raw_type_id ) ? '1' : $raw_type_id;
+			// Regular product feeds (WPPFM_Feed_Processor): write to a temp file so the published file stays intact until completion.
+			$use_temporary_feed_file = ( '1' === $feed_type_id );
+
+			$this->_final_published_feed_file_path = '';
+
+			if ( $use_temporary_feed_file ) {
+				$this->_final_published_feed_file_path = $final_path;
+				$this->_feed_file_path                   = wppfm_get_temporary_feed_file_path( $feed_file_name );
+
+				// Initialize the temporary artifact only; leave the published feed file unchanged until promotion succeeds.
+				if ( false === $wp_filesystem->put_contents( $this->_feed_file_path, '', FS_CHMOD_FILE ) ) {
+					/* translators: %s: Temporary feed file path */
+					return sprintf( __( '1431 - Could not initialize the temporary feed file (%s). Check folder permissions.', 'wp-product-feed-manager' ), $this->_feed_file_path );
+				}
+			} else {
+				$this->_feed_file_path = $final_path;
+				$wp_filesystem->put_contents( $this->_feed_file_path, '', FS_CHMOD_FILE );
+			}
 
 			// Clear the file size checker.
 			delete_transient( 'wppfm_feed_file_size' );
@@ -325,7 +379,18 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 			$channel_class = new WPPFM_Channel();
 			$channel_name  = $channel_class->get_channel_short_name( $this->_feed->channel );
 
-			$logger_message = sprintf( 'Feed %s is a %s feed stored as %s, with an original feed status %s.', $this->_feed->feedId, $channel_name, $this->_feed_file_path, $initial_feed_status );
+			if ( '' !== $this->_final_published_feed_file_path ) {
+				$logger_message = sprintf(
+					'Feed %1$s is a %2$s feed writing to %3$s (final publication path %4$s), with an original feed status %5$s.',
+					$this->_feed->feedId,
+					$channel_name,
+					$this->_feed_file_path,
+					$this->_final_published_feed_file_path,
+					$initial_feed_status
+				);
+			} else {
+				$logger_message = sprintf( 'Feed %s is a %s feed stored as %s, with an original feed status %s.', $this->_feed->feedId, $channel_name, $this->_feed_file_path, $initial_feed_status );
+			}
 			do_action( 'wppfm_feed_generation_message', $this->_feed->feedId, $logger_message );
 
 			return true;
@@ -340,6 +405,15 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 
 			$this->_background_process->set_feed_data( $this->_feed );
 			$this->_background_process->set_file_path( $this->_feed_file_path );
+			if ( '' !== $this->_final_published_feed_file_path ) {
+				$this->_background_process->set_temporary_feed_batch_paths(
+					$this->_final_published_feed_file_path,
+					$this->_feed_file_path,
+					true
+				);
+			} else {
+				$this->_background_process->set_temporary_feed_batch_paths( '', '', false );
+			}
 			$this->_background_process->set_pre_data( $this->get_required_pre_data() );
 			$this->_background_process->set_channel_details( $this->get_channel_details() );
 			$this->_background_process->set_relations_table( $this->channel_to_woocommerce_field_relations() );
@@ -351,53 +425,84 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 		private function fill_the_background_queue() {
 			// Start with an empty queue.
 			$this->_background_process->clear_the_queue();
-			 $sw_status_control = 30 * 3.3;
-			 $product_counter   = 0;
-			
-			 // Add the header to the queue.
-			 $header_string = $this->get_feed_start_line();
-			 $this->_background_process->push_to_queue( array( 'file_format_line' => $header_string ) );
-			
-			 do {
-			 	$product_ids = $this->get_product_ids_for_feed();
-			
-			 	// Add the product ids to the queue.
-			 	foreach ( $product_ids as $product_id ) {
-			 		$this->_background_process->push_to_queue( $product_id );
-			
-			 		$product_counter++;
-			
-			 		if ( $product_counter > $sw_status_control ) {
-			 			break;
-			 		}
-			 	}
-			 } while ( ! empty( $product_ids ) && $sw_status_control > $product_counter );
+			$product_counter = 0;
 
+			// if this is a Google Merchant Promotions Feed, we need to fill the queue only with one dummy product id.
+			if ( '3' === $this->_feed->feedTypeId ) {
+				$this->_background_process->push_to_queue( array( 'product_id' => '0' ) );
+				do_action( 'wppfm_feed_queue_filled', $this->_feed->feedId, 1 );
+				return 1;
+			}
+
+			// The transient cursor is deprecated in incremental mode.
 			delete_transient( 'wppfm_start_product_id' );
-			set_transient( 'wppfm_nr_of_processed_products', 0 ); // (Re)set the processed product counter for the progress bar.
+			set_transient( 'wppfm_nr_of_processed_products', 0, WPPFM_TRANSIENT_LIVE ); // (Re)set the processed product counter for the progress bar.
+			set_transient( 'wppfm_nr_of_handled_items', 0, WPPFM_TRANSIENT_LIVE ); // Keep handled-items counter aligned from startup.
 
-			// implement the wppfm_feed_ids_in_queue filter on the queue.
-			$this->_background_process->apply_filter_to_queue( $this->_feed->feedId );
+			$product_counter = $this->count_total_products_for_incremental_queue();
+
+			// Seed the queue with one control item so the worker can discover the first active slice.
+			$this->_background_process->push_to_queue( array( 'load_next_slice' => true ) );
+
+			$file_extension = function_exists( 'wppfm_get_file_type' ) ? wppfm_get_file_type( $this->_feed->channel ) : 'xml';
+			$slice_limit    = max( 1, absint( apply_filters( 'wppfm_product_query_limit', 1000 ) ) );
+
+			// Keep all incremental runtime fields together in batch metadata to avoid serializing the full queue.
+			$this->_background_process->set_incremental_state(
+				array(
+					'mode'                      => 'incremental',
+					'last_main_product_id'      => -1,
+					'slice_limit'               => $slice_limit,
+					'total_products_to_process' => $product_counter,
+					'discovery_complete'        => false,
+					'header_written'            => false,
+					'footer_written'            => false,
+					'active_slice_loaded'       => false,
+					'file_extension'            => $file_extension,
+					'header_string'             => $this->get_feed_start_line(),
+					'footer_string'             => apply_filters(
+						'wppfm_footer_string',
+						$this->_channel_class->footer(),
+						$this->_feed->feedId,
+						$this->_feed->feedTypeId
+					),
+				)
+			);
 
 			do_action( 'wppfm_feed_queue_filled', $this->_feed->feedId, $product_counter );
 
-			$product_ids = null;
+			return $product_counter;
+		}
 
-			$file_extension = function_exists( 'wppfm_get_file_type' ) ? wppfm_get_file_type( $this->_feed->channel ) : 'xml';
+		/**
+		 * Performs a count-only discovery pass so progress totals stay exact without storing all IDs.
+		 *
+		 * @return int
+		 */
+		private function count_total_products_for_incremental_queue() {
+			$queries_class = new WPPFM_Queries();
+			$selected_categories = apply_filters( 'wppfm_selected_categories', $this->make_category_selection_string(), $this->_feed->feedId );
+			$include_variations  = '1' === $this->_feed->includeVariations;
+			$slice_limit         = max( 1, absint( apply_filters( 'wppfm_product_query_limit', 1000 ) ) );
+			$last_main_product_id = -1;
+			$product_counter      = 0;
 
-			// Add the XML footer to the queue, except when it's a promotion feed.
-			if ( 'xml' === $file_extension && '3' !== $this->_feed->feedTypeId ) {
-				$this->_background_process->push_to_queue(
-					array(
-						'file_format_line' => apply_filters(
-							'wppfm_footer_string',
-							$this->_channel_class->footer(),
-							$this->_feed->feedId,
-							$this->_feed->feedTypeId
-						),
-					)
-				);
-			}
+			do {
+				$discovery = $queries_class->discover_post_ids_by_cursor( $selected_categories, $last_main_product_id, $include_variations, $slice_limit );
+				$last_main_product_id = isset( $discovery['last_main_product_id'] ) ? intval( $discovery['last_main_product_id'] ) : $last_main_product_id;
+				$slice_ids = isset( $discovery['item_ids'] ) && is_array( $discovery['item_ids'] ) ? $discovery['item_ids'] : array();
+				$slice_ids = array_values( array_unique( array_filter( array_map( 'absint', $slice_ids ) ) ) );
+
+				$filtered_slice = apply_filters( 'wppfm_products_in_feed_queue', $slice_ids, $this->_feed->feedId );
+				if ( ! is_array( $filtered_slice ) ) {
+					$filtered_slice = array();
+				}
+
+				$product_counter += count( array_values( array_unique( array_filter( array_map( 'absint', $filtered_slice ) ) ) ) );
+				$discovery_complete = ! empty( $discovery['discovery_complete'] );
+			} while ( ! $discovery_complete );
+
+			return $product_counter;
 		}
 
 		/**
@@ -490,26 +595,6 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 			}
 
 			return false;
-		}
-
-		/**
-		 * Produces an array with the ids of all products that should be added into the feed.
-		 *
-		 * @return array with ids.
-		 */
-		private function get_product_ids_for_feed() {
-			$queries_class = new WPPFM_Queries();
-
-			$selected_categories = apply_filters( 'wppfm_selected_categories', $this->make_category_selection_string(), $this->_feed->feedId );
-
-			$include_variations = '1' === $this->_feed->includeVariations;
-
-			$products = $queries_class->get_post_ids( $selected_categories, $include_variations );
-
-			array_filter( $products ); // Just to make sure, remove all empty elements.
-			$unique_products = array_unique( $products ); // Remove doubles.
-
-			return apply_filters( 'wppfm_products_in_feed_queue', $unique_products, $this->_feed->feedId );
 		}
 
 		/**

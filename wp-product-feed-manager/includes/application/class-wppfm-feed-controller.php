@@ -132,6 +132,159 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 		}
 
 		/**
+		 * Returns the transient key used to track an in-flight next-batch handoff for a feed.
+		 *
+		 * The marker bridges the small gap where one batch intentionally releases the worker lock
+		 * before the next async loopback request has acquired it.
+		 *
+		 * @param string $feed_id Feed id that is being handed off.
+		 *
+		 * @return string
+		 */
+		private static function get_feed_handoff_marker_key( $feed_id ) {
+			return 'wppfm_feed_handoff_marker_' . sanitize_key( (string) $feed_id );
+		}
+
+		/**
+		 * Marks a feed as being in the middle of a batch-to-batch handoff.
+		 *
+		 * @param string $feed_id Feed id being handed off.
+		 *
+		 * @return void
+		 */
+		public static function mark_feed_handoff_pending( $feed_id ) {
+			if ( '' === (string) $feed_id ) {
+				return;
+			}
+
+			$ttl = max( MINUTE_IN_SECONDS, intval( apply_filters( 'wppfm_feed_handoff_marker_ttl', 3 * MINUTE_IN_SECONDS, $feed_id ) ) );
+
+			set_site_transient(
+				self::get_feed_handoff_marker_key( $feed_id ),
+				array(
+					'feed_id' => (string) $feed_id,
+					'ts'      => time(),
+				),
+				$ttl
+			);
+		}
+
+		/**
+		 * Clears the pending handoff marker for a feed.
+		 *
+		 * @param string $feed_id Feed id whose marker should be removed.
+		 *
+		 * @return void
+		 */
+		public static function clear_feed_handoff_marker( $feed_id ) {
+			if ( '' === (string) $feed_id ) {
+				return;
+			}
+
+			delete_site_transient( self::get_feed_handoff_marker_key( $feed_id ) );
+		}
+
+		/**
+		 * Returns true when a feed has a fresh handoff marker.
+		 *
+		 * @param string $feed_id Feed id to inspect.
+		 *
+		 * @return bool
+		 */
+		public static function feed_handoff_marker_is_active_for_feed( $feed_id ) {
+			if ( '' === (string) $feed_id ) {
+				return false;
+			}
+
+			$payload = get_site_transient( self::get_feed_handoff_marker_key( $feed_id ) );
+
+			if ( ! is_array( $payload ) || empty( $payload['ts'] ) ) {
+				return false;
+			}
+
+			$ttl = max( MINUTE_IN_SECONDS, intval( apply_filters( 'wppfm_feed_handoff_marker_ttl', 3 * MINUTE_IN_SECONDS, $feed_id ) ) );
+
+			if ( ( time() - intval( $payload['ts'] ) ) > $ttl ) {
+				self::clear_feed_handoff_marker( $feed_id );
+				return false;
+			}
+
+			return true;
+		}
+
+		/**
+		 * Returns true when any active or queued feed still has a fresh handoff marker.
+		 *
+		 * @return bool
+		 */
+		public static function background_process_handoff_is_active() {
+			$candidate_feed_ids = array();
+			$active_feed_id     = self::get_active_batch_feed_id();
+			$queued_feed_id     = self::get_next_id_from_feed_queue();
+
+			if ( $active_feed_id ) {
+				$candidate_feed_ids[] = (string) $active_feed_id;
+			}
+
+			if ( $queued_feed_id ) {
+				$candidate_feed_ids[] = (string) $queued_feed_id;
+			}
+
+			$candidate_feed_ids = array_values( array_unique( array_filter( $candidate_feed_ids ) ) );
+
+			foreach ( $candidate_feed_ids as $feed_id ) {
+				if ( self::feed_handoff_marker_is_active_for_feed( $feed_id ) ) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		/**
+		 * Returns true when the currently active batch metadata belongs to the provided feed.
+		 *
+		 * @param string $feed_id Feed id to compare against the active batch metadata.
+		 *
+		 * @return bool
+		 */
+		public static function active_batch_belongs_to_feed( $feed_id ) {
+			if ( '' === (string) $feed_id ) {
+				return false;
+			}
+
+			return (string) $feed_id === (string) self::get_active_batch_feed_id();
+		}
+
+		/**
+		 * Returns true when startup should not prepare the same feed again during a live handoff.
+		 *
+		 * This is intentionally narrower than a generic "active batch exists" check so legitimate
+		 * watchdog recovery can still re-enter startup after a real crash.
+		 *
+		 * @param string $feed_id Feed id that is about to start.
+		 *
+		 * @return bool
+		 */
+		public static function should_block_same_feed_startup( $feed_id ) {
+			if ( ! self::active_batch_belongs_to_feed( $feed_id ) ) {
+				return false;
+			}
+
+			if ( self::feed_handoff_marker_is_active_for_feed( $feed_id ) ) {
+				return true;
+			}
+
+			$process_lock = get_site_transient( 'wppfm_feed_generation_process_process_lock' );
+
+			if ( $process_lock ) {
+				return true;
+			}
+
+			return self::background_process_heartbeat_is_fresh();
+		}
+
+		/**
 		 * Checks if the feed queue is empty.
 		 *
 		 * @return bool true if the feed is empty.
@@ -151,9 +304,45 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 		 */
 		public static function nr_ids_remaining_in_product_queue() {
 			$key = get_site_option( 'wppfm_background_process_key' );
-			$ids_in_product_queue = get_site_option( $key );
+			if ( empty( $key ) || ! is_string( $key ) ) {
+				return 0;
+			}
 
-			return $ids_in_product_queue ? count( $ids_in_product_queue ) - 1 : 0; // The last line in the product queue is the feed closure line, so it needs to be subtracted from the count.
+			$batch_metadata = get_site_option( 'wppfm_batch_metadata_' . $key, array() );
+			$incremental    = is_array( $batch_metadata ) && isset( $batch_metadata['incremental_state'] ) && is_array( $batch_metadata['incremental_state'] )
+				? $batch_metadata['incremental_state']
+				: array();
+			$is_incremental = isset( $incremental['mode'] ) && 'incremental' === $incremental['mode'];
+
+			$total_products = $is_incremental && isset( $incremental['total_products_to_process'] )
+				? max( 0, intval( $incremental['total_products_to_process'] ) )
+				: 0;
+			$handled_items  = get_transient( 'wppfm_nr_of_handled_items' );
+			$handled_items  = false === $handled_items ? 0 : max( 0, intval( $handled_items ) );
+
+			if ( $is_incremental ) {
+				return max( 0, $total_products - $handled_items );
+			}
+
+			// Fallback for non-incremental queues (for example promotions feeds).
+			$queue = get_site_option( $key, array() );
+			if ( ! is_array( $queue ) || empty( $queue ) ) {
+				return 0;
+			}
+
+			$remaining = 0;
+			foreach ( $queue as $queue_item ) {
+				if ( is_numeric( $queue_item ) ) {
+					++$remaining;
+					continue;
+				}
+
+				if ( is_array( $queue_item ) && array_key_exists( 'product_id', $queue_item ) && is_numeric( $queue_item['product_id'] ) ) {
+					++$remaining;
+				}
+			}
+
+			return $remaining;
 		}
 
 		/**
@@ -198,6 +387,12 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 			$process_lock = get_site_transient( 'wppfm_feed_generation_process_process_lock' );
 
 			if ( $process_lock ) {
+				return true;
+			}
+
+			// A fresh handoff marker means the previous batch deliberately released its lock
+			// and is waiting for the next loopback worker to take over.
+			if ( self::background_process_handoff_is_active() ) {
 				return true;
 			}
 
@@ -260,6 +455,66 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 		 *
 		 * @return  boolean false if the feed still grows, true if it stopped growing for a certain time.
 		 */
+		/**
+		 * Resolves the path the background worker is writing to for a feed, using active batch metadata.
+		 *
+		 * For regular feeds that use a temporary artifact, this returns the temporary path so stalled-file
+		 * detection tracks the real output file instead of the unchanged published file.
+		 *
+		 * @param string $feed_id Feed id to match against the active batch.
+		 *
+		 * @since 3.23.0
+		 *
+		 * @return string Active file path, or empty string when no matching batch metadata exists.
+		 */
+		public static function resolve_active_feed_generation_file_path_from_batch_metadata( $feed_id ) {
+			$feed_id = (string) $feed_id;
+			$key     = get_site_option( 'wppfm_background_process_key' );
+
+			if ( ! $key || ! is_string( $key ) ) {
+				return '';
+			}
+
+			$batch_metadata = get_site_option( 'wppfm_batch_metadata_' . $key, array() );
+
+			if ( ! is_array( $batch_metadata ) ) {
+				return '';
+			}
+
+			$meta_feed_id = isset( $batch_metadata['feed_id'] ) ? (string) $batch_metadata['feed_id'] : '';
+
+			if ( '' === $meta_feed_id || $meta_feed_id !== $feed_id ) {
+				return '';
+			}
+
+			if ( ! empty( $batch_metadata['file_path'] ) && is_string( $batch_metadata['file_path'] ) ) {
+				return $batch_metadata['file_path'];
+			}
+
+			return '';
+		}
+
+		/**
+		 * Returns the feed id stored in the currently active batch metadata, when available.
+		 *
+		 * @return string
+		 */
+		private static function get_active_batch_feed_id() {
+			$key = get_site_option( 'wppfm_background_process_key' );
+
+			if ( ! $key || ! is_string( $key ) ) {
+				return '';
+			}
+
+			$batch_metadata = get_site_option( 'wppfm_batch_metadata_' . $key, array() );
+
+			if ( ! is_array( $batch_metadata ) || empty( $batch_metadata['feed_id'] ) ) {
+				return '';
+			}
+
+			return (string) $batch_metadata['feed_id'];
+		}
+
 		public static function feed_processing_failed( $feed_file ) {
 
 			if ( '' === $feed_file ) {

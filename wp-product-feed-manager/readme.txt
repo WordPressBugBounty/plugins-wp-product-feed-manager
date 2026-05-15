@@ -3,18 +3,18 @@ Contributors: wpmarketingrobot, michel-jongbloed, aukejomm
 Tags: Tags: Google product feed, google merchant center, google shopping, product feed manager, woocommerce google shopping
 Donate link: https://wpmarketingrobot.com/
 Requires at least: 6.5
-Tested up to: 6.10
+Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 2.22.0
+Stable tag: 2.23.4
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 
-The WooCommerce product feed plugin built for Google. Create a Google Merchant feed in 5 minutes—no coding, no errors. Start selling on Google Shopping today.
+The WooCommerce product feed plugin built for Google. UNLIMITED products, UNLIMITED feeds—completely free. Create Google Merchant feed in 5 minutes—no coding, no errors. Start selling on Google Shopping today
 
 == Description ==
 
-Google Feed Manager for WooCommerce is a free WordPress plugin that creates compliant product feeds for Google Merchant Center. It supports 7 feed types including Primary, Supplemental, Promotions, and Local Inventory feeds. The plugin auto-maps required attributes, schedules automatic updates, and handles up to 100 products per feed. No coding required—generate your first Google Shopping feed in under 5 minutes.
+Google Feed Manager for WooCommerce is a free WordPress plugin that creates compliant product feeds for Google Merchant Center. It supports 7 feed types including Primary, Supplemental, Promotions, and Local Inventory feeds. The plugin auto-maps required attributes, schedules automatic updates, and handles UNLIMITED products efficiently. No coding required—generate your first Google Shopping feed in under 5 minutes.
 
 **This WooCommerce feed manager gets your products on Google Shopping—fast.** Generate a compliant product feed, connect it to Google Merchant Center, and start appearing in shopping feeds where buyers are searching.
 
@@ -89,8 +89,8 @@ Exclude out-of-stock items. Hide low-margin products. Cut low-performers from yo
 **Scheduled updates**
 Your feed refreshes automatically. Merchant Center pulls the latest data. You don't lift a finger.
 
-**Scales with you**
-10 products or 10,000—same speed, same reliability. Large catalogs run without slowing your site.
+**Scales with you—unlimited products, unlimited feeds**
+10 products or 100,000—same speed, same reliability. Create as many feeds as you need. Large catalogs run without slowing your site. No product caps. No feed limits. Ever.
 
 **Plays nice with your stack**
 Works with Yoast, RankMath, WooCommerce Brands, Germanized, currency switchers, and more. Premium adds WPML, Polylang, and TranslatePress.
@@ -105,13 +105,13 @@ Strictly follows Google's 2026 Merchant Center requirements and CSS guidelines. 
 
 **Free includes:**
 - All 7 Google feed types
+- **Unlimited products per feed**
+- **Unlimited number of feeds**
 - Attribute mapping and edit rules
 - Scheduled auto-updates
 - Product filters
-- Up to 100 products per feed
 
 **Pro unlocks:**
-- Unlimited products per feed
 - Advanced filtering logic
 - Full multilingual support (WPML, Polylang, TranslatePress)
 - Multi-channel: Amazon, eBay, Facebook, Instagram, Pinterest, Etsy
@@ -186,11 +186,11 @@ Yes. Set your schedule once. The plugin regenerates the feed; Merchant Center fe
 
 = Free vs Pro—what's the real difference? =
 
-**Free:** Everything you need to run Google Shopping with up to 100 products per feed. All feed types, scheduling, mapping, filters.
+**Free:** Everything you need to run Google Shopping with **unlimited products and unlimited feeds**. All feed types, scheduling, mapping, filters. No caps, no limits.
 
-**Pro:** Removes the 100-product cap. Adds advanced filters, multilingual support (WPML/Polylang/TranslatePress), and additional channels (Amazon, eBay, Facebook, Instagram, Pinterest, Etsy).
+**Pro:** Adds advanced filters, multilingual support (WPML/Polylang/TranslatePress), and additional channels (Amazon, eBay, Facebook, Instagram, Pinterest, Etsy).
 
-Most stores start free. Upgrade when you hit the cap or need more channels.
+Most stores start free. Upgrade when you need advanced features or more channels.
 
 = Something's not working. What do I do? =
 
@@ -214,8 +214,8 @@ This plugin connects to wpmarketingrobot.com for two optional, admin-only featur
 - Data sent & when: Only on form submit: email, first name, last name. Used to deliver the checklist; every email includes an unsubscribe link.
 
 Provider policies (wpmarketingrobot.com):
-- <a href="https://wpmarketingrobot.com/terms/utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=external_services" target="_blank">Terms of Service</a>
-- <a href="https://wpmarketingrobot.com/privacy-policy/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=external_services" target="_blank">Privacy Policy</a>
+- <a href="https://wpmarketingrobot.com/terms/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=external_services" target="_blank">Terms of Service</a>
+- <a href="https://www.wpmarketingrobot.com/privacy-statement/?utm_source=wp_readme&utm_medium=wp_readmelink&utm_campaign=external_services" target="_blank">Privacy Policy</a>
 
 Notes: These calls occur only in wp-admin for the features above. If you don’t use them, no form data is transmitted.
 
@@ -225,6 +225,29 @@ Notes: These calls occur only in wp-admin for the features above. If you don’t
 3. Save and generate your feed
 
 == Changelog ==
+= 2.23.4 2026-05-09 =
+Fix - Fixed an inadvertently added space in the class-feed.php file :-(
+
+= 2.23.3 2026-05-07 =
+Fix - Added more nonce checks to input calls to prevent unauthorized access
+Fix - Updated the plugin to use more unique and distinct names
+
+= 2.23.2 2026-05-06 =
+Tweak - Found and removed more license references in the code
+Fix - Updated some urls in the readme
+Fix - Added a nonce check to input calls to prevent unauthorized access
+Fix - Improved sanitization of inputs
+
+= 2.23.1 2026-04-30 =
+Tweak - Removed all license references from the code
+
+= 2.23.0 2026-04-27 =
+Tweak - Improved the initial queue of product ids setup.
+Tweak - Introducing the use of a temporary feed while the feed process is running, to keep te existing feed in tact if the feed process fails
+Tweak - Added the option to store more than one email address in the Notice recipient option on the Settings page.
+Tweak - Hardend the feed processing code against race conditions.
+Tested - Tested up to WooCommerce 10.7.0
+
 = 2.22.0 2026-03-30 =
 Fix - When making a new feed the product performance data selector would not work correctly.
 Tweak - Hardened the failed feed trigger to prevent unnecessary emails reporting a failed automatic feed process
@@ -451,5 +474,5 @@ Fixed an issue with a folder name with a capital letter that would cause error m
 * Added a > symbol to the selectable separator options
 
 === Upgrade Notice ===
-= 2.22.0 2026-03-30 =
+= 2.23.1 2026-05-07 =
 * Important: This update introduces additional tweaks and some bug fixes. We strongly recommend backing up your existing feeds before upgrading.

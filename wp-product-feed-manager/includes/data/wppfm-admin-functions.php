@@ -305,8 +305,6 @@ function wppfm_append_line_to_file( $file_path, $new_line, $add_crt = false ) {
 	// Prepare the line to write
 	$line_to_write = $new_line . ( $add_crt ? PHP_EOL : '' );
 
-	// Track file operation for performance monitoring
-	do_action( 'wppfm_before_file_write', $line_to_write );
 
 	// Try to use native PHP file operations first (most efficient and safe for local files)
 	// This prevents race conditions by using append mode with file locking
@@ -599,6 +597,205 @@ function wppfm_get_file_path( $feed_name ) {
 	} else { // as of version 1.5.0, all spaces in new filenames are replaced by a dash
 		return WPPFM_FEEDS_DIR . '/' . $feed_name;
 	}
+}
+
+/**
+ * Builds the temporary processing path for a feed file next to the resolved final path.
+ *
+ * Uses the same logical feed name as {@see wppfm_get_file_path()} so sanitization stays aligned.
+ * The real file extension remains the last suffix (e.g. `name.tmp.xml`) so pathinfo-based
+ * format selection in the feed processor continues to work.
+ *
+ * @param string $feed_name Feed file name including extension (same input as wppfm_get_file_path()).
+ *
+ * @return string Absolute filesystem path for the temporary artifact.
+ *
+ * @since 3.23.0
+ */
+function wppfm_get_temporary_feed_file_path( $feed_name ) {
+	$final_path = wppfm_get_file_path( $feed_name );
+	$directory  = dirname( $final_path );
+	$basename   = basename( $final_path );
+	$extension  = pathinfo( $basename, PATHINFO_EXTENSION );
+	$filename   = pathinfo( $basename, PATHINFO_FILENAME );
+
+	if ( '' === $extension ) {
+		return $directory . '/' . $basename . '.tmp';
+	}
+
+	return $directory . '/' . $filename . '.tmp.' . $extension;
+}
+
+/**
+ * Deletes the temporary feed file path stored in the active batch metadata, if present.
+ * Only removes paths that look like plugin temporary artifacts and live under allowed feed directories.
+ * Call this before clearing batch options so metadata is still available.
+ *
+ * @since 3.23.0
+ *
+ * @return void
+ */
+function wppfm_delete_active_batch_temporary_feed_file_if_present() {
+	$key = get_site_option( 'wppfm_background_process_key' );
+	if ( ! $key || ! is_string( $key ) ) {
+		return;
+	}
+
+	$meta = get_site_option( 'wppfm_batch_metadata_' . $key, array() );
+	if ( ! is_array( $meta ) || empty( $meta['use_temporary_file'] ) ) {
+		return;
+	}
+
+	$temporary_path = isset( $meta['temporary_file_path'] ) ? (string) $meta['temporary_file_path'] : '';
+	if ( '' === $temporary_path ) {
+		return;
+	}
+
+	if ( ! wppfm_is_safe_temporary_feed_artifact_path( $temporary_path ) ) {
+		return;
+	}
+
+	$wp_filesystem = wppfm_get_wp_filesystem();
+	if ( $wp_filesystem->exists( $temporary_path ) ) {
+		$wp_filesystem->delete( $temporary_path, false, 'f' );
+	}
+}
+
+/**
+ * Deletes one temporary feed artifact when the path is validated as a plugin temp file under allowed directories.
+ *
+ * @param string $path Absolute filesystem path (e.g. from batch metadata or failure handling).
+ *
+ * @return bool True when the path is absent afterward (including already missing).
+ *
+ * @since 3.23.0
+ */
+function wppfm_delete_temporary_feed_artifact_if_safe( $path ) {
+	$path = (string) $path;
+	if ( '' === $path || ! function_exists( 'wppfm_is_safe_temporary_feed_artifact_path' ) || ! wppfm_is_safe_temporary_feed_artifact_path( $path ) ) {
+		return false;
+	}
+
+	$wp_filesystem = wppfm_get_wp_filesystem();
+	if ( ! $wp_filesystem->exists( $path ) ) {
+		return true;
+	}
+
+	return (bool) $wp_filesystem->delete( $path, false, 'f' );
+}
+
+/**
+ * Records a temporary feed path for a later cleanup pass when immediate deletion failed (e.g. permissions).
+ *
+ * @param string $path Absolute path that must pass {@see wppfm_is_safe_temporary_feed_artifact_path()}.
+ *
+ * @return void
+ *
+ * @since 3.23.0
+ */
+function wppfm_register_orphan_temporary_feed_cleanup_path( $path ) {
+	if ( ! function_exists( 'wppfm_is_safe_temporary_feed_artifact_path' ) || ! wppfm_is_safe_temporary_feed_artifact_path( $path ) ) {
+		return;
+	}
+
+	$paths = get_site_option( 'wppfm_orphan_temp_feed_paths', array() );
+	if ( ! is_array( $paths ) ) {
+		$paths = array();
+	}
+	if ( ! in_array( $path, $paths, true ) ) {
+		$paths[] = $path;
+		update_site_option( 'wppfm_orphan_temp_feed_paths', $paths );
+	}
+}
+
+/**
+ * Attempts to delete paths registered by {@see wppfm_register_orphan_temporary_feed_cleanup_path()} and clears the option when done.
+ *
+ * @return void
+ *
+ * @since 3.23.0
+ */
+function wppfm_purge_orphan_temporary_feed_cleanup_paths() {
+	$paths = get_site_option( 'wppfm_orphan_temp_feed_paths', array() );
+	if ( ! is_array( $paths ) || empty( $paths ) ) {
+		return;
+	}
+
+	$wp_filesystem = wppfm_get_wp_filesystem();
+	$remaining     = array();
+
+	foreach ( $paths as $path ) {
+		if ( ! is_string( $path ) || '' === $path ) {
+			continue;
+		}
+		if ( ! wppfm_is_safe_temporary_feed_artifact_path( $path ) ) {
+			continue;
+		}
+		if ( $wp_filesystem->exists( $path ) ) {
+			$wp_filesystem->delete( $path, false, 'f' );
+		}
+		if ( $wp_filesystem->exists( $path ) || ( function_exists( 'file_exists' ) && file_exists( $path ) ) ) {
+			$remaining[] = $path;
+		}
+	}
+
+	if ( empty( $remaining ) ) {
+		delete_site_option( 'wppfm_orphan_temp_feed_paths' );
+	} else {
+		update_site_option( 'wppfm_orphan_temp_feed_paths', $remaining );
+	}
+}
+
+/**
+ * Returns true when a path is a plugin temporary feed artifact under an allowed feeds directory.
+ *
+ * @param string $path Absolute filesystem path.
+ *
+ * @since 3.23.0
+ *
+ * @return bool
+ */
+function wppfm_is_safe_temporary_feed_artifact_path( $path ) {
+	$path = wp_normalize_path( (string) $path );
+	if ( '' === $path ) {
+		return false;
+	}
+
+	$basename = basename( $path );
+	// Must match wppfm_get_temporary_feed_file_path() pattern (e.g. name.tmp.xml).
+	if ( false === strpos( $basename, '.tmp.' ) ) {
+		return false;
+	}
+
+	$parent = wp_normalize_path( (string) realpath( dirname( $path ) ) );
+	if ( '' === $parent ) {
+		return false;
+	}
+
+	$allowed_bases = array();
+	$feeds_resolved = realpath( WPPFM_FEEDS_DIR );
+	if ( $feeds_resolved ) {
+		$allowed_bases[] = wp_normalize_path( $feeds_resolved );
+	}
+
+	// Legacy feeds folder next to the plugins directory (see wppfm_get_file_path()).
+	$legacy_feeds = dirname( WPPFM_PLUGIN_DIR ) . '/wp-product-feed-manager-support/feeds';
+	$legacy_res   = realpath( $legacy_feeds );
+	if ( $legacy_res ) {
+		$allowed_bases[] = wp_normalize_path( $legacy_res );
+	}
+
+	foreach ( $allowed_bases as $base ) {
+		if ( '' === $base ) {
+			continue;
+		}
+		$base_slash = trailingslashit( $base );
+		if ( $parent === $base || 0 === strpos( $parent, $base_slash ) ) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 /**

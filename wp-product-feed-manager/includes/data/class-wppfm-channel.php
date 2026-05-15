@@ -226,7 +226,6 @@ if ( ! class_exists( 'WPPFM_Channel' ) ) :
 				$url,
 				array(
 					'body' => array(
-						'unique-site-id' => trim( get_option( 'wppfm_lic_key' ) ),
 						'item_name'      => WPPFM_EDD_SL_ITEM_NAME,
 					),
 				)
@@ -389,7 +388,7 @@ if ( ! class_exists( 'WPPFM_Channel' ) ) :
 					$db_class = new WPPFM_Database_Management();
 					$db_class->reset_channel_registration();
 
-					include_channels(); // include the channel classes
+					wppfm_include_channels(); // include the channel classes
 
 					$rerun_counter ++;
 

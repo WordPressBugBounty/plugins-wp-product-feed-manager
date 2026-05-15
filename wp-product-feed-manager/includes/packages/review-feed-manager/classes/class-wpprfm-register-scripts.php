@@ -65,4 +65,4 @@ if ( ! class_exists( 'WPPRFM_Register_Scripts' ) ) :
 
 endif;
 
-$my_wpprfm_ajax_registration_class = new WPPRFM_Register_Scripts();
+$wpprfm_ajax_registration_class = new WPPRFM_Register_Scripts();
