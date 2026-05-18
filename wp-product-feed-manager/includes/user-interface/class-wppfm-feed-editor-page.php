@@ -84,65 +84,156 @@ if ( ! class_exists( 'WPPFM_Feed_Editor_Page' ) ) :
 		 * data when the page is opened for a new feed.
 		 */
 		private function set_feed_data() {
+			$feed_data       = null;
+			$feed_filter     = '';
+			$source_fields   = array();
+			$attribute_data  = array();
+			$performance_meta = array();
+			$queries_class   = null;
 
 			if ( $this->_feed_id ) {
 				$queries_class = new WPPFM_Queries();
 				$data_class    = new WPPFM_Data();
+				$feed_rows     = $queries_class->read_feed( $this->_feed_id );
+				$feed_data     = ! empty( $feed_rows ) ? $feed_rows[0] : null;
 
-				$feed_data      = $queries_class->read_feed( $this->_feed_id )[0];
+				// Fallback when the joined read fails but the feed row still exists.
+				if ( ! $feed_data ) {
+					$feed_data = $this->build_feed_data_from_feed_row( $queries_class->get_feed_row( $this->_feed_id ) );
+				}
+
+				$channel_id = $this->resolve_feed_channel_id( $feed_data );
+				$feed_type  = $feed_data ? (string) ( $feed_data['feed_type_id'] ?? '1' ) : '1';
+
 				$feed_filter    = $queries_class->get_product_filter_query( $this->_feed_id );
 				$source_fields  = $data_class->get_source_fields();
-				$attribute_data = $data_class->get_attribute_data( $this->_feed_id, $feed_data['channel'], $feed_data['feed_type_id'] );
+				$attribute_data = $data_class->get_attribute_data( $this->_feed_id, $channel_id, $feed_type );
 
-				// Verify the categories in the stored category mapping are still active.
-				$feed_data['category_mapping'] = $data_class->verify_categories_in_mapping( $feed_data['category_mapping'] );
-			} else { // no feed id = a new feed
-				$source_fields  = array();
-				$attribute_data = array();
-				$feed_filter    = '';
-				$feed_data      = null;
+				if ( $feed_data ) {
+					// Verify the categories in the stored category mapping are still active.
+					$feed_data['category_mapping'] = $data_class->verify_categories_in_mapping( $feed_data['category_mapping'] ?? '' );
+				}
+
+				$performance_meta = $queries_class->get_feed_performance_meta( $this->_feed_id );
 			}
 
-		$performance_meta = array();
-		if ( $this->_feed_id ) {
-			$performance_meta = $queries_class->get_feed_performance_meta( $this->_feed_id );
+			if ( ! is_array( $feed_data ) ) {
+				$feed_data = array();
+			}
+
+			$this->_feed_data = array(
+				'feed_id'             => $this->_feed_id ?: false,
+				'feed_file_name'      => $feed_data['title'] ?? '',
+				'channel_id'          => $this->resolve_feed_channel_id( $feed_data ),
+				'feed_type_id'        => $feed_data['feed_type_id'] ?? '',
+				'language'            => $feed_data['language'] ?? '',
+				'currency'            => $feed_data['currency'] ?? '',
+				'target_country'      => $feed_data['country'] ?? '',
+				'category_mapping'    => $feed_data['category_mapping'] ?? '',
+				'main_category'       => $feed_data['main_category'] ?? '',
+				'include_variations'  => $feed_data['include_variations'] ?? '',
+				'is_aggregator'       => $feed_data['is_aggregator'] ?? '',
+				'aggregator_name'     => $feed_data['aggregator_name'] ?? '',
+				'url'                 => $feed_data['url'] ?? '',
+				'source'              => $feed_data['source'] ?? '',
+				'feed_title'          => $feed_data['feed_title'] ?? '',
+				'feed_description'    => $feed_data['feed_description'] ?? '',
+				'schedule'            => $feed_data['schedule'] ?? '',
+				'status_id'           => $feed_data['status_id'] ?? '',
+				'feed_filter'         => $feed_filter ?: null,
+				'attribute_data'      => $attribute_data,
+				'source_fields'       => $source_fields,
+				'google_analytics'    => $feed_data['google_analytics'] ?? 0,
+				'wppfm_performance_enabled'            => $performance_meta['wppfm_performance_enabled'] ?? 'false',
+				'wppfm_performance_period_days'         => $performance_meta['wppfm_performance_period_days'] ?? '30',
+				'wppfm_performance_high_percentage'     => $performance_meta['wppfm_performance_high_percentage'] ?? '20',
+				'wppfm_performance_last_update_gmt'     => $performance_meta['wppfm_performance_last_update_gmt'] ?? '',
+				'wppfm_performance_last_analyzed_count' => $performance_meta['wppfm_performance_last_analyzed_count'] ?? '',
+				'utm_id'              => $feed_data['utm_id'] ?? '',
+				'utm_source'          => $feed_data['utm_source'] ?? '',
+				'utm_medium'          => $feed_data['utm_medium'] ?? '',
+				'utm_campaign'        => $feed_data['utm_campaign'] ?? '',
+				'utm_source_platform' => $feed_data['utm_source_platform'] ?? '',
+				'utm_term'            => $feed_data['utm_term'] ?? '',
+				'utm_content'         => $feed_data['utm_content'] ?? '',
+			);
 		}
 
-		$this->_feed_data = array(
-			'feed_id'             => $this->_feed_id ?: false,
-			'feed_file_name'      => $feed_data ? $feed_data['title'] : '',
-			'channel_id'          => $feed_data ? $feed_data['channel'] : '',
-			'feed_type_id'        => $feed_data ? $feed_data['feed_type_id'] : '',
-			'language'            => $feed_data ? $feed_data['language'] : '',
-			'currency'            => $feed_data ? $feed_data['currency'] : '',
-			'target_country'      => $feed_data ? $feed_data['country'] : '',
-			'category_mapping'    => $feed_data ? $feed_data['category_mapping'] : '',
-			'main_category'       => $feed_data ? $feed_data['main_category'] : '',
-			'include_variations'  => $feed_data ? $feed_data['include_variations'] : '',
-			'is_aggregator'       => $feed_data ? $feed_data['is_aggregator'] : '',
-			'aggregator_name'     => $feed_data ? $feed_data['aggregator_name'] : '', // Specifically for a Google Dynamic Remarketing Support feed.
-			'url'                 => $feed_data ? $feed_data['url'] : '',
-			'source'              => $feed_data ? $feed_data['source'] : '',
-			'feed_title'          => $feed_data ? $feed_data['feed_title'] : '',
-			'feed_description'    => $feed_data ? $feed_data['feed_description'] : '',
-			'schedule'            => $feed_data ? $feed_data['schedule'] : '',
-			'status_id'           => $feed_data ? $feed_data['status_id'] : '',
-			'feed_filter'         => $feed_filter ?: null,
-			'attribute_data'      => $attribute_data,
-			'source_fields'       => $source_fields,
-			'google_analytics'    => $feed_data ? $feed_data['google_analytics'] : 0,
-			'wppfm_performance_enabled'           => $performance_meta['wppfm_performance_enabled'] ?? 'false',
-			'wppfm_performance_period_days'        => $performance_meta['wppfm_performance_period_days'] ?? '30',
-			'wppfm_performance_high_percentage'    => $performance_meta['wppfm_performance_high_percentage'] ?? '20',
-			'wppfm_performance_last_update_gmt'    => $performance_meta['wppfm_performance_last_update_gmt'] ?? '',
-			'wppfm_performance_last_analyzed_count' => $performance_meta['wppfm_performance_last_analyzed_count'] ?? '',
-				'utm_id'              => $feed_data ? $feed_data['utm_id'] : '',
-				'utm_source'          => $feed_data ? $feed_data['utm_source'] : '',
-				'utm_medium'          => $feed_data ? $feed_data['utm_medium'] : '',
-				'utm_campaign'        => $feed_data ? $feed_data['utm_campaign'] : '',
-				'utm_source_platform' => $feed_data ? $feed_data['utm_source_platform'] : '',
-				'utm_term'            => $feed_data ? $feed_data['utm_term'] : '',
-				'utm_content'         => $feed_data ? $feed_data['utm_content'] : '',
+		/**
+		 * Resolves the channel id used by the Feed Editor JavaScript.
+		 *
+		 * @param array|null $feed_data Feed row from read_feed() or the fallback builder.
+		 *
+		 * @return string
+		 */
+		private function resolve_feed_channel_id( $feed_data ) {
+			if ( ! is_array( $feed_data ) ) {
+				return '1';
+			}
+
+			$channel_id = $feed_data['channel'] ?? $feed_data['feed_channel_id'] ?? $feed_data['channel_id'] ?? '';
+
+			if ( null === $channel_id || '' === (string) $channel_id ) {
+				return '1';
+			}
+
+			return (string) $channel_id;
+		}
+
+		/**
+		 * Builds a minimal feed data array from a raw product feed row.
+		 *
+		 * @param object|null $feed_row Raw feedmanager_product_feed row.
+		 *
+		 * @return array|null
+		 */
+		private function build_feed_data_from_feed_row( $feed_row ) {
+			if ( ! $feed_row ) {
+				return null;
+			}
+
+			$country_code = '';
+			if ( ! empty( $feed_row->country_id ) ) {
+				global $wpdb;
+
+				$country_code = $wpdb->get_var(
+					$wpdb->prepare(
+						"SELECT name_short FROM {$wpdb->prefix}feedmanager_country WHERE country_id = %d",
+						$feed_row->country_id
+					)
+				);
+
+				$country_code = is_string( $country_code ) ? $country_code : '';
+			}
+
+			return array(
+				'product_feed_id'    => $feed_row->product_feed_id,
+				'source'             => $feed_row->source_id,
+				'title'              => $feed_row->title,
+				'feed_title'         => $feed_row->feed_title,
+				'feed_description'   => $feed_row->feed_description,
+				'main_category'      => $feed_row->main_category,
+				'url'                => $feed_row->url,
+				'include_variations' => $feed_row->include_variations,
+				'is_aggregator'      => $feed_row->is_aggregator,
+				'aggregator_name'    => $feed_row->aggregator_name,
+				'status_id'          => $feed_row->status_id,
+				'feed_type_id'       => $feed_row->feed_type_id,
+				'schedule'           => $feed_row->schedule,
+				'google_analytics'   => $feed_row->google_analytics,
+				'utm_id'             => $feed_row->utm_id ?? '',
+				'utm_source'         => $feed_row->utm_source ?? '',
+				'utm_medium'         => $feed_row->utm_medium ?? '',
+				'utm_campaign'       => $feed_row->utm_campaign ?? '',
+				'utm_source_platform'=> $feed_row->utm_source_platform ?? '',
+				'utm_term'           => $feed_row->utm_term ?? '',
+				'utm_content'        => $feed_row->utm_content ?? '',
+				'feed_channel_id'    => $feed_row->channel_id,
+				'channel'            => $feed_row->channel_id,
+				'country'            => $country_code,
+				'language'           => $feed_row->language,
+				'currency'           => $feed_row->currency,
+				'category_mapping'   => '',
 			);
 		}
 

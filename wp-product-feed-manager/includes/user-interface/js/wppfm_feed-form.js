@@ -36,6 +36,20 @@ var _wppfmFeedGenerationSession = null;
  */
 var _wppfmFeedStatusCheckIntervalId = null;
 
+/**
+ * Normalizes a feed channel id for UI logic and Ajax payloads.
+ *
+ * @param {string|number|null|undefined} channel
+ * @returns {string}
+ */
+function wppfm_normalizeFeedChannel( channel ) {
+	if ( channel === null || channel === undefined || channel === '' ) {
+		return '1';
+	}
+
+	return String( channel );
+}
+
 function wppfm_initializeStandardProductFeedForm( feedFileName, feedType = 'product-feed' ) {
 	// clear the previous form
 	jQuery( '#wppfm-main-input-map' ).empty();
@@ -425,13 +439,15 @@ function wppfm_initiateFeed() {
 
 	if ( ! feedData ) { return; }
 
+	var channelId = wppfm_normalizeFeedChannel( feedData['channel_id'] );
+
 	// make a _feedHolder
 	_feedHolder = new Feed(
 		feedData['feed_id'],
 		feedData['feed_file_name'],
 		feedData['include_variations'],
 		feedData['is_aggregator'],
-		feedData['channel_id'],
+		channelId,
 		feedData['main_category'],
 		feedData['category_mapping'],
 		feedData['url'],
@@ -455,7 +471,7 @@ function wppfm_initiateFeed() {
 		feedData['utm_content']
 	);
 
-	wppfm_addFeedAttributes( feedData['attribute_data'], feedData['channel_id'] );
+	wppfm_addFeedAttributes( feedData['attribute_data'], channelId );
 
 	_feedHolder.setFeedFilter( feedData['feed_filter'] );
 
@@ -468,8 +484,6 @@ function wppfm_initiateFeed() {
 	_feedHolder['wppfm_performance_high_percentage'] = feedData['wppfm_performance_high_percentage'] || '20';
 	_feedHolder['wppfm_performance_last_update_gmt'] = feedData['wppfm_performance_last_update_gmt'] || '';
 	_feedHolder['wppfm_performance_last_analyzed_count'] = feedData['wppfm_performance_last_analyzed_count'] || '';
-
-	console.log( _feedHolder );
 }
 
 /**
@@ -1424,8 +1438,11 @@ function wppfm_fillFeedFields( isNew, categoryChanged ) {
 		jQuery( '#wppfm-category-map' ).show();
 	}
 
-	wppfm_setMerchantSelector( isNew, _feedHolder[ 'channel' ] );
-	if ( '1' === _feedHolder[ 'channel' ].toString() ) {
+	var channelId = wppfm_normalizeFeedChannel( _feedHolder[ 'channel' ] );
+	_feedHolder[ 'channel' ] = channelId;
+
+	wppfm_setMerchantSelector( isNew, channelId );
+	if ( '1' === channelId ) {
 		wppfm_setGoogleFeedTypeSelector( isNew, _feedHolder['feedType'] );
 
 		if ( '5' === _feedHolder['feedType'] ) { // to handle a Google Dynamic Remarketing feed
@@ -1478,7 +1495,7 @@ function wppfm_fillFeedFields( isNew, categoryChanged ) {
 function wppfm_categorySelectCntrl( categories ) {
 	//noinspection JSUnresolvedVariable
 	var htmlCode = '<option value="0">' + wppfm_feed_settings_form_vars.select_a_sub_category + '</option>';
-	if ( '1' === _feedHolder['channel'] ) {
+	if ( '1' === wppfm_normalizeFeedChannel( _feedHolder['channel'] ) ) {
 		//noinspection JSUnresolvedVariable
 		htmlCode += '<option value="cat_number">' + wppfm_feed_settings_form_vars.select_by_category_number + '</option>';
 	}
@@ -3320,7 +3337,6 @@ function updateFeedFormAfterInputChanged( feedId, categoryChanged ) {
 	// now finish the feed page after the input change
 	wppfm_finishOrUpdateFeedPage( categoryChanged );
 
-	console.log(_feedHolder);
 	// make a new feed object if it has not been already
 	if ( feedId === undefined || feedId < 1 ) {
 		wppfm_constructNewFeed();

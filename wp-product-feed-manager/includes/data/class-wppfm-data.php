@@ -576,7 +576,13 @@ if ( ! class_exists( 'WPPFM_Data' ) ) :
 		public function get_feed_data( $feed_id ) {
 			// get the main data
 			$main_feed_data = $this->_queries_class->read_feed( $feed_id );
-			$main_data      = $this->convert_data_to_feed_data( $main_feed_data[0] );
+
+			if ( empty( $main_feed_data ) ) {
+				do_action( 'wppfm_feed_generation_message', $feed_id, 'Could not read feed data from the database.', 'ERROR' );
+				return false;
+			}
+
+			$main_data = $this->convert_data_to_feed_data( $main_feed_data[0] );
 
 			if ( false === $main_data ) {
 				return false;
@@ -715,8 +721,8 @@ if ( ! class_exists( 'WPPFM_Data' ) ) :
 			$feed->feedDescription     = $data['feed_description'] !== null ? $data['feed_description'] : '';
 			$feed->url                 = $data['url'];
 			$feed->dataSource          = $data['source'];
-			$feed->channel             = $data['channel'];
-			$feed->country             = $data['country'];
+			$feed->channel             = $data['channel'] ?? $data['feed_channel_id'] ?? '1';
+			$feed->country             = $data['country'] ?? '';
 			$feed->status              = $data['status_id'];
 			$feed->baseStatusId        = $data['base_status_id'];
 			$feed->feedTypeId          = $data['feed_type_id'];
@@ -724,13 +730,13 @@ if ( ! class_exists( 'WPPFM_Data' ) ) :
 			$feed->language            = $data['language'] !== null ? $data['language'] : '';
 			$feed->currency            = $data['currency'] !== null ? $data['currency'] : ''; // @since 2.28.0
 			$feed->google_analytics    = $data['google_analytics'] !== null ? $data['google_analytics'] : 0; // @since 3.7.0
-			$feed->utm_id              = $data['utm_id']; // @since 3.7.0
-			$feed->utm_source          = $data['utm_source']; // @since 3.7.0
-			$feed->utm_medium          = $data['utm_medium']; // @since 3.7.0
-			$feed->utm_campaign        = $data['utm_campaign']; // @since 3.7.0
-			$feed->utm_source_platform = $data['utm_source_platform']; // @since 3.7.0
-			$feed->utm_term            = $data['utm_term']; // @since 3.7.0
-			$feed->utm_content         = $data['utm_content']; // @since 3.7.0
+			$feed->utm_id              = $data['utm_id'] ?? ''; // @since 3.7.0
+			$feed->utm_source          = $data['utm_source'] ?? ''; // @since 3.7.0
+			$feed->utm_medium          = $data['utm_medium'] ?? ''; // @since 3.7.0
+			$feed->utm_campaign        = $data['utm_campaign'] ?? ''; // @since 3.7.0
+			$feed->utm_source_platform = $data['utm_source_platform'] ?? ''; // @since 3.7.0
+			$feed->utm_term            = $data['utm_term'] ?? ''; // @since 3.7.0
+			$feed->utm_content         = $data['utm_content'] ?? ''; // @since 3.7.0
 
 			return $feed;
 		}

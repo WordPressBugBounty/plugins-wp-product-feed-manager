@@ -487,6 +487,8 @@ function wppfm_getAdvisedInputs( channel ) {
 // ALERT has a relation with the set_output_attribute_levels() function in the class-wppfm-data.php file
 //noinspection JSUnresolvedFunction
 function wppfm_setOutputAttributeLevels( channel, feedHolder, selectArgument ) {
+	channel = ( channel === null || channel === undefined || channel === '' ) ? '1' : String( channel );
+
 	switch ( channel ) {
 		case '1':
 			return setGoogleOutputAttributeLevels( feedHolder, selectArgument );

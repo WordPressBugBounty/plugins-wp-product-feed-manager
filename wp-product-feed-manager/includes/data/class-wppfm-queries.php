@@ -217,16 +217,23 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 
 		public function read_feed( $feed_id ) {
 			$result = $this->_wpdb->get_results(
-				$this->_wpdb->prepare( "SELECT p.product_feed_id, p.source_id AS source, p.title, p.feed_title, p.feed_description, p.main_category, "
-				. "p.url, p.include_variations, p.is_aggregator, p.aggregator_name, p.status_id, p.base_status_id, p.updated, p.products, p.feed_type_id, p.schedule, "
-				. "p.google_analytics, p.utm_id, p.utm_source, p.utm_medium, p.utm_campaign, p.utm_source_platform, p.utm_term, p.utm_content, c.name_short "
-				. "AS country, m.channel_id AS channel, p.language, p.currency "
-				. "FROM {$this->_table_prefix}feedmanager_product_feed AS p "
-				. "INNER JOIN {$this->_table_prefix}feedmanager_country AS c ON p.country_id = c.country_id "
-				. "INNER JOIN {$this->_table_prefix}feedmanager_channel AS m ON p.channel_id = m.channel_id "
-				. "WHERE p.product_feed_id = %d", $feed_id ),
+				$this->_wpdb->prepare(
+					"SELECT p.product_feed_id, p.source_id AS source, p.title, p.feed_title, p.feed_description, p.main_category, "
+					. "p.url, p.include_variations, p.is_aggregator, p.aggregator_name, p.status_id, p.base_status_id, p.updated, p.products, p.feed_type_id, p.schedule, "
+					. "p.google_analytics, p.utm_id, p.utm_source, p.utm_medium, p.utm_campaign, p.utm_source_platform, p.utm_term, p.utm_content, "
+					. "p.channel_id AS feed_channel_id, COALESCE( c.name_short, '' ) AS country, COALESCE( m.channel_id, p.channel_id ) AS channel, p.language, p.currency "
+					. "FROM {$this->_table_prefix}feedmanager_product_feed AS p "
+					. "LEFT JOIN {$this->_table_prefix}feedmanager_country AS c ON p.country_id = c.country_id "
+					. "LEFT JOIN {$this->_table_prefix}feedmanager_channel AS m ON p.channel_id = m.channel_id "
+					. "WHERE p.product_feed_id = %d",
+					$feed_id
+				),
 				ARRAY_A
 			);
+
+			if ( empty( $result ) ) {
+				return array();
+			}
 
 			$category_mapping = $this->read_category_mapping( $feed_id );
 

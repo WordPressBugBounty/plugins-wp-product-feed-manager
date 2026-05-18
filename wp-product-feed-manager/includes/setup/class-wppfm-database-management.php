@@ -78,7 +78,26 @@ if ( ! class_exists( 'WPPFM_Database_Management' ) ) :
 				$this->add_custom_capabilities();
 			}
 
+			$this->ensure_channel_registry_populated();
+
 			do_action( 'wppfm_db_verified' );
+		}
+
+		/**
+		 * Ensures the channel registry table contains at least one channel row.
+		 *
+		 * Feeds use an INNER JOIN on this table in legacy queries; an empty registry prevents
+		 * existing feeds from loading in the Feed Editor and from starting generation.
+		 *
+		 * @since 3.21.0
+		 */
+		private function ensure_channel_registry_populated() {
+			$table_name = $this->_wpdb->prefix . 'feedmanager_channel';
+			$count      = $this->_wpdb->get_var( "SELECT COUNT(*) FROM {$table_name}" );
+
+			if ( '0' === $count || 0 === (int) $count ) {
+				$this->fill_channel_table();
+			}
 		}
 
 		/**
