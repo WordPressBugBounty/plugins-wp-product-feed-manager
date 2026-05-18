@@ -208,7 +208,7 @@ function wppfm_include_classes() {
  * @since 1.0.0
  */
 function wppfm_include_channels() {
-	 if ( ! class_exists( 'WPPFM_Google_Feed_Class' ) ) {
-	 	require_once __DIR__ . '/application/google/class-feed.php';
-	 }
+	if ( ! class_exists( 'WPPFM_Google_Feed_Class' ) ) {
+		require_once WPPFM_CHANNEL_DATA_DIR . '/google/class-feed.php';
+	}
 }

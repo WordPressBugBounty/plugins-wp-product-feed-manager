@@ -7,8 +7,8 @@
  * Author URI: https://www.wpmarketingrobot.com
  * Developer: Michel Jongbloed
  * Developer URI: https://www.wpmarketingrobot.com
- * Version: 2.23.4
- * Modified: 09-05-2026
+ * Version: 2.23.5
+ * Modified: 18-05-2026
  * WC requires at least: 8.4
  * WC tested up to: 10.7.0
  * License: GPL-3.0-or-later
@@ -54,7 +54,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		 *
 		 * @var string  Containing the version number of the plugin.
 		 */
-		public $version = '2.23.4';
+		public $version = '2.23.5';
 
 		/**
 		 * Author Name.
@@ -248,10 +248,10 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 				define( 'WPPFM_UPLOADS_URL', apply_filters( 'wppfm_corrected_uploads_url', $url ) );
 			}
 
-			// Channel packages (unzipped definitions, taxonomies): always under uploads — same base as
-			// wp_upload_dir()['basedir'], multisite-aware via WPPFM_UPLOADS_DIR — never under WPPFM_PLUGIN_DIR.
+			// Channel packages (unzipped definitions, taxonomies). Multi-channel builds use
+			// WPPFM_UPLOADS_DIR . '/wppfm-channels'; the free/Google-only build sets this to the bundled path below.
 			if ( ! defined( 'WPPFM_CHANNEL_DATA_DIR' ) ) {
-				define( 'WPPFM_CHANNEL_DATA_DIR', WPPFM_UPLOADS_DIR . '/wppfm-channels' );
+				define( 'WPPFM_CHANNEL_DATA_DIR', WPPFM_PLUGIN_DIR . 'includes/application' );
 			}
 
 			// Store the folder that contains the backup files.

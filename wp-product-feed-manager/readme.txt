@@ -5,7 +5,7 @@ Donate link: https://wpmarketingrobot.com/
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 2.23.4
+Stable tag: 2.23.5
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -225,6 +225,9 @@ Notes: These calls occur only in wp-admin for the features above. If you don’t
 3. Save and generate your feed
 
 == Changelog ==
+= 2.23.5 2026-05-18 =
+Fix - Fixed an issue where the Google channel data would not be loaded correctly
+
 = 2.23.4 2026-05-09 =
 Fix - Fixed an inadvertently added space in the class-feed.php file :-(
 
@@ -474,5 +477,5 @@ Fixed an issue with a folder name with a capital letter that would cause error m
 * Added a > symbol to the selectable separator options
 
 === Upgrade Notice ===
-= 2.23.1 2026-05-07 =
+= 2.23.5 2026-05-18 =
 * Important: This update introduces additional tweaks and some bug fixes. We strongly recommend backing up your existing feeds before upgrading.

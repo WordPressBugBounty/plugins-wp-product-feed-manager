@@ -223,14 +223,25 @@ if ( ! class_exists( 'WPPFM_File' ) ) :
 		public function get_installed_channels_from_file() {
 			$active_channels = array();
 
-			if ( file_exists( WPPFM_CHANNEL_DATA_DIR ) ) {
-				$dir_iterator = new RecursiveDirectoryIterator( WPPFM_CHANNEL_DATA_DIR );
-				$iterator     = new RecursiveIteratorIterator( $dir_iterator, RecursiveIteratorIterator::SELF_FIRST );
+			if ( ! is_dir( WPPFM_CHANNEL_DATA_DIR ) ) {
+				return $active_channels;
+			}
 
-				foreach ( $iterator as $folder ) {
-					if ( $folder->isDir() && $folder->getFilename() !== '.' & $folder->getFilename() !== '..' ) {
-						$active_channels[] = $folder->getBaseName();
-					}
+			$entries = scandir( WPPFM_CHANNEL_DATA_DIR );
+			if ( ! is_array( $entries ) ) {
+				return $active_channels;
+			}
+
+			foreach ( $entries as $entry ) {
+				if ( '.' === $entry || '..' === $entry ) {
+					continue;
+				}
+
+				$channel_dir = WPPFM_CHANNEL_DATA_DIR . '/' . $entry;
+
+				// Only treat folders with a channel definition file as installed channels.
+				if ( is_dir( $channel_dir ) && file_exists( $channel_dir . '/' . $entry . '.txt' ) ) {
+					$active_channels[] = $entry;
 				}
 			}
 

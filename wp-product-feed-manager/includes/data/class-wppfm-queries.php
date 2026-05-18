@@ -142,12 +142,30 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 		}
 
 		public function get_channel_short_name_from_db( $channel_id ) {
-			if ( 'undefined' !== $channel_id ) { // make sure the selected channel is installed
-				return $this->_wpdb->get_var(
-					$this->_wpdb->prepare( "SELECT short FROM {$this->_table_prefix}feedmanager_channel WHERE channel_id = %d", $channel_id ) );
-			} else {
+			if ( 'undefined' === $channel_id || '' === $channel_id || null === $channel_id ) {
 				return false;
 			}
+
+			$short_name = $this->_wpdb->get_var(
+				$this->_wpdb->prepare(
+					"SELECT short FROM {$this->_table_prefix}feedmanager_channel WHERE channel_id = %d",
+					$channel_id
+				)
+			);
+
+			if ( ! empty( $short_name ) ) {
+				return $short_name;
+			}
+
+			// Category lists resolve the short name from the channel registry; use the same fallback here.
+			if ( class_exists( 'WPPFM_Channel' ) ) {
+				$channel_class = new WPPFM_Channel();
+				$short_name    = $channel_class->get_channel_short_name( (string) $channel_id );
+
+				return ! empty( $short_name ) ? $short_name : false;
+			}
+
+			return false;
 		}
 
 		public function remove_channel_from_db( $channel_short ) {
