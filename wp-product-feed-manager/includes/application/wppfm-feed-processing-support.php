@@ -1899,6 +1899,16 @@ trait WPPFM_Processing_Support {
 			}
 		}
 
+		// @since 3.23.0
+		if ( in_array( '_days_after_product_update', $active_field_names, true ) ) {
+			$product->_days_after_product_update = $this->get_days_after_product_update( $woocommerce_product );
+		}
+
+		// @since 3.23.0
+		if ( in_array( '_days_after_product_added', $active_field_names, true ) ) {
+			$product->_days_after_product_added = $this->get_days_after_product_added( $woocommerce_product );
+		}
+
 		$woocommerce_product = null;
 	}
 
@@ -2388,6 +2398,181 @@ private function get_localized_price_ex_tax_for_country( $product, $raw_price, $
 	 */
 	public function override_client_currency( $currency ) {
 		return $this->_temp_currency ? $this->_temp_currency : $currency;
+	}
+
+	/**
+	 * Returns the number of full days since the product was last updated.
+	 *
+	 * Uses the WooCommerce modified date when available; otherwise falls back to the created date.
+	 * For variable products, uses the most recent modified date on the parent or any of its variations.
+	 *
+	 * @since 3.23.0
+	 *
+	 * @param WC_Product $woocommerce_product WooCommerce product object.
+	 *
+	 * @return int Days since last update, or since the product was added when no update date exists.
+	 */
+	private function get_days_after_product_update( $woocommerce_product ) {
+		if ( ! is_a( $woocommerce_product, 'WC_Product', true ) ) {
+			return 0;
+		}
+
+		$reference_timestamp = $this->get_latest_product_modified_timestamp( $woocommerce_product );
+		if ( ! $reference_timestamp ) {
+			$reference_timestamp = $this->get_product_created_timestamp( $woocommerce_product );
+		}
+
+		if ( ! $reference_timestamp ) {
+			return 0;
+		}
+
+		$days = (int) floor( ( time() - $reference_timestamp ) / DAY_IN_SECONDS );
+
+		return max( 0, $days );
+	}
+
+	/**
+	 * Returns the number of full days since the product was added to the shop.
+	 *
+	 * For variable products, uses the parent created date, or the earliest variation created date as fallback.
+	 * Variations without a created date fall back to the parent product created date.
+	 *
+	 * @since 3.23.0
+	 *
+	 * @param WC_Product $woocommerce_product WooCommerce product object.
+	 *
+	 * @return int Days since the product was added, or 0 when no created date is available.
+	 */
+	private function get_days_after_product_added( $woocommerce_product ) {
+		if ( ! is_a( $woocommerce_product, 'WC_Product', true ) ) {
+			return 0;
+		}
+
+		$reference_timestamp = $this->get_product_created_timestamp( $woocommerce_product );
+
+		if ( ! $reference_timestamp && $woocommerce_product->is_type( 'variation' ) ) {
+			$parent_id = $woocommerce_product->get_parent_id();
+			if ( $parent_id ) {
+				$parent_product = wc_get_product( $parent_id );
+				if ( is_a( $parent_product, 'WC_Product', true ) ) {
+					$reference_timestamp = $this->get_product_created_timestamp( $parent_product );
+				}
+			}
+		}
+
+		if ( ! $reference_timestamp ) {
+			return 0;
+		}
+
+		$days = (int) floor( ( time() - $reference_timestamp ) / DAY_IN_SECONDS );
+
+		return max( 0, $days );
+	}
+
+	/**
+	 * Returns the latest modified timestamp for a product.
+	 *
+	 * Variable products include the parent and all published variations.
+	 *
+	 * @since 3.23.0
+	 *
+	 * @param WC_Product $woocommerce_product WooCommerce product object.
+	 *
+	 * @return int Unix timestamp, or 0 when no modified date is available.
+	 */
+	private function get_latest_product_modified_timestamp( $woocommerce_product ) {
+		$timestamps = array();
+
+		$own_timestamp = $this->get_wc_product_date_timestamp( $woocommerce_product, 'modified' );
+		if ( $own_timestamp ) {
+			$timestamps[] = $own_timestamp;
+		}
+
+		if ( $woocommerce_product->is_type( 'variable' ) ) {
+			foreach ( $woocommerce_product->get_children() as $child_id ) {
+				$child_product = wc_get_product( $child_id );
+				if ( ! is_a( $child_product, 'WC_Product', true ) ) {
+					continue;
+				}
+
+				$child_timestamp = $this->get_wc_product_date_timestamp( $child_product, 'modified' );
+				if ( $child_timestamp ) {
+					$timestamps[] = $child_timestamp;
+				}
+			}
+		}
+
+		return ! empty( $timestamps ) ? max( $timestamps ) : 0;
+	}
+
+	/**
+	 * Returns the created timestamp for a product.
+	 *
+	 * Variable products use the parent created date, or the earliest variation created date as fallback.
+	 *
+	 * @since 3.23.0
+	 *
+	 * @param WC_Product $woocommerce_product WooCommerce product object.
+	 *
+	 * @return int Unix timestamp, or 0 when no created date is available.
+	 */
+	private function get_product_created_timestamp( $woocommerce_product ) {
+		$created_timestamp = $this->get_wc_product_date_timestamp( $woocommerce_product, 'created' );
+		if ( $created_timestamp ) {
+			return $created_timestamp;
+		}
+
+		if ( ! $woocommerce_product->is_type( 'variable' ) ) {
+			return 0;
+		}
+
+		$earliest_child_timestamp = 0;
+		foreach ( $woocommerce_product->get_children() as $child_id ) {
+			$child_product = wc_get_product( $child_id );
+			if ( ! is_a( $child_product, 'WC_Product', true ) ) {
+				continue;
+			}
+
+			$child_timestamp = $this->get_wc_product_date_timestamp( $child_product, 'created' );
+			if ( $child_timestamp && ( ! $earliest_child_timestamp || $child_timestamp < $earliest_child_timestamp ) ) {
+				$earliest_child_timestamp = $child_timestamp;
+			}
+		}
+
+		return $earliest_child_timestamp;
+	}
+
+	/**
+	 * Returns a WooCommerce product date as a Unix timestamp.
+	 *
+	 * Falls back to the related post date when WooCommerce date props are not set.
+	 *
+	 * @since 3.23.0
+	 *
+	 * @param WC_Product $woocommerce_product WooCommerce product object.
+	 * @param string     $date_type           Either 'modified' or 'created'.
+	 *
+	 * @return int Unix timestamp, or 0 when no date is available.
+	 */
+	private function get_wc_product_date_timestamp( $woocommerce_product, $date_type ) {
+		$wc_date = 'modified' === $date_type ? $woocommerce_product->get_date_modified() : $woocommerce_product->get_date_created();
+
+		if ( $wc_date instanceof WC_DateTime ) {
+			return $wc_date->getTimestamp();
+		}
+
+		$product_id = $woocommerce_product->get_id();
+		if ( ! $product_id ) {
+			return 0;
+		}
+
+		if ( 'modified' === $date_type ) {
+			$post_timestamp = get_post_modified_time( 'U', true, $product_id );
+		} else {
+			$post_timestamp = get_post_time( 'U', true, $product_id );
+		}
+
+		return $post_timestamp ? (int) $post_timestamp : 0;
 	}
 
 	/**

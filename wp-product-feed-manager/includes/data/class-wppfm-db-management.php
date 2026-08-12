@@ -394,10 +394,19 @@ if ( ! class_exists( 'WPPFM_Db_Management' ) ) :
 			if ( ! empty( $pending_dispatch_feeds ) ) {
 				foreach ( $pending_dispatch_feeds as $feed_id ) {
 					delete_site_transient( 'wppfm_pending_dispatch_' . $feed_id );
+
+					if ( function_exists( 'wppfm_reset_feed_products_added_counter' ) ) {
+						wppfm_reset_feed_products_added_counter( $feed_id );
+					}
 				}
 			}
 
 			delete_site_option( 'wppfm_pending_dispatch_feeds' );
+
+			$active_feed_id = get_transient( 'wppfm_active_feed_id' );
+			if ( $active_feed_id && function_exists( 'wppfm_reset_feed_products_added_counter' ) ) {
+				wppfm_reset_feed_products_added_counter( $active_feed_id );
+			}
 
 			// Reset progress counters/monitors so the next feed starts from zero.
 			set_transient(

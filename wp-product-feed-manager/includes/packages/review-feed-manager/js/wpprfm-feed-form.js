@@ -145,6 +145,9 @@ function wpprfm_initiateReviewFeed() {
 function wpprfm_initiateSaveAndGenerateReviewFeed() {
 
 	wppfm_showWorkingSpinner();
+
+	// Reset terminal UI state for a new generation run.
+	_wppfmFeedStatusCheckReachedTerminalState = false;
 	
 	// Show preparation message and hide waiting icon since we have specific feedback
 	//noinspection JSUnresolvedVariable

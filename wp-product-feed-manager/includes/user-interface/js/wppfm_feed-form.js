@@ -23,7 +23,11 @@ var _feedHolder                  = [];
  *
  * @since 3.21.0
  *
- * @type {{clientRequestId: string, feedId: (string|null), startedAtMs: number, hasSeenProcessing: boolean}|null}
+ * @type {{clientRequestId: string, feedId: (string|null), startedAtMs: number, hasSeenProcessing: boolean, initiationConfirmed: boolean}|null}
+ *
+ * hasSeenProcessing is set when a status poll observes processing (3) or queue (4).
+ * initiationConfirmed is set when updateFeedFile returns started_processing or pushed_to_queue,
+ * i.e. after the server has accepted this run (covers fast feeds that finish before the next poll).
  */
 var _wppfmFeedGenerationSession = null;
 
@@ -37,18 +41,25 @@ var _wppfmFeedGenerationSession = null;
 var _wppfmFeedStatusCheckIntervalId = null;
 
 /**
- * Normalizes a feed channel id for UI logic and Ajax payloads.
+ * Monotonic request id for feed status polls. Only the most recently started
+ * status request may update the Feed Editor UI.
  *
- * @param {string|number|null|undefined} channel
- * @returns {string}
+ * @since 3.21.0
+ *
+ * @type {number}
  */
-function wppfm_normalizeFeedChannel( channel ) {
-	if ( channel === null || channel === undefined || channel === '' ) {
-		return '1';
-	}
+var _wppfmFeedStatusCheckRequestId = 0;
 
-	return String( channel );
-}
+/**
+ * True after the Feed Editor has shown a terminal generation outcome (ready,
+ * validation failure, or error). Prevents late update-feed-file callbacks and
+ * out-of-order status polls from reverting the UI to a processing state.
+ *
+ * @since 3.21.0
+ *
+ * @type {boolean}
+ */
+var _wppfmFeedStatusCheckReachedTerminalState = false;
 
 function wppfm_initializeStandardProductFeedForm( feedFileName, feedType = 'product-feed' ) {
 	// clear the previous form
@@ -434,12 +445,25 @@ function wppfm_handleSupportFeedSelection( supportFeedId ) {
 	}
 }
 
+/**
+ * Normalizes channel id for feeds where channel is missing (e.g. empty channel registry after google-only conversion).
+ *
+ * @param {string|number|null|undefined} channel Channel id from feed data.
+ * @returns {string} Channel id string.
+ */
+function wppfm_normalizeFeedChannel( channel ) {
+	if ( null === channel || undefined === channel || '' === channel || '0' === String( channel ) ) {
+		return '1';
+	}
+	return String( channel );
+}
+
 function wppfm_initiateFeed() {
 	var feedData = jQuery("#wppfm-feed-editor-page-data-storage").data("wppfmFeedData");
 
 	if ( ! feedData ) { return; }
 
-	var channelId = wppfm_normalizeFeedChannel( feedData['channel_id'] );
+	feedData['channel_id'] = wppfm_normalizeFeedChannel( feedData['channel_id'] );
 
 	// make a _feedHolder
 	_feedHolder = new Feed(
@@ -447,7 +471,7 @@ function wppfm_initiateFeed() {
 		feedData['feed_file_name'],
 		feedData['include_variations'],
 		feedData['is_aggregator'],
-		channelId,
+		feedData['channel_id'],
 		feedData['main_category'],
 		feedData['category_mapping'],
 		feedData['url'],
@@ -471,7 +495,7 @@ function wppfm_initiateFeed() {
 		feedData['utm_content']
 	);
 
-	wppfm_addFeedAttributes( feedData['attribute_data'], channelId );
+	wppfm_addFeedAttributes( feedData['attribute_data'], feedData['channel_id'] );
 
 	_feedHolder.setFeedFilter( feedData['feed_filter'] );
 
@@ -484,6 +508,8 @@ function wppfm_initiateFeed() {
 	_feedHolder['wppfm_performance_high_percentage'] = feedData['wppfm_performance_high_percentage'] || '20';
 	_feedHolder['wppfm_performance_last_update_gmt'] = feedData['wppfm_performance_last_update_gmt'] || '';
 	_feedHolder['wppfm_performance_last_analyzed_count'] = feedData['wppfm_performance_last_analyzed_count'] || '';
+
+	console.log( _feedHolder );
 }
 
 /**
@@ -521,6 +547,8 @@ function wppfm_editExistingFeed( feedId ) {
 	if ( feedId !== _feedHolder[ 'feedId' ] ) {
 		return;
 	}
+
+	_feedHolder['channel'] = wppfm_normalizeFeedChannel( _feedHolder['channel'] );
 
 	var categoryString = _feedHolder[ 'mainCategory' ];
 	var mainCategory   = categoryString && categoryString.indexOf( ' > ' ) > - 1 ? categoryString.substring( 0, categoryString.indexOf( ' > ' ) ) : categoryString;
@@ -877,6 +905,9 @@ function wppfm_setGoogleAnalytics() {
 
 function wppfm_generateAndSaveFeed() {
 	wppfm_showWorkingSpinner();
+
+	// Reset terminal UI state for a new generation run.
+	_wppfmFeedStatusCheckReachedTerminalState = false;
 	
 	// Start a new generation session (used to suppress stale "ready" status responses).
 	var rand = Math.random().toString( 36 ).slice( 2, 8 );
@@ -885,6 +916,7 @@ function wppfm_generateAndSaveFeed() {
 		feedId: null,
 		startedAtMs: Date.now(),
 		hasSeenProcessing: false,
+		initiationConfirmed: false,
 	};
 
 	// Show preparation message and hide waiting icon since we have specific feedback.
@@ -958,6 +990,12 @@ function wppfm_handleSaveFeedToDbFailedAction() {
  * @param   {string}    updateResult
  */
 function wppfm_handleUpdateFeedFileActionResult( updateResult ) {
+	// Polling may already have shown the final "ready" message while updateFeedFile was still running.
+	if ( _wppfmFeedStatusCheckReachedTerminalState ) {
+		wppfm_hideWorkingSpinner();
+		return;
+	}
+
 	var errorMessageElement = jQuery( '#wppfm-error-message' );
 	var totalNumberOfProductsInFeed = 0;
 	var feedProcessStatusCheckRepeatTime = 10000;
@@ -966,9 +1004,6 @@ function wppfm_handleUpdateFeedFileActionResult( updateResult ) {
 
 	// The started_progressing reply also contains the number of products that are to be processed for the feed.
 	if ( updateResult.startsWith( 'started_processing-' ) ) {
-		if ( _wppfmFeedGenerationSession ) {
-			_wppfmFeedGenerationSession.hasSeenProcessing = true;
-		}
 		totalNumberOfProductsInFeed = wppfm_extractNrOfFeedProductsFromUpdateResult( updateResult );
 		feedProcessStatusCheckRepeatTime = wppfm_getFeedStatusCheckRepeatTime( totalNumberOfProductsInFeed );
 		updateResult = 'started_processing';
@@ -976,6 +1011,9 @@ function wppfm_handleUpdateFeedFileActionResult( updateResult ) {
 
 	switch ( updateResult ) {
 		case 'started_processing':
+			if ( _wppfmFeedGenerationSession && String( _wppfmFeedGenerationSession.feedId ) === String( _feedHolder[ 'feedId' ] ) ) {
+				_wppfmFeedGenerationSession.initiationConfirmed = true;
+			}
 			errorMessageElement.hide();
 			//noinspection JSUnresolvedVariable
 			wppfm_showInfoMessage( wppfm_feed_settings_form_vars.feed_started + ' <span class="wppfm-processing-dots"></span>' );
@@ -983,10 +1021,10 @@ function wppfm_handleUpdateFeedFileActionResult( updateResult ) {
 			break;
 
 		case 'pushed_to_queue':
-			errorMessageElement.hide();
-			if ( _wppfmFeedGenerationSession ) {
-				_wppfmFeedGenerationSession.hasSeenProcessing = true;
+			if ( _wppfmFeedGenerationSession && String( _wppfmFeedGenerationSession.feedId ) === String( _feedHolder[ 'feedId' ] ) ) {
+				_wppfmFeedGenerationSession.initiationConfirmed = true;
 			}
+			errorMessageElement.hide();
 			//noinspection JSUnresolvedVariable
 			wppfm_showInfoMessage( wppfm_feed_settings_form_vars.feed_queued );
 			wppfm_feedProcessStatusCheck( _feedHolder[ 'feedId' ], 10000 );
@@ -1000,9 +1038,10 @@ function wppfm_handleUpdateFeedFileActionResult( updateResult ) {
 
 		case 'foreground_processing_complete':
 			// Foreground mode means the feed has already been processed when this callback runs.
-			// Still show "Started" briefly to be consistent with the background mode messaging.
-			//noinspection JSUnresolvedVariable
-			wppfm_showInfoMessage( wppfm_feed_settings_form_vars.feed_started + ' <span class="wppfm-processing-dots"></span>' );
+			// Do not show "Started..." here; polling may already have shown the ready message.
+			if ( _wppfmFeedGenerationSession && String( _wppfmFeedGenerationSession.feedId ) === String( _feedHolder[ 'feedId' ] ) ) {
+				_wppfmFeedGenerationSession = null;
+			}
 			wppfm_feedProcessStatusCheck( _feedHolder[ 'feedId' ], 0 );
 			wppfm_hideWorkingSpinner();
 			break;
@@ -1054,8 +1093,19 @@ function wppfm_feedProcessStatusCheck( feedId, repeatTime ) {
 
 	function wppfm_checkAndSetStatus( feedId ) {
 		var clientRequestId = _wppfmFeedGenerationSession ? _wppfmFeedGenerationSession.clientRequestId : '';
+		var statusRequestId = ++_wppfmFeedStatusCheckRequestId;
 
 		wppfm_getCurrentFeedStatus( feedId, function( result ) {
+			// Ignore out-of-order responses from earlier poll ticks or superseded checks.
+			if ( statusRequestId !== _wppfmFeedStatusCheckRequestId ) {
+				return;
+			}
+
+			// Ignore late responses after the UI has already reached a terminal state.
+			if ( _wppfmFeedStatusCheckReachedTerminalState ) {
+				return;
+			}
+
 			// When the backend returns an HTML error, wppfm_validateResponse() returns 'error'.
 			// Never JSON.parse() that, or the polling loop will crash and the UI will appear stuck.
 			if ( 'error' === result ) {
@@ -1083,6 +1133,7 @@ function wppfm_feedProcessStatusCheck( feedId, repeatTime ) {
 			}
 
 			if ( validationFailureMessage ) {
+				_wppfmFeedStatusCheckReachedTerminalState = true;
 				successErrorMessageElement.hide();
 				wppfm_closeProgressBar();
 				wppfm_storeFeedUrlInSourceData( status[ 'url' ] );
@@ -1098,6 +1149,7 @@ function wppfm_feedProcessStatusCheck( feedId, repeatTime ) {
 
 			switch ( status[ 'status_id' ] ) {
 				case '0': // unknown
+					_wppfmFeedStatusCheckReachedTerminalState = true;
 					//noinspection JSUnresolvedVariable
 					wppfm_showSuccessMessage( wppfm_feed_settings_form_vars.feed_status_unknown.replace( '%feedname%', status[ 'title' ] ) );
 					window.clearInterval( wppfmStatusCheck );
@@ -1107,12 +1159,12 @@ function wppfm_feedProcessStatusCheck( feedId, repeatTime ) {
 				case '1': // on hold
 				case '2': // active
 					// If a generation was just initiated from the UI, do not show a stale "ready" message
-					// until we have actually observed this run entering queue/processing.
+					// until this run is confirmed (poll saw status 3/4, or updateFeedFile returned started).
 					if (
 						_wppfmFeedGenerationSession
 						&& String( _wppfmFeedGenerationSession.feedId ) === String( feedId )
 						&& ! _wppfmFeedGenerationSession.hasSeenProcessing
-						&& ( Date.now() - _wppfmFeedGenerationSession.startedAtMs ) < ( 10 * 60 * 1000 )
+						&& ! _wppfmFeedGenerationSession.initiationConfirmed
 					) {
 						//noinspection JSUnresolvedVariable
 						wppfm_showInfoMessage( wppfm_feed_settings_form_vars.feed_preparing + ' <span class="wppfm-processing-dots"></span>' );
@@ -1121,6 +1173,7 @@ function wppfm_feedProcessStatusCheck( feedId, repeatTime ) {
 					}
 
 					// Get the feed url and store it in the wppfm-feed-url storage so the View Feed button gets the correct url to open.
+					_wppfmFeedStatusCheckReachedTerminalState = true;
 					wppfm_storeFeedUrlInSourceData( status[ 'url' ] );
 					wppfm_closeProgressBar();
 					wppfm_enableViewFeedButtons();
@@ -1171,6 +1224,7 @@ function wppfm_feedProcessStatusCheck( feedId, repeatTime ) {
 					break;
 
 				case '5': // error
+					_wppfmFeedStatusCheckReachedTerminalState = true;
 					successErrorMessageElement.hide();
 					//noinspection JSUnresolvedVariable
 					wppfm_showErrorMessage( wppfm_feed_settings_form_vars.feed_status_error.replace( '%feedname%', status[ 'title' ] ) );
@@ -1181,6 +1235,7 @@ function wppfm_feedProcessStatusCheck( feedId, repeatTime ) {
 					break;
 
 				case '6': // failed
+					_wppfmFeedStatusCheckReachedTerminalState = true;
 					successErrorMessageElement.hide();
 					//noinspection JSUnresolvedVariable
 					wppfm_showErrorMessage( wppfm_feed_settings_form_vars.feed_status_failed.replace( '%feedname%', status[ 'title' ] ) );
@@ -1410,6 +1465,8 @@ function wppfm_getCategorySelectorValue( selectorId ) {
 }
 
 function wppfm_fillFeedFields( isNew, categoryChanged ) {
+	_feedHolder['channel'] = wppfm_normalizeFeedChannel( _feedHolder['channel'] );
+
 	// if the category attribute has a value
 	if ( _feedHolder[ 'mainCategory' ] && isNew === false ) {
 		// and display the category in the Default Category input field unless only the category has been changed
@@ -1438,11 +1495,8 @@ function wppfm_fillFeedFields( isNew, categoryChanged ) {
 		jQuery( '#wppfm-category-map' ).show();
 	}
 
-	var channelId = wppfm_normalizeFeedChannel( _feedHolder[ 'channel' ] );
-	_feedHolder[ 'channel' ] = channelId;
-
-	wppfm_setMerchantSelector( isNew, channelId );
-	if ( '1' === channelId ) {
+	wppfm_setMerchantSelector( isNew, _feedHolder[ 'channel' ] );
+	if ( '1' === _feedHolder[ 'channel' ] ) {
 		wppfm_setGoogleFeedTypeSelector( isNew, _feedHolder['feedType'] );
 
 		if ( '5' === _feedHolder['feedType'] ) { // to handle a Google Dynamic Remarketing feed
@@ -1495,7 +1549,7 @@ function wppfm_fillFeedFields( isNew, categoryChanged ) {
 function wppfm_categorySelectCntrl( categories ) {
 	//noinspection JSUnresolvedVariable
 	var htmlCode = '<option value="0">' + wppfm_feed_settings_form_vars.select_a_sub_category + '</option>';
-	if ( '1' === wppfm_normalizeFeedChannel( _feedHolder['channel'] ) ) {
+	if ( '1' === _feedHolder['channel'] ) {
 		//noinspection JSUnresolvedVariable
 		htmlCode += '<option value="cat_number">' + wppfm_feed_settings_form_vars.select_by_category_number + '</option>';
 	}
@@ -3337,6 +3391,7 @@ function updateFeedFormAfterInputChanged( feedId, categoryChanged ) {
 	// now finish the feed page after the input change
 	wppfm_finishOrUpdateFeedPage( categoryChanged );
 
+	console.log(_feedHolder);
 	// make a new feed object if it has not been already
 	if ( feedId === undefined || feedId < 1 ) {
 		wppfm_constructNewFeed();

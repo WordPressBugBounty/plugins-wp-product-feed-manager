@@ -159,6 +159,10 @@ if ( ! class_exists( 'WPPFM_Ajax_File' ) ) :
 					set_transient( 'wppfm_client_request_id_' . $feed_id, $client_request_id, HOUR_IN_SECONDS );
 				}
 
+				if ( class_exists( 'WPPFM_Feed_Process_Logging' ) && function_exists( 'wppfm_process_logger_is_active' ) && wppfm_process_logger_is_active() ) {
+					WPPFM_Feed_Process_Logging::set_active_process_log_feed_id( $feed_id );
+				}
+
 				// @since: 2.40.0
 				do_action(
 					'wppfm_feed_generation_message',

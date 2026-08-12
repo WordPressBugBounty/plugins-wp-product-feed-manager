@@ -84,23 +84,6 @@ if ( ! class_exists( 'WPPFM_Database_Management' ) ) :
 		}
 
 		/**
-		 * Ensures the channel registry table contains at least one channel row.
-		 *
-		 * Feeds use an INNER JOIN on this table in legacy queries; an empty registry prevents
-		 * existing feeds from loading in the Feed Editor and from starting generation.
-		 *
-		 * @since 3.21.0
-		 */
-		private function ensure_channel_registry_populated() {
-			$table_name = $this->_wpdb->prefix . 'feedmanager_channel';
-			$count      = $this->_wpdb->get_var( "SELECT COUNT(*) FROM {$table_name}" );
-
-			if ( '0' === $count || 0 === (int) $count ) {
-				$this->fill_channel_table();
-			}
-		}
-
-		/**
 		 * Forces a database update
 		 *
 		 * @since 1.9.0
@@ -456,6 +439,20 @@ if ( ! class_exists( 'WPPFM_Database_Management' ) ) :
 			$table_name = $this->_wpdb->prefix . 'feedmanager_product_feedmeta';
 
 			return $this->_wpdb->get_var( "SELECT meta_value FROM $table_name WHERE product_feed_id = 0" );
+		}
+
+		/**
+		 * Repopulates the channel registry when it is empty (e.g. after a google-only build with no channels registered).
+		 */
+		private function ensure_channel_registry_populated() {
+			$table_name = $this->_wpdb->prefix . 'feedmanager_channel';
+
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- one COUNT per request during db verify.
+			$count = (int) $this->_wpdb->get_var( "SELECT COUNT(*) FROM {$table_name}" );
+
+			if ( 0 === $count ) {
+				$this->fill_channel_table();
+			}
 		}
 
 		/**

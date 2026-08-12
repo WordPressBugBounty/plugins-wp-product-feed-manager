@@ -118,6 +118,9 @@ function wppfm_woocommerceSourceOptions() {
 		{value: '_global_unique_id', label: 'GTIN, UPC, EAN or ISBN', prop: 'meta'},
 		// @since 3.15.0
 		{value: '_low_stock_amount', label: 'Low Stock Amount', prop: 'meta'},
+		// @since 3.23.0
+		{value: '_days_after_product_update', label: 'Days After Last Product Update', prop: 'meta'},
+		{value: '_days_after_product_added', label: 'Days After Product Added', prop: 'meta'},
 	];
 
 	// @since 3.11.0 - Made the inclusion of the plugin's own product identifiers dependent on if the Show product identifiers option in the Settings page has been selected or not.

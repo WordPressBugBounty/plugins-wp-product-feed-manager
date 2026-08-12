@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WooCommerce Product Feed Manager\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-26 10:31+0200\n"
-"PO-Revision-Date: 2026-04-26 10:37+0200\n"
+"POT-Creation-Date: 2026-06-07 11:22+0200\n"
+"PO-Revision-Date: 2026-06-07 11:24+0200\n"
 "Last-Translator: webgo-admin <nobody@localhost>\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -36,7 +36,7 @@ msgid "Unknown feed type"
 msgstr "Unbekannter Feed-Typ"
 
 #. translators: %s: Folder where the feeds are stored
-#: includes/application/class-feed-master.php:336
+#: includes/application/class-feed-master.php:344
 #, php-format
 msgid ""
 "1430 - %s is not a writable folder. Make sure you have admin rights to this "
@@ -46,7 +46,7 @@ msgstr ""
 "Administratorrechte für diesen Ordner verfügen."
 
 #. translators: %s: Temporary feed file path
-#: includes/application/class-feed-master.php:370
+#: includes/application/class-feed-master.php:378
 #, php-format
 msgid ""
 "1431 - Could not initialize the temporary feed file (%s). Check folder "
@@ -55,13 +55,13 @@ msgstr ""
 "1431 - Konnte die temporäre Feed-Datei (%s) nicht initialisieren. Überprüfen "
 "Sie die Ordnerberechtigungen."
 
-#: includes/application/class-feed-master.php:824
+#: includes/application/class-feed-master.php:812
 #: includes/user-interface/class-wppfm-i18n-scripts.php:94
 msgid "Fill with a static value"
 msgstr "Mit einem statischen Wert füllen"
 
-#: includes/application/class-feed-master.php:825
-#: includes/application/class-feed-master.php:830
+#: includes/application/class-feed-master.php:813
+#: includes/application/class-feed-master.php:818
 msgid "Use the settings in the Merchant Center"
 msgstr "Einstellung im Merchant Center verwenden"
 
@@ -181,7 +181,7 @@ msgstr ""
 "diese Adresse gesendet werden."
 
 #. translators: %s: Feed id.
-#: includes/application/class-wppfm-feed-processor.php:184
+#: includes/application/class-wppfm-feed-processor.php:191
 #, php-format
 msgid ""
 "Feed %s: batch metadata is missing temporary or final file paths; "
@@ -192,7 +192,7 @@ msgstr ""
 "nicht geändert."
 
 #. translators: 1: Temporary file path, 2: Final file path.
-#: includes/application/class-wppfm-feed-processor.php:205
+#: includes/application/class-wppfm-feed-processor.php:216
 #, php-format
 msgid ""
 "Could not move the temporary feed file (%1$s) to the final location (%2$s). "
@@ -201,14 +201,24 @@ msgstr ""
 "Konnte die temporäre Feed-Datei (%1$s) nicht an den endgültigen Speicherort "
 "(%2$s) verschieben. Der zuvor veröffentlichte Feed blieb unverändert."
 
-#: includes/application/class-wppfm-feed-processor.php:972
+#. translators: 1: Temporary file path, 2: Final file path.
+#: includes/application/class-wppfm-feed-processor.php:218
+#, php-format
+msgid ""
+"Could not move the temporary feed file (%1$s) to the final location (%2$s). "
+"No feed file was published."
+msgstr ""
+"Konnte die temporäre Feed-Datei (%1$s) nicht an den endgültigen Speicherort "
+"(%2$s) verschieben. Der zuvor veröffentlichte Feed blieb unverändert."
+
+#: includes/application/class-wppfm-feed-processor.php:1009
 msgid "Temporary feed file validation failed before publication."
 msgstr ""
 "Validierung der temporären Feed-Datei vor der Veröffentlichung "
 "fehlgeschlagen."
 
 #. translators: %s: Temporary feed file path.
-#: includes/application/class-wppfm-feed-processor.php:1052
+#: includes/application/class-wppfm-feed-processor.php:1089
 #, php-format
 msgid "XML temporary feed validation failed: file %s is missing or empty."
 msgstr ""
@@ -216,7 +226,7 @@ msgstr ""
 "oder ist leer."
 
 #. translators: %s: Temporary feed file path.
-#: includes/application/class-wppfm-feed-processor.php:1109
+#: includes/application/class-wppfm-feed-processor.php:1149
 #, php-format
 msgid ""
 "XML temporary feed validation failed: file %s does not contain the expected "
@@ -226,10 +236,29 @@ msgstr ""
 "nicht die erwartete XML-Header- und Footer-Struktur. Der zuvor "
 "veröffentlichte Feed bleibt aktiv."
 
+#. translators: %s: Temporary feed file path.
+#: includes/application/class-wppfm-feed-processor.php:1151
+#, php-format
+msgid ""
+"XML temporary feed validation failed: file %s does not contain the expected "
+"XML header and footer. No feed file was published."
+msgstr ""
+"Validierung der temporären Feed-Datei fehlgeschlagen: Die Datei %s enthält "
+"nicht die erwartete XML-Header- und Footer-Struktur. Der zuvor "
+"veröffentlichte Feed bleibt aktiv."
+
 #. translators: %s: Feed title.
-#: includes/application/class-wppfm-feed-processor.php:1259
+#: includes/application/class-wppfm-feed-processor.php:1317
 #, php-format
 msgid "Product feed %s failed validation, so the previous feed remains active."
+msgstr ""
+"Produkt-Feed %s hat die Validierung nicht bestanden, daher bleibt der "
+"vorherige Feed aktiv."
+
+#. translators: %s: Feed title.
+#: includes/application/class-wppfm-feed-processor.php:1319
+#, php-format
+msgid "Product feed %s failed validation, so no feed file was generated."
 msgstr ""
 "Produkt-Feed %s hat die Validierung nicht bestanden, daher bleibt der "
 "vorherige Feed aktiv."
@@ -250,14 +279,14 @@ msgstr ""
 "WooCommerce-Analytics-Lookup-Tabellen fehlen. Leistungsdaten können nicht "
 "berechnet werden."
 
-#: includes/application/wppfm-cron-functions.php:114
+#: includes/application/wppfm-cron-functions.php:120
 #, php-format
 msgid "Every %d minute (WPPFM Feed Updates)"
 msgid_plural "Every %d minutes (WPPFM Feed Updates)"
 msgstr[0] "Alle %d Minuten (WPPFM Feed-Aktualisierungen)"
 msgstr[1] "Alle %d Minute (WPPFM Feed-Aktualisierungen)"
 
-#: includes/application/wppfm-cron-functions.php:169
+#: includes/application/wppfm-cron-functions.php:175
 #, php-format
 msgid "Every %d minute (WPPFM Feed Watchdog)"
 msgid_plural "Every %d minutes (WPPFM Feed Watchdog)"
@@ -336,7 +365,7 @@ msgstr ""
 "2131 - Bitte versuchen Sie, die Seite neu zu laden. Erstellen Sie ein "
 "Support ticket auf %s, wenn das Problem weiterhin besteht."
 
-#: includes/data/class-wppfm-ajax-calls.php:49
+#: includes/data/class-wppfm-ajax-calls.php:63
 msgid "You are not allowed to do this! Please contact the web administrator."
 msgstr "Du darfst das nicht tun! Bitte kontaktiere den Webadministrator."
 
@@ -369,38 +398,38 @@ msgstr ""
 "die WordPress Plugins Seite und installieren Sie es dann neu und aktivieren "
 "Sie es erneut."
 
-#: includes/data/class-wppfm-ajax-data.php:546
+#: includes/data/class-wppfm-ajax-data.php:550
 #: includes/user-interface/class-wppfm-list-table.php:143
 msgid "Feed"
 msgstr "Feed"
 
 #. translators: %s: Title of the feed file
-#: includes/data/class-wppfm-ajax-file.php:123
+#: includes/data/class-wppfm-ajax-file.php:135
 #, php-format
 msgid "Could not remove file %s because it does not seem to exist."
 msgstr ""
 "Die Datei %s konnte nicht entfernt werden, weil sie anscheinend nicht "
 "existiert."
 
-#: includes/data/class-wppfm-ajax-file.php:162
+#: includes/data/class-wppfm-ajax-file.php:178
 msgid ""
 "Could not update the feed file because the channel has not been installed"
 msgstr ""
 "Die Feed-Datei konnte nicht aktualisiert werden, weil der Kanal nicht "
 "installiert wurde"
 
-#: includes/data/class-wppfm-ajax-file.php:434
+#: includes/data/class-wppfm-ajax-file.php:451
 msgid "Failed to re-initialize the plugin. Please try again."
 msgstr ""
 "Fehler bei der erneuten Initialisierung des Plugins. Bitte versuchen Sie es "
 "erneut."
 
-#: includes/data/class-wppfm-ajax-file.php:454
+#: includes/data/class-wppfm-ajax-file.php:471
 msgid "Feed processing data cleared"
 msgstr "Feed-Verarbeitungsdaten gelöscht"
 
 #. translators: clearing the feed data failed
-#: includes/data/class-wppfm-ajax-file.php:457
+#: includes/data/class-wppfm-ajax-file.php:474
 msgid "Failed to clear the feed process. Please try again."
 msgstr "Fehler beim Löschen des Feed-Prozesses. Bitte versuchen Sie es erneut."
 
@@ -556,24 +585,29 @@ msgstr "Sie haben keine Berechtigung, Plugin-Updates zu installieren"
 msgid "Error"
 msgstr "Fehler"
 
+#: includes/libraries/wppfm-background-process.php:731
+#: wp-product-feed-manager.php:412
+msgid "You are not allowed to do this."
+msgstr "Du darfst das nicht tun."
+
 #. translators: %d: number of attempts
-#: includes/libraries/wppfm-background-process.php:830
+#: includes/libraries/wppfm-background-process.php:973
 #, php-format
 msgid "Could not acquire process lock after %d attempts"
 msgstr "Prozesssperre konnte nach %d Versuchen nicht übernommen werden"
 
-#: includes/libraries/wppfm-background-process.php:870
+#: includes/libraries/wppfm-background-process.php:1013
 msgid "Failed to acquire process lock"
 msgstr "Prozesssperre konnte nicht übernommen werden"
 
-#: includes/libraries/wppfm-background-process.php:1454
+#: includes/libraries/wppfm-background-process.php:1594
 #, php-format
 msgid "Every %d minute"
 msgid_plural "Every %d minutes"
 msgstr[0] "Jede %d Minute"
 msgstr[1] "Alle %d Minuten"
 
-#: includes/libraries/wppfm-background-process.php:1533
+#: includes/libraries/wppfm-background-process.php:1816
 msgid ""
 "Could not schedule the cron event required to start the feed process. Please "
 "check if your wp cron is configured correctly and is running."
@@ -582,7 +616,7 @@ msgstr ""
 "nicht planen. Bitte prüfen Sie, ob Ihr WP cron korrekt konfiguriert ist und "
 "läuft."
 
-#: includes/packages/logger/wp-product-feed-manager-logger.php:83
+#: includes/packages/logger/wp-product-feed-manager-logger.php:87
 msgid ""
 "The logger code is now integrated in the Feed Manager plugin. To prevent "
 "conflicts please deactivate and remove the \"WooCommerce Product Feed "
@@ -592,9 +626,9 @@ msgstr ""
 "vermeiden, deaktivieren und entfernen Sie das Plugin \"WooCommerce Product "
 "Feed Manager Logger\" von Ihrer Plugins-Seite."
 
-#: includes/packages/pll/includes/wppfm-pll-functions.php:17
-#: includes/packages/transpress/includes/wppfm-transpress-functions.php:24
-#: includes/packages/wpml/includes/wppfm-wpml-functions.php:23
+#: includes/packages/pll/includes/wppfm-pll-functions.php:22
+#: includes/packages/transpress/includes/wppfm-transpress-functions.php:29
+#: includes/packages/wpml/includes/wppfm-wpml-functions.php:30
 msgid "-- Select the language of the feed --"
 msgstr "-- Wählen Sie die Sprache des Feeds --"
 
@@ -928,7 +962,7 @@ msgstr ""
 "Um das WooCommerce Google Produktbewertungsfeed Manager Add-on zu nutzen, "
 "benötigen Sie die aktuellste Version des WP Product Feed Manager Plugins."
 
-#: includes/packages/woocs/includes/wppfm-woocs-functions.php:19
+#: includes/packages/woocs/includes/wppfm-woocs-functions.php:24
 msgid "-- Select the WOOCS currency for the feed --"
 msgstr "-- Wählen Sie die WOOCS Währung des Feeds --"
 
@@ -1778,7 +1812,7 @@ msgid "I accept your Terms and Conditions"
 msgstr "Ich akzeptiere die Allgemeinen Geschäftsbedingungen"
 
 #: includes/user-interface/class-wppfm-license-page.php:53
-#: includes/user-interface/class-wppfm-license-page.php:54
+#: includes/user-interface/class-wppfm-license-page.php:64
 msgid "Activate License"
 msgstr "Lizenz aktivieren"
 
@@ -2568,7 +2602,11 @@ msgstr "Zur Premium-Version wechseln"
 msgid "Get Support"
 msgstr "Hilfe erhalten"
 
-#: includes/user-interface/wppfm-admin-menu-functions.php:312
+#: includes/user-interface/wppfm-admin-menu-functions.php:121
+msgid "You are not allowed to do this!"
+msgstr "Du darfst das nicht tun!"
+
+#: includes/user-interface/wppfm-admin-menu-functions.php:322
 #, php-format
 msgid ""
 "2122 - License verification failed. This may be due to a temporary issue "
@@ -2609,7 +2647,7 @@ msgstr ""
 "für Ihren Feed ein und wählen Sie einen Kanal aus."
 
 #. translators: %s: Error message
-#: includes/user-interface/wppfm-messaging-functions.php:119
+#: includes/user-interface/wppfm-messaging-functions.php:151
 #, php-format
 msgid ""
 "There was an error but I was unable to store the error message in the log "
@@ -2618,7 +2656,7 @@ msgstr ""
 "Es gab einen Fehler, die Fehlermeldung konnte jedoch nicht in der "
 "Protokolldatei gespeichert werden. Die Nachricht war %s"
 
-#: includes/user-interface/wppfm-messaging-functions.php:145
+#: includes/user-interface/wppfm-messaging-functions.php:213
 #, php-format
 msgid ""
 "This plugin requires WooCommerce version %1$s as a minimum!\n"
@@ -2631,7 +2669,7 @@ msgstr ""
 "die eine Version ist, die nicht unterstützt wird. \n"
 "\t\t\t\tBitte aktualisieren Sie auf mindestens die Version 3.0.0. ***"
 
-#: includes/user-interface/wppfm-messaging-functions.php:164
+#: includes/user-interface/wppfm-messaging-functions.php:232
 msgid ""
 "This plugin only works in conjunction with the WooCommerce Plugin!\n"
 "\t\t\t\tIt seems you have not installed and activated the WooCommerce Plugin "
@@ -2642,7 +2680,7 @@ msgstr ""
 "haben, also tun Sie dies bitte, bevor Sie dieses Plugin verwenden."
 
 #. translators: %s: link to information about the WooCommerce plugin
-#: includes/user-interface/wppfm-messaging-functions.php:169
+#: includes/user-interface/wppfm-messaging-functions.php:237
 #, php-format
 msgid ""
 "You can find more information about the Woocommerce Plugin %sby clicking "
@@ -2659,7 +2697,7 @@ msgstr ""
 "den Hersteller- oder Lieferantennamen verwenden."
 
 #: includes/user-interface/wppfm-product-identifiers.php:34
-#: includes/user-interface/wppfm-product-identifiers.php:106
+#: includes/user-interface/wppfm-product-identifiers.php:110
 msgid ""
 "GTIN refers to a products Global Trade Item Number. You can also use a UPC, "
 "EAN, JAN, ISBN or ITF-14 number here."
@@ -2668,23 +2706,23 @@ msgstr ""
 "hier auch eine UPC-, EAN-, JAN-, ISBN- oder ITF-14-Nummer verwenden."
 
 #: includes/user-interface/wppfm-product-identifiers.php:45
-#: includes/user-interface/wppfm-product-identifiers.php:95
+#: includes/user-interface/wppfm-product-identifiers.php:99
 msgid "Add your product's Manufacturer Part Number (MPN)."
 msgstr "Fügen Sie die Hersteller-Teilenummer (MPN) Ihres Produkts ein."
 
-#: includes/user-interface/wppfm-product-identifiers.php:93
+#: includes/user-interface/wppfm-product-identifiers.php:97
 msgid "Product MPN"
 msgstr "Produkt MPN"
 
-#: includes/user-interface/wppfm-product-identifiers.php:154
+#: includes/user-interface/wppfm-product-identifiers.php:161
 msgid "Brand"
 msgstr "Marke"
 
-#: includes/user-interface/wppfm-product-identifiers.php:165
+#: includes/user-interface/wppfm-product-identifiers.php:172
 msgid "GTIN"
 msgstr "GTIN"
 
-#: includes/user-interface/wppfm-product-identifiers.php:176
+#: includes/user-interface/wppfm-product-identifiers.php:183
 msgid "MPN"
 msgstr "MPN"
 
@@ -2784,9 +2822,6 @@ msgstr "WP Marketing Robot"
 
 #~ msgid "You successfully signed up for our news letter."
 #~ msgstr "Sie haben sich erfolgreich für unseren Newsletter angemeldet."
-
-#~ msgid "You are not allowed to do this!"
-#~ msgstr "Du darfst das nicht tun!"
 
 #~ msgid ""
 #~ "WPML support is now integrated in the Feed Manager plugin. To prevent "

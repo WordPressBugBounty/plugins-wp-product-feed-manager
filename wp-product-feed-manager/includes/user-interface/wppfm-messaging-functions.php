@@ -144,10 +144,48 @@ function wppfm_write_log_file( $error_message, $filename = 'debug' ) {
 		$message_line = 'ERROR! Could not write messages of type ' . gettype( $error_message );
 	}
 
-	if ( false === wppfm_append_line_to_file( $file, gmdate( 'Y-m-d H:i:s', time() ) . ' - ' . ucfirst( $filename ) . ' Message: ' . $message_line, true ) ) {
+	$log_line = gmdate( 'Y-m-d H:i:s', time() ) . ' - ' . ucfirst( $filename ) . ' Message: ' . $message_line;
+
+	if ( false === wppfm_append_line_to_file( $file, $log_line, true ) ) {
 		/* translators: %s: Error message */
 		wppfm_show_wp_error( sprintf( __( 'There was an error but I was unable to store the error message in the log file. The message was %s', 'wp-product-feed-manager' ), $error_message ) );
 	}
+
+	wppfm_maybe_mirror_log_line_to_feed_process_log( $filename, $message_line );
+}
+
+/**
+ * Copies general debug log lines into the active feed process log when enabled.
+ *
+ * @param string $filename     Log channel name (e.g. debug).
+ * @param string $message_line Normalized message text.
+ *
+ * @return void
+ */
+function wppfm_maybe_mirror_log_line_to_feed_process_log( $filename, $message_line ) {
+	if ( ! apply_filters( 'wppfm_mirror_debug_log_to_feed_process_log', true ) ) {
+		return;
+	}
+
+	if ( ! function_exists( 'wppfm_process_logger_is_active' ) || ! wppfm_process_logger_is_active() ) {
+		return;
+	}
+
+	if ( ! class_exists( 'WPPFM_Feed_Process_Logging' ) ) {
+		return;
+	}
+
+	$feed_id = WPPFM_Feed_Process_Logging::resolve_log_feed_id( '' );
+
+	if ( '' === $feed_id ) {
+		return;
+	}
+
+	WPPFM_Feed_Process_Logging::add_to_feed_process_logging(
+		$feed_id,
+		sprintf( '[%s] %s', sanitize_key( (string) $filename ), $message_line ),
+		'DEBUG'
+	);
 }
 
 /**

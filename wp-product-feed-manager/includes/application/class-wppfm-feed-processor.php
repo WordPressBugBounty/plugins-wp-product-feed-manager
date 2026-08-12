@@ -103,6 +103,13 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 		private $active_completion_lock_token = '';
 
 		/**
+		 * Feed id tied to the active completion lock for this request.
+		 *
+		 * @var string
+		 */
+		private $active_completion_lock_feed_id = '';
+
+		/**
 		 * Starts a single feed update task.
 		 *
 		 * @param array    $item            the work value, usually a product id, but it can also be an XML header line.
@@ -177,7 +184,8 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 							__( 'Feed %s: batch metadata is missing temporary or final file paths; publication was aborted and the published file was not modified.', 'wp-product-feed-manager' ),
 							$this->_feed_data->feedId
 						),
-						''
+						'',
+						$final_publish_path
 					);
 					return;
 				}
@@ -186,20 +194,26 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 				if ( ! $pre_promotion_validation['is_valid'] ) {
 					$this->handle_feed_promotion_failure_at_completion(
 						$pre_promotion_validation['error_message'],
-						$temporary_path
+						$temporary_path,
+						$final_publish_path
 					);
 					return;
 				}
 
 				if ( ! $this->promote_temporary_feed_file_to_final_location( $temporary_path, $final_publish_path ) ) {
+					$has_existing_published_feed = $this->published_feed_file_exists_at_path( $final_publish_path );
 					$this->handle_feed_promotion_failure_at_completion(
 						sprintf(
-							/* translators: 1: Temporary file path, 2: Final file path. */
-							__( 'Could not move the temporary feed file (%1$s) to the final location (%2$s). The previous published feed was left unchanged.', 'wp-product-feed-manager' ),
+							$has_existing_published_feed
+								/* translators: 1: Temporary file path, 2: Final file path. */
+								? __( 'Could not move the temporary feed file (%1$s) to the final location (%2$s). The previous published feed was left unchanged.', 'wp-product-feed-manager' )
+								/* translators: 1: Temporary file path, 2: Final file path. */
+								: __( 'Could not move the temporary feed file (%1$s) to the final location (%2$s). No feed file was published.', 'wp-product-feed-manager' ),
 							$temporary_path,
 							$final_publish_path
 						),
-						$temporary_path
+						$temporary_path,
+						$final_publish_path
 					);
 					return;
 				}
@@ -213,9 +227,28 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 
 			$feed_status             = '0' !== $this->_feed_data->status && '3' !== $this->_feed_data->status && '4' !== $this->_feed_data->status ? $this->_feed_data->status : $this->_feed_data->baseStatusId;
 			$feed_title              = $this->_feed_data->title . '.' . pathinfo( $this->_feed_file_path, PATHINFO_EXTENSION );
-			$total_handled_products  = get_transient( 'wppfm_nr_of_processed_products' );
-			$total_handled_products  = false === $total_handled_products ? 0 : intval( $total_handled_products );
+			if ( function_exists( 'wppfm_get_authoritative_feed_products_added_count' ) ) {
+				$total_handled_products = wppfm_get_authoritative_feed_products_added_count( $this->_feed_data->feedId );
+			} elseif ( function_exists( 'wppfm_get_feed_products_added_counter' ) ) {
+				$total_handled_products = wppfm_get_feed_products_added_counter( $this->_feed_data->feedId, true );
+			} elseif ( function_exists( 'wppfm_get_legacy_feed_products_processed_transient_count' ) ) {
+				$total_handled_products = wppfm_get_legacy_feed_products_processed_transient_count();
+			} else {
+				$legacy_count           = get_transient( 'wppfm_nr_of_processed_products' );
+				$total_handled_products = false === $legacy_count ? 0 : intval( $legacy_count );
+			}
+
 			$this->register_feed_update( $this->_feed_data->feedId, $feed_title, $total_handled_products, $feed_status );
+
+			if ( function_exists( 'wppfm_reset_feed_products_added_counter' ) ) {
+				wppfm_reset_feed_products_added_counter( $this->_feed_data->feedId );
+			}
+
+			if ( function_exists( 'wppfm_clear_feed_products_progress_transient' ) ) {
+				wppfm_clear_feed_products_progress_transient();
+			} else {
+				delete_transient( 'wppfm_nr_of_processed_products' );
+			}
 			$this->clear_the_queue();
 
 			// Now the feed is ready to go, remove the feed id from the feed queue.
@@ -711,8 +744,9 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 				return false;
 			}
 
-			$this->active_completion_lock_key   = $lock_key;
-			$this->active_completion_lock_token = $token;
+			$this->active_completion_lock_key     = $lock_key;
+			$this->active_completion_lock_token   = $token;
+			$this->active_completion_lock_feed_id = (string) $feed_id;
 			do_action(
 				'wppfm_feed_generation_message',
 				$feed_id,
@@ -728,10 +762,12 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 		 * @return void
 		 */
 		private function release_feed_completion_lock() {
+			$log_feed_id = $this->get_completion_lock_log_feed_id();
+
 			if ( '' === $this->active_completion_lock_key || '' === $this->active_completion_lock_token ) {
 				do_action(
 					'wppfm_feed_generation_message',
-					'unknown',
+					$log_feed_id,
 					'Skipped completion lock release because no active completion lock is set.',
 					'WARNING'
 				);
@@ -743,20 +779,38 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 				delete_site_option( $this->active_completion_lock_key );
 				do_action(
 					'wppfm_feed_generation_message',
-					'unknown',
+					$log_feed_id,
 					sprintf( 'Released completion lock (key=%s).', $this->active_completion_lock_key )
 				);
 			} else {
 				do_action(
 					'wppfm_feed_generation_message',
-					'unknown',
+					$log_feed_id,
 					sprintf( 'Skipped completion lock release because this request is not the lock owner (key=%s).', $this->active_completion_lock_key ),
 					'WARNING'
 				);
 			}
 
-			$this->active_completion_lock_key   = '';
-			$this->active_completion_lock_token = '';
+			$this->active_completion_lock_key     = '';
+			$this->active_completion_lock_token   = '';
+			$this->active_completion_lock_feed_id = '';
+		}
+
+		/**
+		 * Returns the feed id to use when logging completion-lock events.
+		 *
+		 * @return string
+		 */
+		private function get_completion_lock_log_feed_id() {
+			if ( '' !== $this->active_completion_lock_feed_id ) {
+				return (string) absint( $this->active_completion_lock_feed_id );
+			}
+
+			if ( preg_match( '/wppfm_feed_completion_lock_(\d+)$/', (string) $this->active_completion_lock_key, $matches ) ) {
+				return (string) absint( $matches[1] );
+			}
+
+			return '';
 		}
 
 	/**
@@ -1093,11 +1147,16 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 				'ERROR'
 			);
 
+			$has_existing_published_feed = $this->published_feed_file_exists_at_path( $final_path );
+
 			return array(
 				'is_valid'      => false,
 				'error_message' => sprintf(
-					/* translators: %s: Temporary feed file path. */
-					__( 'XML temporary feed validation failed: file %s does not contain the expected XML header and footer. The previous published feed remains active.', 'wp-product-feed-manager' ),
+					$has_existing_published_feed
+						/* translators: %s: Temporary feed file path. */
+						? __( 'XML temporary feed validation failed: file %s does not contain the expected XML header and footer. The previous published feed remains active.', 'wp-product-feed-manager' )
+						/* translators: %s: Temporary feed file path. */
+						: __( 'XML temporary feed validation failed: file %s does not contain the expected XML header and footer. No feed file was published.', 'wp-product-feed-manager' ),
 					$temporary_path
 				),
 			);
@@ -1231,19 +1290,41 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 		}
 
 		/**
+		 * Checks whether a published feed file already exists at the final destination path.
+		 *
+		 * @param string $final_path Absolute path to the published feed file.
+		 *
+		 * @return bool
+		 */
+		private function published_feed_file_exists_at_path( $final_path ) {
+			if ( '' === (string) $final_path ) {
+				return false;
+			}
+
+			$wp_filesystem = wppfm_get_wp_filesystem();
+
+			return $wp_filesystem->exists( $final_path );
+		}
+
+		/**
 		 * Terminal cleanup when the temporary file cannot be promoted at completion time.
 		 *
 		 * @param string $reason_message  Human-readable reason for logging.
 		 * @param string $temporary_path  Known temp artifact path when promotion failed, or empty when unknown.
+		 * @param string $final_path      Absolute path to the published feed file, when known.
 		 *
 		 * @return void
 		 */
-		private function handle_feed_promotion_failure_at_completion( $reason_message, $temporary_path = '' ) {
+		private function handle_feed_promotion_failure_at_completion( $reason_message, $temporary_path = '', $final_path = '' ) {
 			$feed_id = (string) $this->_feed_data->feedId;
 			$feed_title = isset( $this->_feed_data->title ) ? (string) $this->_feed_data->title : (string) $feed_id;
+			$has_existing_published_feed = $this->published_feed_file_exists_at_path( $final_path );
 			$user_visible_failure_message = sprintf(
-				/* translators: %s: Feed title. */
-				__( 'Product feed %s failed validation, so the previous feed remains active.', 'wp-product-feed-manager' ),
+				$has_existing_published_feed
+					/* translators: %s: Feed title. */
+					? __( 'Product feed %s failed validation, so the previous feed remains active.', 'wp-product-feed-manager' )
+					/* translators: %s: Feed title. */
+					: __( 'Product feed %s failed validation, so no feed file was generated.', 'wp-product-feed-manager' ),
 				$feed_title
 			);
 

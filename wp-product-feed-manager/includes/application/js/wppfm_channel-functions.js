@@ -92,6 +92,7 @@ function wppfm_clearMainChannelSelectors() {
 	jQuery( '#google-feed-description-row' ).hide();
 	jQuery( '#aggregator-selector-row' ).hide();
 	jQuery( '#wppfm-add-google-analytics-row' ).hide();
+	jQuery( '.wppfm-channel-extra-main-input-row' ).hide();
 
 	// standard for all channels
 	jQuery( '#update-schedule-row' ).show();
@@ -487,7 +488,13 @@ function wppfm_getAdvisedInputs( channel ) {
 // ALERT has a relation with the set_output_attribute_levels() function in the class-wppfm-data.php file
 //noinspection JSUnresolvedFunction
 function wppfm_setOutputAttributeLevels( channel, feedHolder, selectArgument ) {
-	channel = ( channel === null || channel === undefined || channel === '' ) ? '1' : String( channel );
+	if ( typeof wppfm_normalizeFeedChannel === 'function' ) {
+		channel = wppfm_normalizeFeedChannel( channel );
+	} else if ( null === channel || undefined === channel || '' === channel || '0' === String( channel ) ) {
+		channel = '1';
+	} else {
+		channel = String( channel );
+	}
 
 	switch ( channel ) {
 		case '1':

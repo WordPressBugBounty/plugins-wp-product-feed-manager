@@ -26,6 +26,9 @@ function wppfm_include_classes() {
 	if ( ! class_exists( 'WPPFM_Async_Request' ) ) {
 		require_once __DIR__ . '/libraries/wppfm-async-request.php';
 	}
+	if ( ! function_exists( 'wppfm_get_feed_products_added_counter' ) ) {
+		require_once __DIR__ . '/application/wppfm-feed-product-counter.php';
+	}
 	if ( ! class_exists( 'WPPFM_Background_Process' ) ) {
 		require_once __DIR__ . '/libraries/wppfm-background-process.php';
 	}
@@ -208,7 +211,7 @@ function wppfm_include_classes() {
  * @since 1.0.0
  */
 function wppfm_include_channels() {
-	if ( ! class_exists( 'WPPFM_Google_Feed_Class' ) ) {
-		require_once WPPFM_CHANNEL_DATA_DIR . '/google/class-feed.php';
-	}
+	 if ( ! class_exists( 'WPPFM_Google_Feed_Class' ) ) {
+	 	require_once WPPFM_CHANNEL_DATA_DIR . '/google/class-feed.php';
+	 }
 }

@@ -19,6 +19,10 @@ wppfm_logger_setup();
 function wppfm_logger_setup() {
 
 	if ( wppfm_process_logger_is_active() ) {
+		if ( ! class_exists( 'WPPFM_Feed_Processing_Diagnostics' ) ) {
+			require_once __DIR__ . '/includes/class-wppfm-feed-processing-diagnostics.php';
+		}
+
 		require_once __DIR__ . '/includes/wppfm-logger-actions.php';
 
 		if ( ! is_plugin_active( 'wp-product-feed-manager-logger/wp-product-feed-manager-logger.php' ) ) {

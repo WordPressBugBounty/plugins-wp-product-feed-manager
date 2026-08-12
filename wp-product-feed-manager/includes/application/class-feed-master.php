@@ -261,13 +261,23 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 						$watchdog_path = $active_from_batch;
 					}
 				}
-				$current_feed_status['products_in_queue'] = get_transient( 'wppfm_nr_of_processed_products' );
+				$current_feed_status['products_in_queue'] = function_exists( 'wppfm_resolve_feed_products_added_count' )
+					? wppfm_resolve_feed_products_added_count( $feed_id, true )
+					: get_transient( 'wppfm_nr_of_processed_products' );
 				$current_feed_status['products_to_process'] = get_transient( 'wppfm_nr_of_products_to_process_' . $feed_id );
 
-				// If it is, set the feed status to fail and change the $current_feed_status['status_id'] to 6.
-				if ( WPPFM_Feed_Controller::feed_processing_failed( $watchdog_path ) ) {
+				if ( class_exists( 'WPPFM_Feed_Processing_Diagnostics' ) ) {
+					WPPFM_Feed_Processing_Diagnostics::maybe_log_suppressed_stall_notice( $feed_id, $watchdog_path );
+				}
 
-					do_action( 'wppfm_feed_processing_failed_file_size_stopped_increasing', $feed_id, WPPFM_Feed_Controller::nr_ids_remaining_in_product_queue() );
+				// If it is, set the feed status to fail and change the $current_feed_status['status_id'] to 6.
+				if ( WPPFM_Feed_Controller::feed_processing_failed( $watchdog_path, $feed_id ) ) {
+
+					$stall_diagnostics = class_exists( 'WPPFM_Feed_Processing_Diagnostics' )
+						? WPPFM_Feed_Processing_Diagnostics::build_stall_snapshot( $feed_id, $watchdog_path )
+						: array();
+
+					do_action( 'wppfm_feed_processing_failed_file_size_stopped_increasing', $feed_id, WPPFM_Feed_Controller::nr_ids_remaining_in_product_queue(), $stall_diagnostics );
 					do_action( 'wppfm_register_feed_url', $feed_id, $published_path );
 
 					// Change the status of the feed to failed processing.
@@ -436,6 +446,10 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 
 			// The transient cursor is deprecated in incremental mode.
 			delete_transient( 'wppfm_start_product_id' );
+			if ( function_exists( 'wppfm_reset_feed_products_added_counter' ) ) {
+				wppfm_reset_feed_products_added_counter( $this->_feed->feedId );
+			}
+
 			set_transient( 'wppfm_nr_of_processed_products', 0, WPPFM_TRANSIENT_LIVE ); // (Re)set the processed product counter for the progress bar.
 			set_transient( 'wppfm_nr_of_handled_items', 0, WPPFM_TRANSIENT_LIVE ); // Keep handled-items counter aligned from startup.
 
@@ -882,6 +896,8 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 				'wppfm_performance_tier',
 				'wppfm_performance_revenue',
 				'wppfm_performance_orders',
+				'_days_after_product_update',
+				'_days_after_product_added',
 			);
 		}
 

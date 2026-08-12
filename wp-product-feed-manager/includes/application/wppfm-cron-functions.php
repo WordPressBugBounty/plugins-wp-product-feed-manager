@@ -32,6 +32,7 @@ function wppfm_update_feeds() {
 	require_once __DIR__ . '/../user-interface/wppfm-messaging-functions.php';
 	require_once __DIR__ . '/../user-interface/wppfm-url-functions.php';
 	require_once __DIR__ . '/../application/wppfm-feed-processing-support.php';
+	require_once __DIR__ . '/../application/wppfm-feed-product-counter.php';
 	require_once __DIR__ . '/../application/wppfm-feed-processor-functions.php';
 
 	// WooCommerce needs to be installed and active.
@@ -225,8 +226,8 @@ function wppfm_handle_feed_watchdog_cron() {
 	$heartbeat_fresh = method_exists( 'WPPFM_Feed_Controller', 'background_process_heartbeat_is_fresh' )
 		? WPPFM_Feed_Controller::background_process_heartbeat_is_fresh()
 		: false;
-	$handoff_active = method_exists( 'WPPFM_Feed_Controller', 'background_process_handoff_is_active' )
-		? WPPFM_Feed_Controller::background_process_handoff_is_active()
+	$handoff_grace_active = method_exists( 'WPPFM_Feed_Controller', 'background_process_handoff_grace_is_active' )
+		? WPPFM_Feed_Controller::background_process_handoff_grace_is_active()
 		: false;
 
 	$lock_missing_since_key = 'wppfm_watchdog_lock_missing_since';
@@ -234,12 +235,12 @@ function wppfm_handle_feed_watchdog_cron() {
 	$lock_timeout           = max( 60, intval( $lock_timeout ) ); // Minimum 1 minute.
 
 	if ( ! $queue_empty && ! $is_processing && ! $lock_exists ) {
-		if ( $handoff_active ) {
+		if ( $handoff_grace_active ) {
 			do_action(
 				'wppfm_feed_generation_message',
 				'unknown',
 				sprintf(
-					'Feed watchdog detected an unlocked queue during a marked batch handoff; skipping restart to avoid duplicate feed startup. (queue_count=%d, active_key=%s)',
+					'Feed watchdog detected an unlocked queue during batch handoff grace; skipping restart to avoid duplicate feed startup. (queue_count=%d, active_key=%s)',
 					intval( $queue_count ),
 					$active_key ? $active_key : 'none'
 				),
@@ -248,6 +249,16 @@ function wppfm_handle_feed_watchdog_cron() {
 
 			delete_site_transient( $lock_missing_since_key );
 			return;
+		}
+
+		$resume_feed_id = WPPFM_Feed_Controller::get_next_id_from_feed_queue();
+
+		if ( $resume_feed_id && function_exists( 'wppfm_should_resume_existing_batch' ) && wppfm_should_resume_existing_batch( $resume_feed_id ) ) {
+			delete_site_transient( $lock_missing_since_key );
+
+			if ( function_exists( 'wppfm_resume_background_feed_batch' ) && wppfm_resume_background_feed_batch( $resume_feed_id, 'watchdog_queue_idle' ) ) {
+				return;
+			}
 		}
 
 		do_action(
@@ -316,6 +327,12 @@ function wppfm_handle_feed_watchdog_cron() {
 			delete_transient( 'wppfm_feed_file_size' );
 			delete_site_transient( $lock_missing_since_key );
 
+			$resume_feed_id = WPPFM_Feed_Controller::get_next_id_from_feed_queue();
+
+			if ( $resume_feed_id && wppfm_should_resume_existing_batch( $resume_feed_id ) && wppfm_resume_background_feed_batch( $resume_feed_id, 'watchdog_stale_processing_flag' ) ) {
+				return;
+			}
+
 			wppfm_watchdog_start_next_feed( 'stale_processing_flag' );
 		}
 
@@ -329,6 +346,59 @@ function wppfm_handle_feed_watchdog_cron() {
 
 	// Hook point for follow-up maintenance steps (e.g. orphaned batch cleanup) after the watchdog health check.
 	do_action( 'wppfm_feed_watchdog_after_health_check', $lock_exists, $is_processing, ! $queue_empty );
+}
+
+/**
+ * Returns true when an in-flight batch for the feed can be resumed via handle().
+ *
+ * @param string $feed_id Feed id to inspect.
+ *
+ * @return bool
+ */
+function wppfm_should_resume_existing_batch( $feed_id ) {
+	if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) {
+		return false;
+	}
+
+	return WPPFM_Feed_Controller::should_resume_existing_batch( (string) $feed_id );
+}
+
+/**
+ * Resumes the existing background batch without re-preparing the feed queue.
+ *
+ * @param string $feed_id Feed id to resume.
+ * @param string $context Optional context for logging.
+ *
+ * @return bool True when handle() was invoked.
+ */
+function wppfm_resume_background_feed_batch( $feed_id, $context = 'cron_recovery' ) {
+	$feed_id = (string) $feed_id;
+
+	if ( '' === $feed_id || ! wppfm_should_resume_existing_batch( $feed_id ) ) {
+		return false;
+	}
+
+	if ( ! function_exists( 'wppfm_include_classes' ) ) {
+		require_once __DIR__ . '/../wppfm-wpincludes.php';
+	}
+
+	wppfm_include_classes();
+
+	if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) {
+		return false;
+	}
+
+	$background_process = new WPPFM_Feed_Processor();
+
+	if ( $background_process->is_process_running() ) {
+		return false;
+	}
+
+	do_action( 'wppfm_batch_resume_via_handle', $feed_id, $context );
+
+	$background_process->handle();
+
+	return true;
 }
 
 /**

@@ -54,6 +54,8 @@ if ( ! class_exists( 'WPPFM_Product_Feed_Main_Input_Wrapper' ) ) :
 			WPPFM_Main_Input_Selector_Element::performance_high_percentage_element();
 			// Feed update schedule selector
 			WPPFM_Main_Input_Selector_Element::feed_update_schedule_selector_element();
+			// Channel-specific extra main input elements (registered via add_action).
+			do_action( 'wppfm_add_feed_main_input_elements' );
 			// Close the body and table code
 			$this->main_input_wrapper_table_end();
 		}

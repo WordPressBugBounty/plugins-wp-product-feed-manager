@@ -3,7 +3,7 @@
  * WP Product Feed Manager Google Feed Class.
  *
  * @package WP Product Feed Manager/Channels
- * @version 31.0
+ * @version 33.0
  */
 
 // Prevent direct access
@@ -18,7 +18,7 @@ if ( ! class_exists( 'WPPFM_Google_Feed_Class' ) ) :
 	 */
 	class WPPFM_Google_Feed_Class extends WPPFM_Feed_Master_Class {
 
-		private $_version = '31.0';
+		private $_version = '33.0';
 
 		public function __construct() {
 			parent::__construct();
@@ -135,6 +135,11 @@ if ( ! class_exists( 'WPPFM_Google_Feed_Class' ) ) :
 				'consumer_notice',
 				'free_shipping_threshold',
 				'certification',
+				'handling_cutoff_time',
+				'minimum_order_value',
+				'question_and_answer',
+				'related_product',
+				'variant_option',
 			);
 		}
 
@@ -154,6 +159,9 @@ if ( ! class_exists( 'WPPFM_Google_Feed_Class' ) ) :
 				'return_rule_label',
 				'certification',
 				'video_link',
+				'question_and_answer',
+				'related_product',
+				'variant_option',
 			);
 		}
 
@@ -175,6 +183,8 @@ if ( ! class_exists( 'WPPFM_Google_Feed_Class' ) ) :
 				'shipping-max_handling_time',
 				'shipping-min_transit_time',
 				'shipping-max_transit_time',
+				'shipping-loyalty_program_label',
+				'shipping-loyalty_tier_label',
 				'tax-country',
 				'tax-region',
 				'tax-rate',
@@ -195,6 +205,21 @@ if ( ! class_exists( 'WPPFM_Google_Feed_Class' ) ) :
 				'certification-certification_name',
 				'certification-certification_code',
 				'certification-certification_value',
+				'handling_cutoff_time-cutoff_time',
+				'handling_cutoff_time-country',
+				'handling_cutoff_time-cutoff_timezone',
+				'handling_cutoff_time-disable_delivery_after_cutoff',
+				'minimum_order_value-country',
+				'minimum_order_value-surface',
+				'minimum_order_value-service',
+				'minimum_order_value-price',
+				'question_and_answer-question',
+				'question_and_answer-answer',
+				'related_product-relationship_type',
+				'related_product-identifier_type',
+				'related_product-identifier',
+				'variant_option-name',
+				'variant_option-value',
 			);
 		}
 

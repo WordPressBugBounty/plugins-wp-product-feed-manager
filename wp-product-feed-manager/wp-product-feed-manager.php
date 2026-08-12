@@ -7,10 +7,10 @@
  * Author URI: https://www.wpmarketingrobot.com
  * Developer: Michel Jongbloed
  * Developer URI: https://www.wpmarketingrobot.com
- * Version: 2.23.6
- * Modified: 18-05-2026
+ * Version: 2.23.7
+ * Modified: 11-06-2026
  * WC requires at least: 8.4
- * WC tested up to: 10.7.0
+ * WC tested up to: 10.8.1
  * License: GPL-3.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  *
@@ -28,7 +28,7 @@
  * You can read the GNU General Public License here <http://www.gnu.org/licenses/>.
  * Requires at least: 6.5
  * Requires Plugins: woocommerce
- * Tested up to: 6.9
+ * Tested up to: 7.0
  *
  * @package WordPress
  *
@@ -54,7 +54,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		 *
 		 * @var string  Containing the version number of the plugin.
 		 */
-		public $version = '2.23.6';
+		public $version = '2.23.7';
 
 		/**
 		 * Author Name.
@@ -219,7 +219,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 
 			// Store the plugin title.
 			if ( ! defined( 'WPPFM_MIN_REQUIRED_WC_VERSION' ) ) {
-				define( 'WPPFM_MIN_REQUIRED_WC_VERSION', '3.0.0' );
+				define( 'WPPFM_MIN_REQUIRED_WC_VERSION', '2.24.0' );
 			}
 
 			// Store the base uploads' folder, should also work in a multi-site environment.
@@ -248,8 +248,8 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 				define( 'WPPFM_UPLOADS_URL', apply_filters( 'wppfm_corrected_uploads_url', $url ) );
 			}
 
-			// Channel packages (unzipped definitions, taxonomies). Multi-channel builds use
-			// WPPFM_UPLOADS_DIR . '/wppfm-channels'; the free/Google-only build sets this to the bundled path below.
+			// Channel packages (unzipped definitions, taxonomies): always under uploads — same base as
+			// wp_upload_dir()['basedir'], multisite-aware via WPPFM_UPLOADS_DIR — never under WPPFM_PLUGIN_DIR.
 			if ( ! defined( 'WPPFM_CHANNEL_DATA_DIR' ) ) {
 				define( 'WPPFM_CHANNEL_DATA_DIR', WPPFM_PLUGIN_DIR . 'includes/application' );
 			}
@@ -301,6 +301,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 
 			// Include the admin menu and the includes file.
 			require_once __DIR__ . '/includes/application/wppfm-feed-processing-support.php';
+			require_once __DIR__ . '/includes/application/wppfm-feed-product-counter.php';
 			require_once __DIR__ . '/includes/application/wppfm-feed-processor-functions.php';
 			require_once __DIR__ . '/includes/application/wppfm-cron-functions.php';
 			require_once __DIR__ . '/includes/user-interface/wppfm-admin-menu-functions.php';

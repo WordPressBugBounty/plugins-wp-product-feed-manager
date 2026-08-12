@@ -577,9 +577,19 @@ if ( ! class_exists( 'WPPFM_Data' ) ) :
 			// get the main data
 			$main_feed_data = $this->_queries_class->read_feed( $feed_id );
 
-			if ( empty( $main_feed_data ) ) {
-				do_action( 'wppfm_feed_generation_message', $feed_id, 'Could not read feed data from the database.', 'ERROR' );
-				return false;
+			if ( empty( $main_feed_data ) || ! isset( $main_feed_data[0] ) ) {
+				$raw_row = $this->_queries_class->read_feed_product_row( $feed_id );
+				if ( ! $raw_row ) {
+					return false;
+				}
+				$main_feed_data = array( $raw_row );
+			}
+
+			$channel_id = $main_feed_data[0]['channel'] ?? '';
+			if ( '' === (string) $channel_id || '0' === (string) $channel_id ) {
+				$installed = $this->_queries_class->read_installed_channels();
+				$channel_id = ! empty( $installed[0]['channel_id'] ) ? (string) $installed[0]['channel_id'] : '1';
+				$main_feed_data[0]['channel'] = $channel_id;
 			}
 
 			$main_data = $this->convert_data_to_feed_data( $main_feed_data[0] );
@@ -590,7 +600,10 @@ if ( ! class_exists( 'WPPFM_Data' ) ) :
 
 			$main_data->attributes = array();
 
-			$channel   = trim( $this->_queries_class->get_channel_short_name_from_db( $main_feed_data[0]['channel'] ) );
+			$channel = trim( (string) $this->_queries_class->get_channel_short_name_from_db( $main_feed_data[0]['channel'] ) );
+			if ( '' === $channel && '1' === (string) $main_feed_data[0]['channel'] ) {
+				$channel = 'google';
+			}
 			$is_custom = function_exists( 'wppfm_channel_is_custom_channel' ) && wppfm_channel_is_custom_channel( $channel );
 
 			// read the output fields
@@ -712,24 +725,25 @@ if ( ! class_exists( 'WPPFM_Data' ) ) :
 			$feed = new stdClass();
 
 			$feed->feedId              = $data['product_feed_id'];
-			$feed->title               = $data['title'];
-			$feed->mainCategory        = $data['main_category'];
-			$feed->categoryMapping     = $data['category_mapping'];
-			$feed->isAggregator        = $data['is_aggregator'];
-			$feed->includeVariations   = $data['include_variations'];
-			$feed->feedTitle           = $data['feed_title'] !== null ? $data['feed_title'] : '';
-			$feed->feedDescription     = $data['feed_description'] !== null ? $data['feed_description'] : '';
-			$feed->url                 = $data['url'];
-			$feed->dataSource          = $data['source'];
-			$feed->channel             = $data['channel'] ?? $data['feed_channel_id'] ?? '1';
+			$feed->title               = $data['title'] ?? '';
+			$feed->mainCategory        = $data['main_category'] ?? '';
+			$feed->categoryMapping     = $data['category_mapping'] ?? '';
+			$feed->isAggregator        = $data['is_aggregator'] ?? '';
+			$feed->includeVariations   = $data['include_variations'] ?? '';
+			$feed->feedTitle           = null !== ( $data['feed_title'] ?? null ) ? $data['feed_title'] : '';
+			$feed->feedDescription     = null !== ( $data['feed_description'] ?? null ) ? $data['feed_description'] : '';
+			$feed->url                 = $data['url'] ?? '';
+			$feed->dataSource          = $data['source'] ?? '';
+			$channel_id                = $data['channel'] ?? '';
+			$feed->channel             = ( '' !== (string) $channel_id && '0' !== (string) $channel_id ) ? $channel_id : '1';
 			$feed->country             = $data['country'] ?? '';
-			$feed->status              = $data['status_id'];
-			$feed->baseStatusId        = $data['base_status_id'];
-			$feed->feedTypeId          = $data['feed_type_id'];
-			$feed->updateSchedule      = $data['schedule'];
-			$feed->language            = $data['language'] !== null ? $data['language'] : '';
-			$feed->currency            = $data['currency'] !== null ? $data['currency'] : ''; // @since 2.28.0
-			$feed->google_analytics    = $data['google_analytics'] !== null ? $data['google_analytics'] : 0; // @since 3.7.0
+			$feed->status              = $data['status_id'] ?? '';
+			$feed->baseStatusId        = $data['base_status_id'] ?? '';
+			$feed->feedTypeId          = $data['feed_type_id'] ?? '';
+			$feed->updateSchedule      = $data['schedule'] ?? '';
+			$feed->language            = null !== ( $data['language'] ?? null ) ? $data['language'] : '';
+			$feed->currency            = null !== ( $data['currency'] ?? null ) ? $data['currency'] : ''; // @since 2.28.0
+			$feed->google_analytics    = null !== ( $data['google_analytics'] ?? null ) ? $data['google_analytics'] : 0; // @since 3.7.0
 			$feed->utm_id              = $data['utm_id'] ?? ''; // @since 3.7.0
 			$feed->utm_source          = $data['utm_source'] ?? ''; // @since 3.7.0
 			$feed->utm_medium          = $data['utm_medium'] ?? ''; // @since 3.7.0

@@ -221,7 +221,7 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 					"SELECT p.product_feed_id, p.source_id AS source, p.title, p.feed_title, p.feed_description, p.main_category, "
 					. "p.url, p.include_variations, p.is_aggregator, p.aggregator_name, p.status_id, p.base_status_id, p.updated, p.products, p.feed_type_id, p.schedule, "
 					. "p.google_analytics, p.utm_id, p.utm_source, p.utm_medium, p.utm_campaign, p.utm_source_platform, p.utm_term, p.utm_content, "
-					. "p.channel_id AS feed_channel_id, COALESCE( c.name_short, '' ) AS country, COALESCE( m.channel_id, p.channel_id ) AS channel, p.language, p.currency "
+					. "COALESCE( c.name_short, '' ) AS country, COALESCE( m.channel_id, p.channel_id ) AS channel, p.language, p.currency "
 					. "FROM {$this->_table_prefix}feedmanager_product_feed AS p "
 					. "LEFT JOIN {$this->_table_prefix}feedmanager_country AS c ON p.country_id = c.country_id "
 					. "LEFT JOIN {$this->_table_prefix}feedmanager_channel AS m ON p.channel_id = m.channel_id "
@@ -244,6 +244,50 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 			}
 
 			return $result;
+		}
+
+		/**
+		 * Reads a feed row from the product feed table only (no channel/country joins).
+		 * Used when joined read_feed() returns no rows but the feed still exists.
+		 *
+		 * @param int|string $feed_id Feed id.
+		 * @return array|null Feed row or null when not found.
+		 */
+		public function read_feed_product_row( $feed_id ) {
+			$row = $this->_wpdb->get_row(
+				$this->_wpdb->prepare(
+					"SELECT product_feed_id, source_id AS source, title, feed_title, feed_description, main_category, "
+					. "url, include_variations, is_aggregator, aggregator_name, status_id, base_status_id, updated, products, feed_type_id, schedule, "
+					. "google_analytics, utm_id, utm_source, utm_medium, utm_campaign, utm_source_platform, utm_term, utm_content, "
+					. "channel_id AS channel, language, currency, country_id "
+					. "FROM {$this->_table_prefix}feedmanager_product_feed WHERE product_feed_id = %d",
+					$feed_id
+				),
+				ARRAY_A
+			);
+
+			if ( ! $row ) {
+				return null;
+			}
+
+			$row['country']          = '';
+			$row['category_mapping'] = '';
+
+			if ( ! empty( $row['country_id'] ) ) {
+				$country_short = $this->_wpdb->get_var(
+					$this->_wpdb->prepare(
+						"SELECT name_short FROM {$this->_table_prefix}feedmanager_country WHERE country_id = %d",
+						$row['country_id']
+					)
+				);
+				if ( $country_short ) {
+					$row['country'] = $country_short;
+				}
+			}
+
+			unset( $row['country_id'] );
+
+			return $row;
 		}
 
 		public function read_category_mapping( $feed_id ) {

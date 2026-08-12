@@ -146,6 +146,99 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 		}
 
 		/**
+		 * Returns the handoff grace period in seconds (loopback may still arrive).
+		 *
+		 * @param string $feed_id Feed id for filter context.
+		 *
+		 * @return int
+		 */
+		public static function get_feed_handoff_grace_seconds( $feed_id = '' ) {
+			$grace = intval( apply_filters( 'wppfm_feed_handoff_grace_seconds', 30, $feed_id ) );
+
+			return max( 5, $grace );
+		}
+
+		/**
+		 * Returns how long the handoff marker transient should persist.
+		 *
+		 * Defaults to grace plus a small buffer so cron can resume after loopback drops.
+		 *
+		 * @param string $feed_id Feed id for filter context.
+		 *
+		 * @return int
+		 */
+		public static function get_feed_handoff_marker_ttl( $feed_id = '' ) {
+			$filtered = apply_filters( 'wppfm_feed_handoff_marker_ttl', null, $feed_id );
+
+			if ( null !== $filtered ) {
+				return max( 30, intval( $filtered ) );
+			}
+
+			$grace  = self::get_feed_handoff_grace_seconds( $feed_id );
+			$buffer = intval( apply_filters( 'wppfm_feed_handoff_marker_buffer_seconds', 30, $feed_id ) );
+
+			return max( 30, $grace + max( 0, $buffer ) );
+		}
+
+		/**
+		 * Returns the stored handoff marker payload for a feed.
+		 *
+		 * @param string $feed_id Feed id to inspect.
+		 *
+		 * @return array|null
+		 */
+		private static function get_feed_handoff_marker_payload( $feed_id ) {
+			if ( '' === (string) $feed_id ) {
+				return null;
+			}
+
+			$payload = get_site_transient( self::get_feed_handoff_marker_key( $feed_id ) );
+
+			if ( ! is_array( $payload ) || empty( $payload['ts'] ) ) {
+				return null;
+			}
+
+			return $payload;
+		}
+
+		/**
+		 * Returns how many seconds ago the handoff marker was set, or null when absent.
+		 *
+		 * @param string $feed_id Feed id to inspect.
+		 *
+		 * @return int|null
+		 */
+		public static function get_feed_handoff_age_seconds( $feed_id ) {
+			$payload = self::get_feed_handoff_marker_payload( $feed_id );
+
+			if ( null === $payload ) {
+				return null;
+			}
+
+			return max( 0, time() - intval( $payload['ts'] ) );
+		}
+
+		/**
+		 * Returns true while the feed is still inside the short handoff grace window.
+		 *
+		 * @param string   $feed_id        Feed id to inspect.
+		 * @param int|null $grace_seconds  Optional override for grace length.
+		 *
+		 * @return bool
+		 */
+		public static function is_feed_handoff_grace_active( $feed_id, $grace_seconds = null ) {
+			$age = self::get_feed_handoff_age_seconds( $feed_id );
+
+			if ( null === $age ) {
+				return false;
+			}
+
+			$grace = null === $grace_seconds ? self::get_feed_handoff_grace_seconds( $feed_id ) : max( 5, intval( $grace_seconds ) );
+
+			return $age <= $grace;
+		}
+
+		/**
 		 * Marks a feed as being in the middle of a batch-to-batch handoff.
 		 *
 		 * @param string $feed_id Feed id being handed off.
@@ -157,7 +250,7 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 				return;
 			}
 
-			$ttl = max( MINUTE_IN_SECONDS, intval( apply_filters( 'wppfm_feed_handoff_marker_ttl', 3 * MINUTE_IN_SECONDS, $feed_id ) ) );
+			$ttl = self::get_feed_handoff_marker_ttl( $feed_id );
 
 			set_site_transient(
 				self::get_feed_handoff_marker_key( $feed_id ),
@@ -192,24 +285,38 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 		 * @return bool
 		 */
 		public static function feed_handoff_marker_is_active_for_feed( $feed_id ) {
-			if ( '' === (string) $feed_id ) {
-				return false;
+			return null !== self::get_feed_handoff_marker_payload( $feed_id );
+		}
+
+		/**
+		 * Returns true when any active or queued feed is inside the short handoff grace window.
+		 *
+		 * Cron and watchdog should defer intervention during grace so loopback can still arrive.
+		 *
+		 * @return bool
+		 */
+		public static function background_process_handoff_grace_is_active() {
+			$candidate_feed_ids = array();
+			$active_feed_id     = self::get_active_batch_feed_id();
+			$queued_feed_id     = self::get_next_id_from_feed_queue();
+
+			if ( $active_feed_id ) {
+				$candidate_feed_ids[] = (string) $active_feed_id;
 			}
 
-			$payload = get_site_transient( self::get_feed_handoff_marker_key( $feed_id ) );
-
-			if ( ! is_array( $payload ) || empty( $payload['ts'] ) ) {
-				return false;
+			if ( $queued_feed_id ) {
+				$candidate_feed_ids[] = (string) $queued_feed_id;
 			}
 
-			$ttl = max( MINUTE_IN_SECONDS, intval( apply_filters( 'wppfm_feed_handoff_marker_ttl', 3 * MINUTE_IN_SECONDS, $feed_id ) ) );
+			$candidate_feed_ids = array_values( array_unique( array_filter( $candidate_feed_ids ) ) );
 
-			if ( ( time() - intval( $payload['ts'] ) ) > $ttl ) {
-				self::clear_feed_handoff_marker( $feed_id );
-				return false;
+			foreach ( $candidate_feed_ids as $feed_id ) {
+				if ( self::is_feed_handoff_grace_active( $feed_id ) ) {
+					return true;
+				}
 			}
 
-			return true;
+			return false;
 		}
 
 		/**
@@ -271,7 +378,8 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 				return false;
 			}
 
-			if ( self::feed_handoff_marker_is_active_for_feed( $feed_id ) ) {
+			// Block duplicate preparation during the short grace window only.
+			if ( self::is_feed_handoff_grace_active( $feed_id ) ) {
 				return true;
 			}
 
@@ -281,7 +389,115 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 				return true;
 			}
 
-			return self::background_process_heartbeat_is_fresh();
+			if ( self::background_process_heartbeat_is_fresh() ) {
+				return true;
+			}
+
+			// After grace, still block update_feed_file() when an existing batch can resume via handle().
+			return self::should_resume_existing_batch( $feed_id );
+		}
+
+		/**
+		 * Returns true when batch metadata and queue state allow resuming via handle().
+		 *
+		 * @param string $feed_id Feed id to inspect.
+		 *
+		 * @return bool
+		 */
+		public static function should_resume_existing_batch( $feed_id ) {
+			if ( '' === (string) $feed_id ) {
+				return false;
+			}
+
+			if ( ! self::active_batch_belongs_to_feed( $feed_id ) ) {
+				return false;
+			}
+
+			$key = get_site_option( 'wppfm_background_process_key' );
+
+			if ( ! $key || ! is_string( $key ) ) {
+				return false;
+			}
+
+			$batch_metadata = get_site_option( 'wppfm_batch_metadata_' . $key, array() );
+
+			if ( ! is_array( $batch_metadata ) || empty( $batch_metadata['feed_id'] ) ) {
+				return false;
+			}
+
+			if ( 0 === self::nr_ids_remaining_in_product_queue() ) {
+				return false;
+			}
+
+			return true;
+		}
+
+		/**
+		 * Returns true when the UI stall detector should not mark the feed as failed yet.
+		 *
+		 * @param string $feed_id Feed id being monitored.
+		 *
+		 * @return bool
+		 */
+		public static function should_suppress_feed_processing_failure( $feed_id ) {
+			$feed_id = (string) $feed_id;
+
+			if ( '' === $feed_id ) {
+				$feed_id = self::get_active_batch_feed_id();
+			}
+
+			if ( '' === $feed_id ) {
+				return false;
+			}
+
+			if ( self::is_feed_handoff_grace_active( $feed_id ) ) {
+				return true;
+			}
+
+			if ( ! self::should_resume_existing_batch( $feed_id ) ) {
+				return false;
+			}
+
+			$process_lock = get_site_transient( 'wppfm_feed_generation_process_process_lock' );
+
+			if ( $process_lock ) {
+				return false;
+			}
+
+			if ( self::background_process_heartbeat_is_fresh() ) {
+				return false;
+			}
+
+			return true;
+		}
+
+		/**
+		 * Extra stall-detection delay while handoff or batch recovery is still plausible.
+		 *
+		 * @param string $feed_id Feed id for filter context.
+		 *
+		 * @return int
+		 */
+		public static function get_feed_stall_detection_extra_delay( $feed_id ) {
+			$feed_id = (string) $feed_id;
+			$extra   = 0;
+
+			if ( '' === $feed_id ) {
+				return 0;
+			}
+
+			if ( self::is_feed_handoff_grace_active( $feed_id ) ) {
+				$extra += self::get_feed_handoff_grace_seconds( $feed_id );
+			}
+
+			if ( self::should_resume_existing_batch( $feed_id ) && ! self::background_process_heartbeat_is_fresh() ) {
+				$extra += max(
+					0,
+					intval( apply_filters( 'wppfm_feed_recovery_stall_delay_seconds', 2 * MINUTE_IN_SECONDS, $feed_id ) )
+				);
+			}
+
+			return $extra;
 		}
 
 		/**
@@ -447,15 +663,6 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 		}
 
 		/**
-		 * Checks if a running feed size is still growing, in order to identify a failing feed process.
-		 *
-		 * @since 2.2.0.
-		 *
-		 * @param   string $feed_file String with the full path and name of the feed file.
-		 *
-		 * @return  boolean false if the feed still grows, true if it stopped growing for a certain time.
-		 */
-		/**
 		 * Resolves the path the background worker is writing to for a feed, using active batch metadata.
 		 *
 		 * For regular feeds that use a temporary artifact, this returns the temporary path so stalled-file
@@ -499,7 +706,7 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 		 *
 		 * @return string
 		 */
-		private static function get_active_batch_feed_id() {
+		public static function get_active_batch_feed_id() {
 			$key = get_site_option( 'wppfm_background_process_key' );
 
 			if ( ! $key || ! is_string( $key ) ) {
@@ -515,10 +722,30 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 			return (string) $batch_metadata['feed_id'];
 		}
 
-		public static function feed_processing_failed( $feed_file ) {
+		/**
+		 * Checks if a running feed size is still growing, in order to identify a failing feed process.
+		 *
+		 * @since 2.2.0.
+		 *
+		 * @param string $feed_file String with the full path and name of the feed file.
+		 * @param string $feed_id   Optional feed id for handoff/recovery-aware stall detection.
+		 *
+		 * @return bool|null false if the feed still grows, true if stalled, null when path is empty.
+		 */
+		public static function feed_processing_failed( $feed_file, $feed_id = '' ) {
 
 			if ( '' === $feed_file ) {
 				return null;
+			}
+
+			$feed_id = (string) $feed_id;
+
+			if ( '' === $feed_id ) {
+				$feed_id = self::get_active_batch_feed_id();
+			}
+
+			if ( '' !== $feed_id && self::should_suppress_feed_processing_failure( $feed_id ) ) {
+				return false;
 			}
 			// Retrieve the last known growth-monitor snapshot for this feed file.
 			$monitor_data          = self::get_feed_growth_monitor_data( $feed_file );
@@ -581,7 +808,11 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 			$base_delay = apply_filters( 'wppfm_failed_detection_base_delay', WPPFM_DELAY_FAILED_LABEL, $feed_file );
 			$base_delay = max( 0, intval( $base_delay ) );
 			$bonus_delay = max( 0, intval( $bonus_delay ) );
-			$delay = $base_delay + $bonus_delay;
+			$delay       = $base_delay + $bonus_delay;
+
+			if ( '' !== $feed_id ) {
+				$delay += self::get_feed_stall_detection_extra_delay( $feed_id );
+			}
 
 			// And the delay time has passed.
 			if ( (int) $prev_feed_time_stamp + $delay < time() ) {
@@ -644,6 +875,10 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 		 * @return int
 		 */
 		private static function get_processed_products_counter() {
+			if ( function_exists( 'wppfm_resolve_feed_products_added_count' ) ) {
+				return wppfm_resolve_feed_products_added_count();
+			}
+
 			$processed_products = get_transient( 'wppfm_nr_of_processed_products' );
 
 			return false === $processed_products ? 0 : intval( $processed_products );

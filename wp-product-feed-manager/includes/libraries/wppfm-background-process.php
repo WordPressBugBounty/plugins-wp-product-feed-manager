@@ -53,6 +53,17 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	protected $cron_interval_identifier;
 
 	/**
+	 * Hook name for the single-fire loopback-recovery cron event.
+	 *
+	 * Kept separate from $cron_hook_identifier so that scheduling it from
+	 * inside dispatch() cannot race with other health-check writes on the
+	 * shared cron options row.
+	 *
+	 * @var string
+	 */
+	protected $cron_recovery_hook_identifier;
+
+	/**
 	 * Keeps track of the number of products that where added to the feed
 	 *
 	 * @var int
@@ -162,10 +173,11 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	public function __construct() {
 		parent::__construct();
 
-		$this->cron_hook_identifier     = $this->identifier . '_cron';
-		$this->cron_interval_identifier = $this->identifier . '_cron_interval';
+		$this->cron_hook_identifier          = $this->identifier . '_cron';
+		$this->cron_interval_identifier      = $this->identifier . '_cron_interval';
+		$this->cron_recovery_hook_identifier = $this->identifier . '_cron_recovery';
 		// Keep this in-memory list empty; queue progression is the source of truth for processed items.
-		$this->processed_products       = array();
+		$this->processed_products            = array();
 		
 		// Allow customization of progress update interval
 		$this->progress_update_interval = apply_filters( 
@@ -180,7 +192,11 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 		);
 
 		add_action( $this->cron_hook_identifier, array( $this, 'handle_cron_health_check' ) );
+		// Both the interval health-check and single-fire recovery hooks run the same handler.
+		add_action( $this->cron_recovery_hook_identifier, array( $this, 'handle_cron_health_check' ) );
 		add_filter( 'cron_schedules', array( $this, 'schedule_cron_health_check' ) ); // phpcs:disable WordPress.WP.CronInterval.ChangeDetected
+		// Recover when legacy recurring events fail wp_reschedule_event() during concurrent cron writes.
+		add_action( 'cron_reschedule_event_error', array( $this, 'handle_cron_reschedule_event_error' ), 10, 3 );
 	}
 
 	/**
@@ -295,11 +311,98 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	 * @param string $feed_id   The id of the feed.
 	 */
 	public function dispatch( $feed_id ) {
-		// Schedule the cron health check.
+		// Schedule the cron health check (single event; no-op if already scheduled).
 		$this->schedule_event();
 
 		// Perform the remote post.
 		parent::dispatch( $feed_id );
+
+		// Schedule recovery after handoff grace when applicable so cron does not run during
+		// the intentional lock gap and exit before loopback can acquire the worker lock.
+		$this->schedule_recovery_cron_event( $feed_id );
+	}
+
+	/**
+	 * Whether dispatch should nudge WP-Cron to run immediately after scheduling recovery.
+	 *
+	 * @param string $feed_id Feed id for filter context.
+	 *
+	 * @return bool
+	 */
+	protected function should_spawn_cron_after_dispatch( $feed_id ) {
+		$default = ! ( defined( 'WP_CLI' ) && WP_CLI );
+
+		return (bool) apply_filters( 'wppfm_spawn_cron_after_dispatch', $default, $feed_id );
+	}
+
+	/**
+	 * Schedules recovery via the dedicated cron hook (not the recurring health hook).
+	 *
+	 * @since 3.18.0
+	 *
+	 * @param string $feed_id Optional feed id for handoff-aware scheduling.
+	 */
+	protected function schedule_health_check_fallback( $feed_id = '' ) {
+		$this->schedule_recovery_cron_event( $feed_id );
+	}
+
+	/**
+	 * Schedules the single-fire recovery cron, deferring until after handoff grace when marked.
+	 *
+	 * Avoids firing handle_cron_health_check() during the short handoff window where it would
+	 * exit early and consume a cron slot while loopback may still arrive.
+	 *
+	 * @since 3.23.0
+	 *
+	 * @param string $feed_id Feed id for grace calculation.
+	 *
+	 * @return int Unix timestamp when recovery was scheduled.
+	 */
+	protected function schedule_recovery_cron_event( $feed_id = '' ) {
+		$feed_id = (string) $feed_id;
+
+		if ( '' === $feed_id && class_exists( 'WPPFM_Feed_Controller' ) ) {
+			$feed_id = WPPFM_Feed_Controller::get_active_batch_feed_id();
+		}
+
+		$timestamp      = time();
+		$spawn_cron_now = true;
+		$after_handoff  = false;
+
+		if ( '' !== $feed_id && class_exists( 'WPPFM_Feed_Controller' ) && WPPFM_Feed_Controller::feed_handoff_marker_is_active_for_feed( $feed_id ) ) {
+			$grace     = WPPFM_Feed_Controller::get_feed_handoff_grace_seconds( $feed_id );
+			$buffer    = max( 0, intval( apply_filters( 'wppfm_feed_recovery_cron_buffer_seconds', 5, $feed_id ) ) );
+			$timestamp = time() + $grace + $buffer;
+			$spawn_cron_now = (bool) apply_filters( 'wppfm_spawn_cron_after_handoff_dispatch', false, $feed_id );
+			$after_handoff  = true;
+		}
+
+		$extra_delay = max( 0, intval( apply_filters( 'wppfm_pending_dispatch_healthcheck_delay', 0, $feed_id ) ) );
+
+		if ( $extra_delay > 0 ) {
+			$timestamp = max( $timestamp, time() + $extra_delay );
+		}
+
+		wp_clear_scheduled_hook( $this->cron_recovery_hook_identifier );
+		wp_schedule_single_event( $timestamp, $this->cron_recovery_hook_identifier );
+
+		if ( $after_handoff ) {
+			do_action(
+				'wppfm_feed_generation_message',
+				$feed_id,
+				sprintf(
+					'Recovery cron scheduled after handoff grace (in %ds).',
+					max( 0, $timestamp - time() )
+				),
+				'WARNING'
+			);
+		}
+
+		if ( $spawn_cron_now && $this->should_spawn_cron_after_dispatch( $feed_id ) && function_exists( 'spawn_cron' ) ) {
+			spawn_cron( time() );
+		}
+
+		return $timestamp;
 	}
 
 	/**
@@ -593,8 +696,8 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 		// Don't lock up other requests while processing.
 		session_write_close();
 
-		$feed_id = filter_input( INPUT_GET, 'feed_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-		$this->request_feed_id = is_string( $feed_id ) ? $feed_id : '';
+		$this->request_feed_id = $this->get_async_request_feed_id();
+		$feed_id               = $this->request_feed_id;
 
 		$background_mode_disabled = get_option( 'wppfm_disabled_background_mode', 'false' );
 
@@ -605,19 +708,37 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 			wp_die();
 		}
 
-		// Always enforce authorization for external AJAX entrypoints.
 		// Foreground mode dispatches internally in the same request and therefore has no standalone nonce payload.
 		if ( ! $this->is_internal_dispatch_context() ) {
-			$nonce = filter_input( INPUT_GET, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+			$nonce      = $this->get_async_request_nonce();
+			$nonce_data = $this->verify_dispatch_nonce( $feed_id, $nonce );
 
-			if ( ! is_string( $nonce ) || '' === $nonce || ! wp_verify_nonce( $nonce, $this->identifier ) ) {
-				do_action( 'wppfm_feed_generation_message', $feed_id, 'Unauthorized background-process request rejected due to invalid nonce.', 'ERROR' );
-				wp_die( esc_html__( 'You are not allowed to do this.', 'wp-product-feed-manager' ) );
-			}
+			// Cron/loopback: authorize with the one-time transient issued in dispatch() (no logged-in user).
+			// Logged-in admin fallback: capability + action nonce when the transient is unavailable.
+			if ( false === $nonce_data ) {
+				$authorized_as_admin = is_string( $nonce )
+					&& '' !== $nonce
+					&& wp_verify_nonce( $nonce, $this->identifier )
+					&& current_user_can( 'edit_feeds' );
 
-			if ( ! current_user_can( 'edit_feeds' ) ) {
-				do_action( 'wppfm_feed_generation_message', $feed_id, 'Unauthorized background-process request rejected due to missing capability.', 'ERROR' );
-				wp_die( esc_html__( 'You are not allowed to do this.', 'wp-product-feed-manager' ) );
+				if ( ! $authorized_as_admin ) {
+					do_action(
+						'wppfm_feed_generation_message',
+						$feed_id ? $feed_id : 'unknown',
+						'Unauthorized background-process request rejected (invalid dispatch nonce and no edit_feeds capability).',
+						'ERROR'
+					);
+					wp_die( esc_html__( 'You are not allowed to do this.', 'wp-product-feed-manager' ) );
+				}
+			} else {
+				do_action(
+					'wppfm_feed_generation_message',
+					$feed_id,
+					sprintf(
+						'Background dispatch authorized via loopback nonce (request_id=%s).',
+						isset( $nonce_data['request_id'] ) ? strval( $nonce_data['request_id'] ) : 'n/a'
+					)
+				);
 			}
 		}
 
@@ -1022,6 +1143,37 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	}
 
 	/**
+	 * Persists the authoritative products-added counter at a batch boundary.
+	 *
+	 * Uses an absolute, monotonic total so repeated commits for the same slice are
+	 * idempotent instead of additive.
+	 *
+	 * @param int|string $feed_id                Feed id.
+	 * @param int        $running_progress_count Absolute products-added total for the feed run.
+	 *
+	 * @return void
+	 */
+	protected function commit_batch_products_added_counter( $feed_id, $running_progress_count = 0 ) {
+		$feed_id                = absint( $feed_id );
+		$running_progress_count = max( 0, absint( $running_progress_count ) );
+
+		if ( ! $feed_id || $running_progress_count < 1 ) {
+			$this->products_handled_in_batch = 0;
+			return;
+		}
+
+		if ( function_exists( 'wppfm_set_feed_products_added_counter' ) ) {
+			wppfm_set_feed_products_added_counter( $feed_id, $running_progress_count );
+		}
+
+		if ( function_exists( 'wppfm_sync_feed_products_added_progress_transient' ) ) {
+			wppfm_sync_feed_products_added_progress_transient( $feed_id );
+		}
+
+		$this->products_handled_in_batch = 0;
+	}
+
+	/**
 	 * Handle
 	 *
 	 * Pass each queue item to the task handler, while remaining
@@ -1035,6 +1187,9 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 		if ( ! $this->is_current_process_locked() ) {
 			$this->lock_process();
 		}
+
+		$feed_id             = '';
+		$handled_items_count = 0;
 
 		do {
 			// Validate that we still own the lock before processing each batch
@@ -1070,26 +1225,6 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 			$active_key = get_site_option( 'wppfm_background_process_key' );
 			if ( $properties_key && $active_key !== $properties_key ) {
 				update_site_option( 'wppfm_background_process_key', $properties_key );
-			}
-
-			$total_handled_products = get_transient( 'wppfm_nr_of_processed_products' );
-
-			if ( false === $total_handled_products ) {
-				$total_handled_products = 0;
-				set_transient( 'wppfm_nr_of_processed_products', $total_handled_products );
-			}
-
-			// Initialise a separate transient that tracks all handled items (added or filtered).
-			// This counter is used by the stalled-feed watchdog logic so that heavy filtering
-			// does not look like a stalled feed when the file itself is no longer growing.
-			$handled_items_count = get_transient( 'wppfm_nr_of_handled_items' );
-
-			if ( false === $handled_items_count ) {
-				$handled_items_count = 0;
-				set_transient(
-					'wppfm_nr_of_handled_items',
-					$handled_items_count
-				);
 			}
 
 			// @since 2.10.0
@@ -1144,6 +1279,37 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 				return false;
 			}
 
+			// Committed products-added total before this batch slice. Always bypass object-cache:
+			// direct SQL increments invalidate cache, but a stale cached read here would inflate
+			// progress totals and reconcile would persist the wrong feed product count.
+			$batch_committed_baseline = 0;
+
+			if ( function_exists( 'wppfm_get_feed_products_added_counter' ) ) {
+				$batch_committed_baseline = wppfm_get_feed_products_added_counter( $feed_id, true );
+			} else {
+				$legacy_baseline = get_transient( 'wppfm_nr_of_processed_products' );
+
+				if ( false === $legacy_baseline ) {
+					$legacy_baseline = 0;
+					set_transient( 'wppfm_nr_of_processed_products', $legacy_baseline );
+				}
+
+				$batch_committed_baseline = intval( $legacy_baseline );
+			}
+
+			// Initialise a separate transient that tracks all handled items (added or filtered).
+			// This counter is used by the stalled-feed watchdog logic so that heavy filtering
+			// does not look like a stalled feed when the file itself is no longer growing.
+			$handled_items_count = get_transient( 'wppfm_nr_of_handled_items' );
+
+			if ( false === $handled_items_count ) {
+				$handled_items_count = 0;
+				set_transient(
+					'wppfm_nr_of_handled_items',
+					$handled_items_count
+				);
+			}
+
 			// Incremental mode keeps only runtime state in metadata and loads product slices on demand.
 			$batch = $this->maybe_prepare_incremental_batch_data( $batch, $batch_metadata, $properties_key, $feed_data );
 
@@ -1170,6 +1336,10 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 			foreach ( $batch->data as $key => $value ) {
 				// Validate lock ownership before processing each item
 				if ( ! $this->is_current_process_locked() ) {
+					$this->commit_batch_products_added_counter(
+						$feed_id,
+						$batch_committed_baseline + $this->products_handled_in_batch
+					);
 					do_action( 'wppfm_feed_generation_message', $feed_id, 'Process lock was lost during item processing', 'ERROR' );
 					$this->unlock_process();
 					return false;
@@ -1204,13 +1374,12 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 				// If the product was added successfully, increment feed progress counters.
 				if ( 'product added' === $task && array_key_exists( 'product_id', $value ) ) {
 					$this->products_handled_in_batch++;
-					$total_handled_products++;
-					
-					// Update transient only every N products to reduce DB writes
-					if ( $total_handled_products % $this->progress_update_interval === 0 ) {
-						set_transient( 'wppfm_nr_of_processed_products', $total_handled_products );
+					$running_progress_count = $batch_committed_baseline + $this->products_handled_in_batch;
+
+					// Update progress mirrors only every N products to reduce DB writes.
+					if ( $running_progress_count % $this->progress_update_interval === 0 && function_exists( 'wppfm_update_feed_products_added_progress_mirrors' ) ) {
+						wppfm_update_feed_products_added_progress_mirrors( $feed_id, $running_progress_count );
 					}
-					
 				}
 
 				unset( $batch->data[ $key ] ); // Remove this product from the queue.
@@ -1232,6 +1401,17 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 					break;
 				}
 			}
+
+			// Persist the final in-batch total before atomic commit so completion/progress
+			// still see the full count when the last slice is not on an interval boundary.
+			$running_progress_count = $batch_committed_baseline + $this->products_handled_in_batch;
+
+			if ( $running_progress_count > 0 && function_exists( 'wppfm_persist_feed_products_added_progress_count' ) ) {
+				wppfm_persist_feed_products_added_progress_count( $running_progress_count, $feed_id );
+			}
+
+			// Commit the authoritative per-feed counter once per batch slice.
+			$this->commit_batch_products_added_counter( $feed_id, $running_progress_count );
 
 			// Update or delete current batch.
 			if ( ! empty( $batch->data ) ) {
@@ -1261,16 +1441,20 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 			$this->flush_file_buffer();
 		}
 
-		// Persist the final processed counter for both continuation and completion paths.
-		// The completion routine reads this transient to store the final product count on the feed record.
-		set_transient( 'wppfm_nr_of_processed_products', $total_handled_products );
+		// Mirror the authoritative atomic counter into the legacy progress transient.
+		if ( $feed_id && function_exists( 'wppfm_sync_feed_products_added_progress_transient' ) ) {
+			wppfm_sync_feed_products_added_progress_transient( $feed_id );
+		}
 
 		// If the queue is not empty, restart the process.
 		if ( ! $this->is_queue_empty() ) {
 			update_option( 'wppfm_processed_products', implode( ',', $this->processed_products ) );
 			
 			// Ensure progress counters are up to date even if not on interval boundary.
-			set_transient( 'wppfm_nr_of_processed_products', $total_handled_products );
+			if ( $feed_id && function_exists( 'wppfm_sync_feed_products_added_progress_transient' ) ) {
+				wppfm_sync_feed_products_added_progress_transient( $feed_id );
+			}
+
 			set_transient( 'wppfm_nr_of_handled_items', $handled_items_count );
 
 
@@ -1459,13 +1643,7 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	 * @return mixed
 	 */
 	public function schedule_cron_health_check( $schedules ) {
-		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Dynamic hook is intentionally namespaced by this process identifier to allow per-process cron interval overrides.
-		$interval = apply_filters( $this->identifier . '_cron_interval', 5 );
-
-		if ( property_exists( $this, 'cron_interval' ) ) {
-			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Dynamic hook is intentionally namespaced by this process identifier to allow per-process cron interval overrides.
-			$interval = apply_filters( $this->identifier . '_cron_interval', $this->cron_interval_identifier );
-		}
+		$interval = $this->get_cron_health_check_interval_minutes();
 
 		// Adds every 5 minutes to the existing schedules.
 		$schedules[ $this->identifier . '_cron_interval' ] = array(
@@ -1487,6 +1665,29 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	}
 
 	/**
+	 * Logs why a cron health check exited without starting handle() (logging only).
+	 *
+	 * @param string $reason  Machine-readable skip reason.
+	 * @param string $feed_id Optional feed id for context.
+	 *
+	 * @return void
+	 */
+	protected function log_cron_health_check_skip( $reason, $feed_id = '' ) {
+		$feed_id = (string) $feed_id;
+
+		if ( '' === $feed_id && class_exists( 'WPPFM_Feed_Controller' ) ) {
+			$feed_id = WPPFM_Feed_Controller::get_active_batch_feed_id();
+		}
+
+		do_action(
+			'wppfm_cron_health_check_skipped',
+			$reason,
+			$feed_id,
+			$this->cron_recovery_hook_identifier
+		);
+	}
+
+	/**
 	 * Handle cron health check
 	 *
 	 * Restart the background process if not already running
@@ -1496,16 +1697,26 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 		$pending_feed_ids = $this->get_pending_dispatch_feed_ids();
 		$has_pending      = ! empty( $pending_feed_ids );
 
-		// Be more conservative about spawning new processes
+		// Background process already running — nothing to do.
 		if ( $this->is_process_running() ) {
-			// Background process already running.
+			$this->log_cron_health_check_skip( 'process_already_running' );
+			$this->schedule_next_cron_health_check();
 			exit;
 		}
 
-		// Double-check the queue isn't empty before starting
+		// Defer only during the short handoff grace so loopback can acquire the lock first.
+		// After grace expires, fall through and resume via handle() when batch data still exists.
+		if ( class_exists( 'WPPFM_Feed_Controller' ) && WPPFM_Feed_Controller::background_process_handoff_grace_is_active() ) {
+			$this->log_cron_health_check_skip( 'handoff_grace_active' );
+			$this->schedule_next_cron_health_check();
+			exit;
+		}
+
+		// No active process and no in-flight loopback — check whether there is work left.
 		if ( $this->is_queue_empty() && ! $has_pending ) {
-			// No data to process.
+			// Nothing left to process; remove any pending health-check events.
 			$this->clear_scheduled_event();
+			$this->log_cron_health_check_skip( 'queue_empty_no_pending_dispatch' );
 			exit;
 		}
 
@@ -1514,6 +1725,8 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 
 		// Final check before starting
 		if ( $this->is_process_running() ) {
+			$this->log_cron_health_check_skip( 'process_running_after_delay' );
+			$this->schedule_next_cron_health_check();
 			exit;
 		}
 
@@ -1529,6 +1742,8 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 					);
 				}
 			}
+			$this->clear_scheduled_event();
+			$this->log_cron_health_check_skip( 'queue_empty_with_pending_dispatch_cleared' );
 			exit;
 		}
 
@@ -1540,21 +1755,126 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 				'Pending dispatch detected. Cron health check is starting the background process.',
 				'WARNING'
 			);
+		} elseif ( class_exists( 'WPPFM_Feed_Controller' ) ) {
+			$resume_feed_id = WPPFM_Feed_Controller::get_active_batch_feed_id();
+
+			if ( $resume_feed_id && WPPFM_Feed_Controller::should_resume_existing_batch( $resume_feed_id ) ) {
+				do_action(
+					'wppfm_feed_generation_message',
+					$resume_feed_id,
+					'Cron health check resuming existing batch after handoff grace via handle().',
+					'WARNING'
+				);
+			}
 		}
 
 		$this->handle();
 
+		// Keep a fallback health check queued while batches run in case loopback dispatch fails.
+		$this->schedule_next_cron_health_check();
+
 		exit;
+	}
+
+	/**
+	 * Returns the health-check interval in minutes for this background process.
+	 *
+	 * @return int
+	 */
+	protected function get_cron_health_check_interval_minutes() {
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Dynamic hook is intentionally namespaced by this process identifier to allow per-process cron interval overrides.
+		$interval = apply_filters( $this->identifier . '_cron_interval', 5 );
+
+		if ( property_exists( $this, 'cron_interval' ) ) {
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- Dynamic hook is intentionally namespaced by this process identifier to allow per-process cron interval overrides.
+			$interval = apply_filters( $this->identifier . '_cron_interval', $this->cron_interval_identifier );
+		}
+
+		return max( 1, intval( $interval ) );
+	}
+
+	/**
+	 * Returns the health-check interval in seconds for this background process.
+	 *
+	 * @return int
+	 */
+	protected function get_cron_health_check_interval_seconds() {
+		return $this->get_cron_health_check_interval_minutes() * MINUTE_IN_SECONDS;
+	}
+
+	/**
+	 * Converts legacy recurring health-check cron entries to single events.
+	 *
+	 * Recurring events are rescheduled by WordPress before the hook runs, which can
+	 * race with dispatch()/spawn_cron() and trigger "could_not_set" debug.log noise.
+	 *
+	 * @return void
+	 */
+	protected function maybe_convert_recurring_health_check_cron() {
+		if ( ! function_exists( 'wp_get_scheduled_event' ) ) {
+			return;
+		}
+
+		$event = wp_get_scheduled_event( $this->cron_hook_identifier );
+
+		if ( ! $event || empty( $event->schedule ) ) {
+			return;
+		}
+
+		$next_timestamp = max( time(), intval( $event->timestamp ) );
+
+		wp_clear_scheduled_hook( $this->cron_hook_identifier );
+		wp_schedule_single_event( $next_timestamp, $this->cron_hook_identifier );
+	}
+
+	/**
+	 * Schedules the next single-fire health-check cron event when monitoring is still required.
+	 *
+	 * @return bool True when an event was scheduled or one is already pending.
+	 */
+	protected function schedule_next_cron_health_check() {
+		if ( wp_next_scheduled( $this->cron_hook_identifier ) ) {
+			return true;
+		}
+
+		$timestamp = time() + $this->get_cron_health_check_interval_seconds();
+
+		return (bool) wp_schedule_single_event( $timestamp, $this->cron_hook_identifier );
+	}
+
+	/**
+	 * Ensures a health-check cron exists after legacy recurring reschedule failures.
+	 *
+	 * @param WP_Error $result     Reschedule error from WordPress core.
+	 * @param string   $hook       Hook that failed to reschedule.
+	 * @param array    $event_data Stored cron event data.
+	 *
+	 * @return void
+	 */
+	public function handle_cron_reschedule_event_error( $result, $hook, $event_data ) {
+		if ( $hook !== $this->cron_hook_identifier ) {
+			return;
+		}
+
+		unset( $result, $event_data );
+
+		$this->maybe_convert_recurring_health_check_cron();
+		$this->schedule_next_cron_health_check();
 	}
 
 	/**
 	 * Schedule event
 	 */
 	protected function schedule_event() {
-		if ( ! wp_next_scheduled( $this->cron_hook_identifier ) ) {
-			if ( ! wp_schedule_event( time(), $this->cron_interval_identifier, $this->cron_hook_identifier ) ) {
-				wppfm_show_wp_error( __( 'Could not schedule the cron event required to start the feed process. Please check if your wp cron is configured correctly and is running.', 'wp-product-feed-manager' ) );
-			}
+		$this->maybe_convert_recurring_health_check_cron();
+
+		if ( wp_next_scheduled( $this->cron_hook_identifier ) ) {
+			return;
+		}
+
+		// Single events avoid wp_reschedule_event() races on the shared cron option row.
+		if ( ! wp_schedule_single_event( time(), $this->cron_hook_identifier ) ) {
+			wppfm_show_wp_error( __( 'Could not schedule the cron event required to start the feed process. Please check if your wp cron is configured correctly and is running.', 'wp-product-feed-manager' ) );
 		}
 	}
 
@@ -1562,11 +1882,11 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	 * Clear scheduled event
 	 */
 	protected function clear_scheduled_event() {
-		$timestamp = wp_next_scheduled( $this->cron_hook_identifier );
+		wp_clear_scheduled_hook( $this->cron_hook_identifier );
 
-		if ( $timestamp ) {
-			wp_unschedule_event( $timestamp, $this->cron_hook_identifier );
-		}
+		// Also cancel any pending single-fire recovery event that may have been
+		// queued by dispatch() but is no longer needed now the queue is empty.
+		wp_clear_scheduled_hook( $this->cron_recovery_hook_identifier );
 	}
 
 	/**

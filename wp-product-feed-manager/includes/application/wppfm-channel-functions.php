@@ -182,6 +182,7 @@ function wppfm_get_file_type( $channel_id ) {
 		case '28': // Galaxus Product Properties
 		case '34': // X Shopping Manager
 		case '39': // Reddit
+		case '40': // ChatGPT
 		case '998': // Custom CSV Feed
 			return 'csv';
 
