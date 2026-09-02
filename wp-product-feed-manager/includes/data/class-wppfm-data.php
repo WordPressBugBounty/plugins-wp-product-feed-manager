@@ -523,24 +523,43 @@ if ( ! class_exists( 'WPPFM_Data' ) ) :
 		 * @return array
 		 * @since 2.5.0
 		 *
-		 * @since 2.31.0 implemented a conversion to integer for %d value items.
+		 * @since 3.24.0 implemented a conversion to integer for %d value items.
 		 */
 		public function convert_ajax_feed_data_to_database_format( $feed_data ) {
 			$result = array();
 
+			if ( ! is_array( $feed_data ) ) {
+				return $result;
+			}
+
 			foreach ( $feed_data as $data_item ) {
-				if ( 'product_feed_id' !== $data_item->name ) {
-
-					if ( 'url' === $data_item->name ) {
-						$data_item->value = $this->verify_url( $data_item->value );
-					}
-
-					if ( 'country_id' === $data_item->name ) {
-						$data_item->value = $this->get_country_id_from_short_code( $data_item->value )->country_id;
-					}
-
-					$result[ $data_item->name ] = '%d' !== $data_item->type ? $data_item->value : intval( $data_item->value );
+				if ( ! is_object( $data_item ) || ! isset( $data_item->name, $data_item->type, $data_item->value ) ) {
+					continue;
 				}
+
+				if ( 'product_feed_id' === $data_item->name ) {
+					continue;
+				}
+
+				// Reject unknown column identifiers before they reach $wpdb->update()/insert().
+				if ( ! wppfm_is_valid_ajax_feed_column_name( $data_item->name ) ) {
+					continue;
+				}
+
+				// Only accept wpdb placeholders used by the feed editor conversion table.
+				if ( '%d' !== $data_item->type && '%s' !== $data_item->type ) {
+					continue;
+				}
+
+				if ( 'url' === $data_item->name ) {
+					$data_item->value = $this->verify_url( $data_item->value );
+				}
+
+				if ( 'country_id' === $data_item->name ) {
+					$data_item->value = $this->get_country_id_from_short_code( $data_item->value )->country_id;
+				}
+
+				$result[ $data_item->name ] = '%d' !== $data_item->type ? $data_item->value : intval( $data_item->value );
 			}
 
 			return $result;

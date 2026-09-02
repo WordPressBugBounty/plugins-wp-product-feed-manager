@@ -3,14 +3,14 @@ Contributors: wpmarketingrobot, michel-jongbloed, aukejomm
 Tags: Tags: Google product feed, google merchant center, google shopping, product feed manager, woocommerce google shopping
 Donate link: https://wpmarketingrobot.com/
 Requires at least: 6.5
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.23.7
+Stable tag: 2.23.8
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 
-The WooCommerce product feed plugin built for Google. UNLIMITED products, UNLIMITED feeds, completely free. Create Google Merchant feed in 5 minutes, no coding, no errors. 
+The WooCommerce product feed plugin built for Google. UNLIMITED products & feeds, completely free. Create your Google Merchant feed in 5 minutes.
 
 == Description ==
 
@@ -225,6 +225,10 @@ Notes: These calls occur only in wp-admin for the features above. If you don’t
 3. Save and generate your feed
 
 == Changelog ==
+= 2.23.8 2026-08-27 =
+Fix - Fixed a time-based SQL Injection vulnerability
+Tested - Tested up to WooCommerce 11.0.1.
+
 = 2.23.7 2026-08-08 =
 Fix - Fixed an issue where the plugin could not handle memory settings in GB correctly.
 Tested - Tested up to WooCommerce 11.0.0.
@@ -482,5 +486,5 @@ Fixed an issue with a folder name with a capital letter that would cause error m
 * Added a > symbol to the selectable separator options
 
 === Upgrade Notice ===
-= 2.23.7 2026-05-18 =
+= 2.23.7 2026-05-27 =
 * Important: This update introduces additional tweaks and some bug fixes. We strongly recommend backing up your existing feeds before upgrading.

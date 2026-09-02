@@ -369,7 +369,7 @@ function wppfm_should_resume_existing_batch( $feed_id ) {
  * @param string $feed_id Feed id to resume.
  * @param string $context Optional context for logging.
  *
- * @return bool True when handle() was invoked.
+ * @return bool True when batch processing was resumed.
  */
 function wppfm_resume_background_feed_batch( $feed_id, $context = 'cron_recovery' ) {
 	$feed_id = (string) $feed_id;
@@ -396,7 +396,7 @@ function wppfm_resume_background_feed_batch( $feed_id, $context = 'cron_recovery
 
 	do_action( 'wppfm_batch_resume_via_handle', $feed_id, $context );
 
-	$background_process->handle();
+	$background_process->resume_batch_processing();
 
 	return true;
 }

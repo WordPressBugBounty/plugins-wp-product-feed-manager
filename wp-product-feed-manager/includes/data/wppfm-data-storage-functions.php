@@ -57,6 +57,84 @@ function wppfm_ajax_feed_data_to_database_array( $feed_type ) {
 }
 
 /**
+ * Returns the feed column names that may be written from AJAX feed payloads.
+ *
+ * Array keys passed to $wpdb->update() and $wpdb->insert() are used as SQL column
+ * identifiers and must never contain user-controlled characters such as backticks.
+ *
+ * @since 3.24.0.1
+ *
+ * @return string[] Allowed feedmanager_product_feed column names.
+ */
+function wppfm_get_allowed_ajax_feed_column_names() {
+	static $allowed_columns = null;
+
+	if ( null !== $allowed_columns ) {
+		return $allowed_columns;
+	}
+
+	$feed_types = apply_filters(
+		'wppfm_ajax_feed_data_feed_types',
+		array(
+			'product-feed',
+			'google-product-review-feed',
+			'google-merchant-promotions-feed',
+		)
+	);
+
+	$columns = array();
+
+	foreach ( (array) $feed_types as $feed_type ) {
+		$conversion_table = wppfm_ajax_feed_data_to_database_array( $feed_type );
+
+		foreach ( (array) $conversion_table as $conversion_item ) {
+			if ( ! is_object( $conversion_item ) || empty( $conversion_item->db ) ) {
+				continue;
+			}
+
+			// product_feed_id is only used in the WHERE clause, never as a SET column.
+			if ( 'product_feed_id' === $conversion_item->db ) {
+				continue;
+			}
+
+			$columns[] = $conversion_item->db;
+		}
+	}
+
+	$allowed_columns = array_values( array_unique( $columns ) );
+
+	/**
+	 * Filters the allow-list of feed table columns writable from AJAX feed payloads.
+	 *
+	 * @since 3.24.0
+	 *
+	 * @param string[] $allowed_columns Allowed feedmanager_product_feed column names.
+	 */
+	return apply_filters( 'wppfm_allowed_ajax_feed_column_names', $allowed_columns );
+}
+
+/**
+ * Validates a feed column name before it is used as a $wpdb array key.
+ *
+ * @since 3.24.0
+ *
+ * @param string $column_name Candidate column identifier from an AJAX payload.
+ *
+ * @return bool True when the column may be written via AJAX feed data.
+ */
+function wppfm_is_valid_ajax_feed_column_name( $column_name ) {
+	if ( ! is_string( $column_name ) || '' === $column_name ) {
+		return false;
+	}
+
+	if ( ! preg_match( '/^[a-zA-Z0-9_]+$/', $column_name ) ) {
+		return false;
+	}
+
+	return in_array( $column_name, wppfm_get_allowed_ajax_feed_column_names(), true );
+}
+
+/**
  * Returns an array with all the feed names.
  *
  * @return array with all the feed names as strings.

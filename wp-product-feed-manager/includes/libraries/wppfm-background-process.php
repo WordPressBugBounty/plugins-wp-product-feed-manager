@@ -1174,6 +1174,19 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	}
 
 	/**
+	 * Resume an in-flight batch from a trusted cron or watchdog context.
+	 *
+	 * External callers must validate resume preconditions (batch metadata, queue state,
+	 * and process lock) before invoking this method. Unlike maybe_handle(), this bypasses
+	 * async nonce checks because cron recovery is not an HTTP loopback request.
+	 *
+	 * @return void|bool Same return value as handle().
+	 */
+	public function resume_batch_processing() {
+		return $this->handle();
+	}
+
+	/**
 	 * Handle
 	 *
 	 * Pass each queue item to the task handler, while remaining
@@ -1508,7 +1521,9 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	}
 
 	/**
-	 * Get memory limit
+	 * Get memory limit in bytes.
+	 *
+	 * Uses WordPress byte conversion so ini values like 4G are not misread as 4 megabytes.
 	 *
 	 * @return int
 	 */
@@ -1525,6 +1540,11 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 			$memory_limit = '32000M';
 		}
 
+		if ( function_exists( 'wp_convert_hr_to_bytes' ) ) {
+			return wp_convert_hr_to_bytes( $memory_limit );
+		}
+
+		// Fallback when WordPress byte conversion is unavailable.
 		return intval( $memory_limit ) * 1024 * 1024;
 	}
 
