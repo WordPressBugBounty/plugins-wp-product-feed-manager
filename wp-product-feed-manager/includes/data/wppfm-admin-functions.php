@@ -896,3 +896,76 @@ function wppfm_store_latest_blog( $blog_data ) {
 	// Update the option with the new array.
 	update_option( 'wppfm_latest_weblogs', $current_weblogs );
 }
+
+/**
+ * Whether the Black Friday 2026 promotion period is active (Europe/Amsterdam).
+ *
+ * @return bool
+ */
+function wppfm_is_black_friday_2026_promotion_period_active() {
+	$promotion_timezone = new DateTimeZone( 'Europe/Amsterdam' );
+	$now                = new DateTime( 'now', $promotion_timezone );
+	$start              = new DateTime( '2026-11-01 00:00:00', $promotion_timezone );
+	$end                = new DateTime( '2026-11-30 23:59:59', $promotion_timezone );
+
+	return $now >= $start && $now <= $end;
+}
+
+/**
+ * Whether the Black Friday 2026 promotion UI should show for a given plugin edition.
+ *
+ * Pass the WPPFM_PLUGIN_VERSION_ID value for the notice or card you are rendering
+ * (for example 'free' or 'google'). Date window is shared via
+ * wppfm_is_black_friday_2026_promotion_period_active().
+ *
+ * @param string $plugin_version_id Plugin edition that may show this promotion.
+ *
+ * @return bool
+ */
+function wppfm_should_show_black_friday_2026_promotion( $plugin_version_id ) {
+	if ( ! defined( 'WPPFM_PLUGIN_VERSION_ID' ) || WPPFM_PLUGIN_VERSION_ID !== $plugin_version_id ) {
+		return false;
+	}
+
+	return wppfm_is_black_friday_2026_promotion_period_active();
+}
+
+/**
+ * WordPress option name for a dismissed Black Friday 2026 admin notice.
+ *
+ * @param string $plugin_version_id Plugin edition ('free' or 'google').
+ *
+ * @return string Empty when the edition has no promotion notice.
+ */
+function wppfm_get_black_friday_2026_promotion_dismiss_option_name( $plugin_version_id ) {
+	$dismiss_options = array(
+		'free'   => 'wppfm_black_friday_promotion_2026_dismissed',
+		'google' => 'wppfm_black_friday_promotion_2026_google_dismissed',
+	);
+
+	return isset( $dismiss_options[ $plugin_version_id ] ) ? $dismiss_options[ $plugin_version_id ] : '';
+}
+
+/**
+ * Black Friday 2026 promotion edition to show in wp-admin, or false when none applies.
+ *
+ * @return false|string 'free', 'google', or false.
+ */
+function wppfm_get_active_black_friday_2026_promotion_edition() {
+	$promotion_editions = array( 'free', 'google' );
+
+	foreach ( $promotion_editions as $promotion_edition ) {
+		if ( ! wppfm_should_show_black_friday_2026_promotion( $promotion_edition ) ) {
+			continue;
+		}
+
+		$dismiss_option = wppfm_get_black_friday_2026_promotion_dismiss_option_name( $promotion_edition );
+		if ( '' === $dismiss_option || 'canceled' === get_option( $dismiss_option, 'keep_it_on' ) ) {
+			continue;
+		}
+
+		return $promotion_edition;
+	}
+
+	return false;
+}

@@ -66,6 +66,14 @@ if ( ! class_exists( 'WPPFM_Support_Page' ) ) :
 			// $this->join_our_community_card(); // Switched off until the community funnel is ready
 			$this->join_our_facebook_group_card();
 			$this->request_a_feature_card();
+
+			if ( wppfm_should_show_black_friday_2026_promotion( 'free' ) ) {
+				$this->black_friday_2026_card();
+			}
+
+			if ( wppfm_should_show_black_friday_2026_promotion( 'google' ) ) {
+				$this->black_friday_2026_google_card();
+			}
 		}
 
 		/**
@@ -99,7 +107,9 @@ if ( ! class_exists( 'WPPFM_Support_Page' ) ) :
 					'id' => array(),
 				),
 				'ul' => array(),
+				'ol' => array(),
 				'li' => array(),
+				'strong' => array(),
 				'a' => array(
 					'class' => array(),
 					'id' => array(),
@@ -323,6 +333,64 @@ if ( ! class_exists( 'WPPFM_Support_Page' ) ) :
 			$this->card_action( __( 'Request a Feature', 'wp-product-feed-manager' ), WPPFM_EDD_SL_STORE_URL . 'help-center/feature-request/?utm_source=pl_sup_tab&utm_medium=textlink&utm_campaign=feature_request&utm_id=PST.14227' );
 			echo '</div>';
 		}
+
+		/**
+		 * Renders a Black Friday 2026 card for the Support page.
+		 */
+		private function black_friday_2026_card() {
+			$content_html = '<p>' . __( 'From <strong>November 1</strong> to <strong>November 30</strong>, every Premium license is <strong>35% off</strong>. Pick the version that fits your store:', 'wp-product-feed-manager' ) . '</p>';
+			$content_html .= '<ul>';
+			$content_html .= '<li>' . esc_html__( 'Google Only Premium: €44.85 instead of €69', 'wp-product-feed-manager' ) . '</li>';
+			$content_html .= '<li>' . esc_html__( 'Multichannel Premium: €64.35 instead of €99. One product feed for Google Shopping, Meta, Bing and more.', 'wp-product-feed-manager' ) . '</li>';
+			$content_html .= '</ul>';
+			$content_html .= '<p>' . esc_html__( 'How to claim your discount.', 'wp-product-feed-manager' ) . '</p>';
+			$content_html .= '<ol>';
+			$content_html .= '<li>' . esc_html__( 'Click See the offer and choose your version.', 'wp-product-feed-manager' ) . '</li>';
+			$content_html .= '<li>' . __( 'Enter code <strong>BLCKFD26FRMUM</strong> at checkout.', 'wp-product-feed-manager' ) . '</li>';
+			$content_html .= '<li>' . esc_html__( 'Activate your license key in the plugin.', 'wp-product-feed-manager' ) . '</li>';
+			$content_html .= '</ol>';
+			$content_html .= '<p>' . esc_html__( 'Good to know:', 'wp-product-feed-manager' ) . '</p>';
+			$content_html .= '<ul>';
+			$content_html .= '<li>' . esc_html__( 'The code is valid from November 1 until November 30, 2026.', 'wp-product-feed-manager' ) . '</li>';
+			$content_html .= '<li>' . esc_html__( 'Questions before you buy? Use the support form on this page and we will reply within one working day.
+', 'wp-product-feed-manager' ) . '</li>';
+			$content_html .= '</ul>';
+
+			echo '<div class="wppfm-support-card" id="wppfm-black-friday-2026-support-card">';
+			$this->card_icon( 'icon-black-friday-sale.png' );
+			$this->card_header( __( 'Black Friday: save 35% on Premium', 'wp-product-feed-manager' ) );
+			$this->card_content( $content_html );
+			$this->card_action( __( 'See the offer', 'wp-product-feed-manager' ), 'https://wpmarketingrobot.com/pricing/?discount=BLCKFD26FRMUM&utm_source=plugin-free&utm_medium=banner&utm_campaign=bf26' );
+			echo '</div>';
+		}
+
+		/**
+		 * Renders the Black Friday 2026 card for the Google Only Support page.
+		 */
+		private function black_friday_2026_google_card() {
+			$upgrade_url = 'https://www.wpmarketingrobot.com/purchase-wp-product-feed-manager/?discount=BLCKFD26DLPREMIUM&utm_source=plugin-google&utm_medium=banner&utm_campaign=bf26';
+
+			$content_html  = '<p>' . __( 'From <strong>November 1</strong> to <strong>November 30</strong>, upgrading from Google Only Premium to Multichannel Premium is <strong>€30 cheaper</strong>. You keep your license and your feed, and you add Meta, Bing and more on top of Google Shopping.', 'wp-product-feed-manager' ) . '</p>';
+			$content_html .= '<p>' . esc_html__( 'How to claim your discount', 'wp-product-feed-manager' ) . '</p>';
+			$content_html .= '<ol>';
+			$content_html .= '<li>' . esc_html__( 'Click Upgrade now and choose Multichannel Premium.', 'wp-product-feed-manager' ) . '</li>';
+			$content_html .= '<li>' . __( 'Enter code <strong>BLCKFD26DLPREMIUM</strong> at checkout.', 'wp-product-feed-manager' ) . '</li>';
+			$content_html .= '<li>' . esc_html__( 'Switch on the new channels in the plugin. Your mapping stays as it is.', 'wp-product-feed-manager' ) . '</li>';
+			$content_html .= '</ol>';
+			$content_html .= '<p>' . esc_html__( 'Good to know:', 'wp-product-feed-manager' ) . '</p>';
+			$content_html .= '<ul>';
+			$content_html .= '<li>' . esc_html__( 'The code is valid from November 1 until November 30, 2026.', 'wp-product-feed-manager' ) . '</li>';
+			$content_html .= '<li>' . esc_html__( 'Not sure which channel to start with? Ask us through the support form on this page.', 'wp-product-feed-manager' ) . '</li>';
+			$content_html .= '</ul>';
+
+			echo '<div class="wppfm-support-card" id="wppfm-black-friday-2026-google-support-card">';
+			$this->card_icon( 'icon-black-friday-sale.png' );
+			$this->card_header( __( 'Product Feed Manager - Black Friday: save €30 when you upgrade to Multichannel', 'wp-product-feed-manager' ) );
+			$this->card_content( $content_html );
+			$this->card_action( __( 'Upgrade now', 'wp-product-feed-manager' ), $upgrade_url );
+			echo '</div>';
+		}
+
 
 		/**
 		 * Stores data in the DOM for the Feed Manager Settings page

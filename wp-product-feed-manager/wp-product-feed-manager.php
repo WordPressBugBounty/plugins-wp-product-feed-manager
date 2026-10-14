@@ -7,10 +7,10 @@
  * Author URI: https://www.wpmarketingrobot.com
  * Developer: Michel Jongbloed
  * Developer URI: https://www.wpmarketingrobot.com
- * Version: 2.23.8
- * Modified: 27-08-2026
+ * Version: 2.24.0
+ * Modified: 13-10-2026
  * WC requires at least: 8.4
- * WC tested up to: 10.8.1
+ * WC tested up to: 11.2.1
  * License: GPL-3.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  *
@@ -28,7 +28,7 @@
  * You can read the GNU General Public License here <http://www.gnu.org/licenses/>.
  * Requires at least: 6.5
  * Requires Plugins: woocommerce
- * Tested up to: 7.0
+ * Tested up to: 7.1
  *
  * @package WordPress
  *
@@ -54,7 +54,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		 *
 		 * @var string  Containing the version number of the plugin.
 		 */
-		public $version = '2.23.8';
+		public $version = '2.24.0';
 
 		/**
 		 * Author Name.

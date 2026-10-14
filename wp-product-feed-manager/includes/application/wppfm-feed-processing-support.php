@@ -1035,21 +1035,34 @@ trait WPPFM_Processing_Support {
 
 		$quotes_not_allowed = wppfm_channel_requires_no_quotes_on_empty_attributes( $channel );
 
-		// @since 2.11.0 allows choosing another separator for array data.
-		$separator_for_arrays = apply_filters( 'wppfm_separator_for_arrays_in_csv_feed', '|' );
-
 		// Loop through the active attributes.
 		foreach ( $active_fields as $row_item ) {
 			if ( array_key_exists( $row_item, $row_data ) ) {
-				$clean_row_item = ! is_array( $row_data[ $row_item ] ) ? preg_replace( "/[\r\n]/", '', $row_data[ $row_item ] ) : implode( $separator_for_arrays, $row_data[ $row_item ] );
+				if ( is_array( $row_data[ $row_item ] ) ) {
+					// @since 2.11.0 allows choosing another separator for array data.
+					// Filter: wppfm_separator_for_arrays_in_csv_feed( string $separator, string $row_item, string $channel, array $row_data ).
+					$separator_for_arrays = apply_filters( 'wppfm_separator_for_arrays_in_csv_feed', '|', $row_item, $channel, $row_data );
+					$clean_row_item       = implode( $separator_for_arrays, $row_data[ $row_item ] );
+				} else {
+					$clean_row_item = preg_replace( "/[\r\n]/", '', $row_data[ $row_item ] );
+				}
 			} else {
 				$clean_row_item = '';
 			}
 
 			$quotes = $quotes_not_allowed && '' === $clean_row_item ? '' : '"';
 
-			$remove_double_quotes_from_string = str_replace( '"', "'", $clean_row_item );
-			$row_string                      .= $quotes . $remove_double_quotes_from_string . $quotes . $separator;
+			// Filter: wppfm_csv_feed_cell_is_json( bool $is_json, string $row_item, string $channel, array $row_data, string $clean_row_item ).
+			$cell_is_json = apply_filters( 'wppfm_csv_feed_cell_is_json', false, $row_item, $channel, $row_data, $clean_row_item );
+
+			if ( $cell_is_json ) {
+				// RFC 4180-style quoting so JSON double quotes remain valid in the cell.
+				$escaped_cell = str_replace( '"', '""', $clean_row_item );
+				$row_string  .= $quotes . $escaped_cell . $quotes . $separator;
+			} else {
+				$remove_double_quotes_from_string = str_replace( '"', "'", $clean_row_item );
+				$row_string                      .= $quotes . $remove_double_quotes_from_string . $quotes . $separator;
+			}
 		}
 
 		$row = rtrim( $row_string, $separator ); // Removes the comma at the end of the line.
@@ -1909,7 +1922,45 @@ trait WPPFM_Processing_Support {
 			$product->_days_after_product_added = $this->get_days_after_product_added( $woocommerce_product );
 		}
 
+		// @since 3.24.0
+		if ( in_array( '_product_is_variation', $active_field_names, true ) ) {
+			$product->_product_is_variation = $woocommerce_product->is_type( 'variable' ) || $woocommerce_product->is_type( 'variation' ) ? 'true' : 'false';
+		}
+
+		// WooCommerce aggregate review count for the product (parent when this row is a variation).
+		// @since 3.25.0
+		if ( in_array( 'wppfm_product_review_count', $active_field_names, true ) ) {
+			$product->wppfm_product_review_count = (string) $this->get_wppfm_product_review_count( $woocommerce_product, $woocommerce_product_parent );
+		}
+
 		$woocommerce_product = null;
+	}
+
+	/**
+	 * Returns the number of approved product reviews for a WooCommerce product.
+	 *
+	 * Variations inherit review data from the parent product because reviews are
+	 * stored on the parent post in WooCommerce.
+	 *
+	 * @since 3.25.0
+	 *
+	 * @param WC_Product      $woocommerce_product        Current product object.
+	 * @param WC_Product|null $woocommerce_product_parent Parent product when applicable.
+	 *
+	 * @return int Non-negative review count.
+	 */
+	private function get_wppfm_product_review_count( $woocommerce_product, $woocommerce_product_parent ) {
+		if ( ! $woocommerce_product instanceof WC_Product ) {
+			return 0;
+		}
+
+		$review_product = $woocommerce_product;
+
+		if ( $woocommerce_product->get_parent_id() && $woocommerce_product_parent instanceof WC_Product ) {
+			$review_product = $woocommerce_product_parent;
+		}
+
+		return max( 0, (int) $review_product->get_rating_count() );
 	}
 
 	/**

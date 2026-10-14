@@ -746,6 +746,7 @@ span#wppfm-make-backup-button {
 /**************************/
 
 .wppfm-support-wrapper {
+    align-items: start;
     display: grid;
     grid-template-columns: auto auto;
 }
@@ -789,9 +790,31 @@ h2.wppfm-support-card__title {
     width: 100%;
 }
 
+.wppfm-support-card__content ol,
 .wppfm-support-card__content ul {
     list-style-position: inside;
+    margin: 0.35em 0;
+    padding: 0;
+}
+
+.wppfm-support-card__content ul {
     list-style-type: circle;
+}
+
+.wppfm-support-card__content ol {
+    list-style-type: decimal;
+}
+
+.wppfm-support-card__content ol li,
+.wppfm-support-card__content ul li {
+    line-height: 1.35;
+    margin: 0 0 0.25em;
+    padding: 0;
+}
+
+.wppfm-support-card__content ol li:last-child,
+.wppfm-support-card__content ul li:last-child {
+    margin-bottom: 0;
 }
 
 .wppfm-action-card {

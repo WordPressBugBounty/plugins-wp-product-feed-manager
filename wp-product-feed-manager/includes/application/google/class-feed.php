@@ -3,7 +3,7 @@
  * WP Product Feed Manager Google Feed Class.
  *
  * @package WP Product Feed Manager/Channels
- * @version 33.0
+ * @version 34.0
  */
 
 // Prevent direct access
@@ -18,7 +18,7 @@ if ( ! class_exists( 'WPPFM_Google_Feed_Class' ) ) :
 	 */
 	class WPPFM_Google_Feed_Class extends WPPFM_Feed_Master_Class {
 
-		private $_version = '33.0';
+		private $_version = '34.0';
 
 		public function __construct() {
 			parent::__construct();
@@ -80,7 +80,14 @@ if ( ! class_exists( 'WPPFM_Google_Feed_Class' ) ) :
 							break;
 
 						case 'item_group_id':
-							$main_data->attributes[ $i ]->fieldLevel = in_array( $country, $this->special_clothing_group_countries(), true ) ? 1 : 4;
+							// Standard Google Product Feeds: required when variations are included, optional otherwise.
+							// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+							if ( '1' === (string) ( $main_data->feedTypeId ?? '1' ) ) {
+								// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+								$main_data->attributes[ $i ]->fieldLevel = '1' === (string) $main_data->includeVariations ? 1 : 4;
+							} else {
+								$main_data->attributes[ $i ]->fieldLevel = in_array( $country, $this->special_clothing_group_countries(), true ) ? 1 : 4;
+							}
 							break;
 
 						case 'gender':

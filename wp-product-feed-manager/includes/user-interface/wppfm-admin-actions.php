@@ -155,37 +155,21 @@ add_action( 'admin_menu', 'wppfm_verify_feed_update_schedule_registration' );
 
 
 /**
- * Generates a Sales Promotion notice for the free version of the plugin. Gets triggered by the admin_notices action.
+ * Generates a Black Friday 2026 sales promotion notice. Gets triggered by the admin_notices action.
  *
  * @return bool true if the notice has been displayed, false if not.
  */
 function wppfm_sales_promotion_notice() {
-	// Only show on the free version.
-	if ( 'free' !== WPPFM_PLUGIN_VERSION_ID ) {
+	$promotion_edition = wppfm_get_active_black_friday_2026_promotion_edition();
+
+	if ( false === $promotion_edition ) {
 		return false;
 	}
-
-	$current_date = gmdate( 'Y-m-d' );
-	$start_date = '2024-11-25';
-	$end_date = '2024-12-08';
-
-	// Check the correct time frame.
-	if ( $current_date < $start_date || $current_date > $end_date ) {
-		return false;
-	}
-
-	// Check if the promotion message has been dismissed.
-	if ( 'canceled' === get_option( 'wppfm_black_friday_promotion_2024_dismissed', 'keep_it_on' ) ) {
-		return false;
-	}
-
-	wp_localize_script( 'wppfm_notice-handling-script', 'wppfm_notice_ajax', array( 'ajax_url' => admin_url( 'admin-ajax.php') ) );
 
 	wp_register_style( 'wp-product-feed-manager-promotion-banner', WPPFM_PLUGIN_URL . '/css/wppfm-promotion-notice.css', '', WPPFM_VERSION_NUM, 'screen' );
 	wp_enqueue_style( 'wp-product-feed-manager-promotion-banner' );
 
-	// Show the sales promotion message.
-	WPPFM_Notice::render_sales_promotion_notice();
+	WPPFM_Notice::render_black_friday_2026_promotion_notice( $promotion_edition );
 
 	return true;
 }

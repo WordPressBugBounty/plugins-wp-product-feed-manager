@@ -1106,6 +1106,16 @@ if ( ! class_exists( 'WPPFM_Feed_Processor' ) ) :
 			$expected_header = '<?xml version="1.0"';
 			$expected_footer = '</rss>';
 
+			if ( is_array( $batch_metadata ) && ! empty( $batch_metadata['incremental_state']['header_string'] ) ) {
+				$expected_header = str_replace( "\r", '', (string) $batch_metadata['incremental_state']['header_string'] );
+				$expected_header = str_replace( '<wf-connection-string>', '<link>', $expected_header );
+				$expected_header = trim( $expected_header );
+			}
+			
+			if ( is_array( $batch_metadata ) && ! empty( $batch_metadata['incremental_state']['footer_string'] ) ) {
+				$expected_footer = trim( (string) $batch_metadata['incremental_state']['footer_string'] );
+			}
+
 			$header_is_valid = 0 === strpos( ltrim( $trimmed_contents ), $expected_header );
 			$footer_is_valid = $this->ends_with_ignore_trailing_whitespace( $trimmed_contents, $expected_footer );
 

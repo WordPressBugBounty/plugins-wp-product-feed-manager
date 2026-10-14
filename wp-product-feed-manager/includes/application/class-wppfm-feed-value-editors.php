@@ -90,14 +90,62 @@ if ( ! class_exists( 'WPPFM_Feed_Value_Editors' ) ) :
 		}
 
 		/**
-		 * Performs a strip_tags action on a value.
+		 * Strips HTML tags and shortcode tags from a value so it can be exported as plain text.
+		 *
+		 * Shortcode tags are removed while their enclosed text is kept. That way page-builder
+		 * markup such as [vc_row]Description[/vc_row] becomes "Description". WordPress
+		 * strip_shortcodes() is not used because it also drops that enclosed content.
+		 *
+		 * HTML tags are kept intact and only padded with spaces. wp_strip_all_tags() then
+		 * removes those complete tags. Replacing tags ourselves first can leave debris
+		 * such as "<" or "p >" that strip_tags() no longer recognizes.
 		 *
 		 * @param string $current_value the current value.
 		 *
 		 * @return string the resulting value.
 		 */
 		public function strip_tags_from_value( $current_value ) {
-			return wp_strip_all_tags( $current_value );
+			if ( ! is_string( $current_value ) ) {
+				return wp_strip_all_tags( $current_value );
+			}
+
+			// Decode first so &lt;p&gt; becomes a real <p> that wp_strip_all_tags() can remove.
+			$value = $current_value;
+			for ( $i = 0; $i < 3; $i++ ) {
+				$decoded = html_entity_decode( $value, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8' );
+				if ( $decoded === $value ) {
+					break;
+				}
+				$value = $decoded;
+			}
+
+			// Remove shortcode tags but keep their inner text. Do this before HTML stripping
+			// because wp_strip_all_tags() does not treat [vc_row] as a tag.
+			$without_shortcodes = preg_replace( '/\[\/?[a-zA-Z][\w\-]*(?:\s[^\]]*)?\/?\]/', '', $value );
+
+			if ( null === $without_shortcodes ) {
+				$without_shortcodes = $value;
+			}
+
+			$without_vc_shortcodes = preg_replace( '/\[\/?vc_[^\]]+\]/', '', $without_shortcodes );
+
+			if ( null !== $without_vc_shortcodes ) {
+				$without_shortcodes = $without_vc_shortcodes;
+			}
+
+			// Keep every HTML tag intact and only add spaces around it.
+			// <p>Shirt.</p><h2>Details</h2> becomes " <p> Shirt. </p>  <h2> Details </h2> "
+			// so wp_strip_all_tags() can remove the tags and leave readable spacing.
+			$with_spacing = preg_replace( '/(<[^>]+>)/', ' $1 ', $without_shortcodes );
+
+			if ( null === $with_spacing ) {
+				$with_spacing = $without_shortcodes;
+			}
+
+			$plain_text = wp_strip_all_tags( $with_spacing, true );
+			$plain_text = preg_replace( '/\s+/u', ' ', $plain_text );
+
+			return trim( (string) $plain_text );
 		}
 
 		/**

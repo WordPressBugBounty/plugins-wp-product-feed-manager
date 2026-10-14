@@ -46,7 +46,7 @@ if ( ! class_exists( 'WPPFM_Channel' ) ) :
 				new Wppfm_Channel_Info( '15', 'comcon', 'Commerce Connector' ),
 				new Wppfm_Channel_Info( '16', 'facebook', 'Facebook', 'https://business.facebook.com/commerce_manager/get_started/', 'https://www.facebook.com/business/help/120325381656392?id=725943027795860' ),
 				new Wppfm_Channel_Info( '17', 'bol', 'Bol.com' ),
-				new Wppfm_Channel_Info( '18', 'adtraction', 'Adtraction', 'https://adtraction.com/advertisers', 'https://www.wpmarketingrobot.com/system/wp-content/uploads/2023/10/Adtraction_datafeedspecification.pdf' ),
+				new Wppfm_Channel_Info( '18', 'adtraction', 'Adtraction', 'https://adtraction.com/advertisers', 'https://www.wpmarketingrobot.com/wp-content/uploads/2023/10/Adtraction_datafeedspecification.pdf' ),
 				new Wppfm_Channel_Info( '19', 'ricardo', 'Ricardo.ch' ),
 				new Wppfm_Channel_Info( '20', 'ebay', 'eBay' ),
 				new Wppfm_Channel_Info( '21', 'shopzilla', 'Shopzilla' ),

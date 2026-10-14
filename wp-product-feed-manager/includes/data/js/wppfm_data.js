@@ -7,7 +7,7 @@ function wppfm_queryOptionsEng() {
 
 	return [
 		'includes', 'does not include', 'is equal to', 'is not equal to', 'is empty', 'is not empty', 'starts with',
-		'does not start with', 'ends with', 'does not end with', 'is greater than', 'is greater or equal to', 'is smaller than',
+		'does not start with', 'ends with', 'does not end with', 'is true', 'is false', 'is greater than', 'is greater or equal to', 'is smaller than',
 		'is smaller or equal to', 'is between'
 	];
 }
@@ -121,6 +121,8 @@ function wppfm_woocommerceSourceOptions() {
 		// @since 3.23.0
 		{value: '_days_after_product_update', label: 'Days After Last Product Update', prop: 'meta'},
 		{value: '_days_after_product_added', label: 'Days After Product Added', prop: 'meta'},
+		// @since 3.24.0
+		{value: '_product_is_variation', label: 'Product Is Variation', prop: 'meta'},
 	];
 
 	// @since 3.11.0 - Made the inclusion of the plugin's own product identifiers dependent on if the Show product identifiers option in the Settings page has been selected or not.

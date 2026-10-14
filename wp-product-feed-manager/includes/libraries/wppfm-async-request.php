@@ -494,8 +494,10 @@ abstract class WPPFM_Async_Request {
 			return (string) absint( $feed_id );
 		}
 
-		if ( isset( $_POST['feed_id'] ) ) {
-			return (string) absint( wp_unslash( $_POST['feed_id'] ) );
+		$post_feed_id = filter_input( INPUT_POST, 'feed_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+
+		if ( is_string( $post_feed_id ) && '' !== $post_feed_id ) {
+			return (string) absint( $post_feed_id );
 		}
 
 		return '';
@@ -513,8 +515,10 @@ abstract class WPPFM_Async_Request {
 			return $nonce;
 		}
 
-		if ( isset( $_POST['nonce'] ) ) {
-			return sanitize_text_field( wp_unslash( $_POST['nonce'] ) );
+		$post_nonce = filter_input( INPUT_POST, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+
+		if ( is_string( $post_nonce ) && '' !== $post_nonce ) {
+			return $post_nonce;
 		}
 
 		return '';
@@ -526,9 +530,10 @@ abstract class WPPFM_Async_Request {
 	 * @return string query|body|mixed|missing
 	 */
 	protected function get_loopback_inbound_param_source() {
-		$has_get_nonce  = is_string( filter_input( INPUT_GET, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) )
-			&& '' !== filter_input( INPUT_GET, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-		$has_post_nonce = isset( $_POST['nonce'] ) && '' !== sanitize_text_field( wp_unslash( $_POST['nonce'] ) );
+		$get_nonce      = filter_input( INPUT_GET, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$has_get_nonce  = is_string( $get_nonce ) && '' !== $get_nonce;
+		$post_nonce     = filter_input( INPUT_POST, 'nonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$has_post_nonce = is_string( $post_nonce ) && '' !== $post_nonce;
 
 		if ( $has_get_nonce && $has_post_nonce ) {
 			return 'mixed';
@@ -952,6 +957,10 @@ abstract class WPPFM_Async_Request {
 	 * @return bool
 	 */
 	protected function feed_has_ok_status( $feed_id ) {
+		if ( class_exists( 'WPPFM_Feed_Controller' ) && method_exists( 'WPPFM_Feed_Controller', 'feed_has_ok_status' ) ) {
+			return WPPFM_Feed_Controller::feed_has_ok_status( $feed_id );
+		}
+
 		if ( ! class_exists( 'WPPFM_Data' ) ) {
 			return false;
 		}
@@ -983,6 +992,10 @@ abstract class WPPFM_Async_Request {
 			)
 		);
 
+		if ( 'feed_status_ok' === $reason && class_exists( 'WPPFM_Feed_Controller' ) ) {
+			WPPFM_Feed_Controller::invalidate_feed_process_state_object_cache();
+		}
+
 		do_action( 'wppfm_dispatch_recovery_skipped', $feed_id, $classification, $reason );
 	}
 
@@ -998,11 +1011,9 @@ abstract class WPPFM_Async_Request {
 			return true;
 		}
 
-		if ( isset( $_POST['wppfm_dispatch_probe'] ) ) {
-			return '1' === sanitize_text_field( wp_unslash( $_POST['wppfm_dispatch_probe'] ) );
-		}
+		$post_probe = filter_input( INPUT_POST, 'wppfm_dispatch_probe', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
-		return false;
+		return '1' === (string) $post_probe;
 	}
 
 	/**

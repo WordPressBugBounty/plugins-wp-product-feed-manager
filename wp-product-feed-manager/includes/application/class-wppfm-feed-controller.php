@@ -400,13 +400,18 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 		/**
 		 * Returns true when batch metadata and queue state allow resuming via handle().
 		 *
-		 * @param string $feed_id Feed id to inspect.
+		 * @param string $feed_id              Feed id to inspect.
+		 * @param bool   $bypass_object_cache When true, drops cached queue/batch options before reading.
 		 *
 		 * @return bool
 		 */
-		public static function should_resume_existing_batch( $feed_id ) {
+		public static function should_resume_existing_batch( $feed_id, $bypass_object_cache = false ) {
 			if ( '' === (string) $feed_id ) {
 				return false;
+			}
+
+			if ( $bypass_object_cache ) {
+				self::invalidate_feed_process_state_object_cache();
 			}
 
 			if ( ! self::active_batch_belongs_to_feed( $feed_id ) ) {
@@ -429,7 +434,120 @@ if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) :
 				return false;
 			}
 
+			if ( ! self::background_batch_rows_exist() ) {
+				return false;
+			}
+
 			return true;
+		}
+
+		/**
+		 * Returns true when the feed status in the database is OK (status id 1).
+		 *
+		 * @param string $feed_id Feed id.
+		 *
+		 * @return bool
+		 */
+		public static function feed_has_ok_status( $feed_id ) {
+			$feed_id = (string) absint( $feed_id );
+
+			if ( '' === $feed_id || '0' === $feed_id ) {
+				return false;
+			}
+
+			if ( ! class_exists( 'WPPFM_Data' ) ) {
+				return false;
+			}
+
+			$data   = new WPPFM_Data();
+			$status = $data->get_feed_status( $feed_id );
+
+			return '1' === (string) $status;
+		}
+
+		/**
+		 * Returns true when at least one background batch row exists in the database.
+		 *
+		 * @return bool
+		 */
+		public static function background_batch_rows_exist() {
+			global $wpdb;
+
+			$like = $wpdb->esc_like( 'wppfm_feed_generation_process_batch_' ) . '%';
+
+			// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Authoritative batch presence check for watchdog/recovery; no core API for LIKE on option/meta keys.
+			if ( is_multisite() ) {
+				$count = $wpdb->get_var(
+					$wpdb->prepare(
+						'SELECT COUNT(*) FROM %i WHERE meta_key LIKE %s',
+						$wpdb->sitemeta,
+						$like
+					)
+				);
+			} else {
+				$count = $wpdb->get_var(
+					$wpdb->prepare(
+						'SELECT COUNT(*) FROM %i WHERE option_name LIKE %s',
+						$wpdb->options,
+						$like
+					)
+				);
+			}
+			// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+
+			return (int) $count > 0;
+		}
+
+		/**
+		 * Drops in-request object-cache entries for feed queue and batch coordination state.
+		 *
+		 * @param string|null $properties_key Optional batch option key to invalidate explicitly.
+		 *
+		 * @return void
+		 */
+		public static function invalidate_feed_process_state_object_cache( $properties_key = null ) {
+			global $wpdb;
+
+			$option_names = array(
+				'wppfm_feed_queue',
+				'wppfm_background_process_key',
+				'wppfm_feed_generation_process_process_heartbeat',
+			);
+
+			if ( null === $properties_key || '' === (string) $properties_key ) {
+				$properties_key = get_site_option( 'wppfm_background_process_key' );
+			}
+
+			if ( is_string( $properties_key ) && '' !== $properties_key ) {
+				$option_names[] = $properties_key;
+				$option_names[] = 'wppfm_batch_metadata_' . $properties_key;
+			}
+
+			$option_names = array_values( array_unique( $option_names ) );
+
+			foreach ( $option_names as $option_name ) {
+				if ( is_multisite() ) {
+					wp_cache_delete( $wpdb->siteid . ':' . $option_name, 'site-options' );
+				} else {
+					wp_cache_delete( $option_name, 'options' );
+				}
+			}
+
+			if ( is_multisite() ) {
+				wp_cache_delete( $wpdb->siteid . ':alloptions', 'site-options' );
+			} else {
+				wp_cache_delete( 'alloptions', 'options' );
+			}
+
+			$site_transients = array(
+				'wppfm_background_process_is_active',
+				'wppfm_background_process_started_at',
+				'wppfm_feed_generation_process_process_lock',
+			);
+
+			foreach ( $site_transients as $transient_name ) {
+				wp_cache_delete( $transient_name, 'site-transient' );
+			}
 		}
 
 		/**

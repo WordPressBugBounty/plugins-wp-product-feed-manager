@@ -451,9 +451,23 @@ if ( ! class_exists( 'WPPFM_Ajax_Data' ) ) :
 		 */
 		public function wppfm_cancel_promotion() {
 			if ( wp_verify_nonce( filter_input( INPUT_POST, 'cancelPromotionNonce', FILTER_SANITIZE_FULL_SPECIAL_CHARS ), 'wppfm-ajax-cancel-promotion-notice-nonce' ) && current_user_can( 'manage_options' ) && is_admin() ) {
-				update_option( 'wppfm_black_friday_promotion_2024_dismissed', 'canceled' );
+				$promotion_edition = filter_input( INPUT_POST, 'promotionEdition', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+				$allowed_editions  = array( 'free', 'google' );
 
-				$result = get_option( 'wppfm_black_friday_promotion_2024_dismissed' );
+				if ( ! in_array( $promotion_edition, $allowed_editions, true ) ) {
+					$promotion_edition = 'free';
+				}
+
+				$dismiss_option = wppfm_get_black_friday_2026_promotion_dismiss_option_name( $promotion_edition );
+
+				if ( '' === $dismiss_option ) {
+					$this->show_not_allowed_error_message();
+					exit;
+				}
+
+				update_option( $dismiss_option, 'canceled' );
+
+				$result = get_option( $dismiss_option );
 				echo 'Removed black friday promotion ' . esc_html( $result ) . '!';
 			} else {
 				$this->show_not_allowed_error_message();

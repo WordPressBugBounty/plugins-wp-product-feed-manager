@@ -37,8 +37,8 @@ function wppfm_queryIsFilled( rowId, sourceLevel, queryLevel ) {
 	}
 
 	if ( 'select' !== querySourceSelectorValue ) {
-		if ( '4' !== querySelectorValue && '5' !== querySelectorValue ) {
-			if ( '14' === querySelectorValue ) {
+		if ( '4' !== querySelectorValue && '5' !== querySelectorValue && '10' !== querySelectorValue && '11' !== querySelectorValue ) {
+			if ( '16' === querySelectorValue ) {
 				result = ! ! (
 					jQuery( '#value-options-condition-and-value-input-' + identString ).val() && queryValue
 				);
@@ -65,8 +65,8 @@ function wppfm_feedFilterIsFilled( feedId, filterLevel ) {
 	}
 
 	if ( 'select' !== querySourceSelectorValue ) {
-		if ( '4' !== querySelectorValue && '5' !== querySelectorValue ) {
-			if ( '14' === querySelectorValue ) {
+		if ( '4' !== querySelectorValue && '5' !== querySelectorValue && '10' !== querySelectorValue && '11' !== querySelectorValue ) {
+			if ( '16' === querySelectorValue ) {
 				result = ! ! (
 					jQuery( '#filter-input-control-' + identifierString + '-2' ).val() && queryValue
 				);

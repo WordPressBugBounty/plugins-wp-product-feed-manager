@@ -5,7 +5,7 @@ Donate link: https://wpmarketingrobot.com/
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.23.8
+Stable tag: 2.24.0
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -225,8 +225,18 @@ Notes: These calls occur only in wp-admin for the features above. If you don’t
 3. Save and generate your feed
 
 == Changelog ==
+= 2.24.0 2026-10-13 =
+Added - Added an "is true" and "is false" condition filter
+Added - Added a "Product is Variation" source
+Tested - Tested up to WooCommerce 11.2.1.
+
+= 2.23.9 2026-09-05 =
+Fix - Fixed an issue with the automatic protocol correction for automatically generated feeds
+Fix - Implemented a fix where the Smush plugin could freeze the loading of the Edit Feed page
+
 = 2.23.8 2026-08-27 =
 Fix - Fixed a time-based SQL Injection vulnerability
+Tweak - Improved the header and footer check in the feed validation process
 Tested - Tested up to WooCommerce 11.0.1.
 
 = 2.23.7 2026-08-08 =
@@ -486,5 +496,5 @@ Fixed an issue with a folder name with a capital letter that would cause error m
 * Added a > symbol to the selectable separator options
 
 === Upgrade Notice ===
-= 2.23.7 2026-05-27 =
+= 2.24.0 2026-10-13 =
 * Important: This update introduces additional tweaks and some bug fixes. We strongly recommend backing up your existing feeds before upgrading.

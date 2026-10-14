@@ -84,6 +84,17 @@ if ( ! class_exists( 'WPPFM_Register_Scripts' ) ) :
 				)
 			);
 
+			$promotion_edition = wppfm_get_active_black_friday_2026_promotion_edition();
+			if ( false !== $promotion_edition ) {
+				wp_localize_script(
+					'wppfm_notice-handling-script',
+					'wppfm_promotion_notice',
+					array(
+						'promotion_edition' => $promotion_edition,
+					)
+				);
+			}
+
 			// Do not load the other scripts unless a wppfm page is on.
 			if ( ! wppfm_on_own_main_plugin_page() ) {
 				return;

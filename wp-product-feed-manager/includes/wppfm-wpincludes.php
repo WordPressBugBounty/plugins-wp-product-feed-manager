@@ -13,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 require_once __DIR__ . '/application/wppfm-feed-health-monitor.php';
 require_once __DIR__ . '/data/wppfm-performance-source-fields.php';
+require_once __DIR__ . '/data/wppfm-product-review-source-fields.php';
 
 /**
  * Includes all required classes

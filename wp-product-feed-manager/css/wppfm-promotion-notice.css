@@ -39,7 +39,7 @@
 .wppfm-discount-promotion-message em {
     font-weight: 750;
 }
-
+    
 .wppfm-discount-button {
     border: none;
     border-radius: 16px;
@@ -54,14 +54,27 @@
     text-decoration: none;
     width: 240px;
 }
-.wppfm-discount-button:focus,
-.wppfm-discount-button:hover {
+
+/*
+ * Core styles every anchor inside div.notice with the admin blue, and that
+ * rule also wins for :visited, :hover, :focus and :active. These selectors
+ * outrank it so the label stays white on the green and red buttons.
+ * border-radius and box-shadow are repeated here because div.notice a:focus
+ * in common.css forces 2px radius and a focus ring on click.
+ */
+div.notice a.wppfm-discount-button:link,
+div.notice a.wppfm-discount-button:visited,
+div.notice a.wppfm-discount-button:hover,
+div.notice a.wppfm-discount-button:focus,
+div.notice a.wppfm-discount-button:active {
     border: none;
+    border-radius: 16px;
     box-shadow: none;
     color: white;
     outline: none;
-    transition: all 0.2s ease-in-out;
-    transition-property: background;
+    text-decoration: none;
+    transition: background 0.2s ease-in-out;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .wppfm-go-for-the-deal {

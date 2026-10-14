@@ -928,9 +928,9 @@ function wppfm_setChannelRelatedPresets( outputsField, channel ) {
 			break;
 
 		case '40': // ChatGPT
-			if ( outputsField[ 'field_label' ] === 'enable_search' || outputsField[ 'field_label' ] === 'enable_checkout' || outputsField[ 'field_label' ] === 'condition' 
+			if ( outputsField[ 'field_label' ] === 'condition' || outputsField[ 'field_label' ] === 'description'
 				|| outputsField[ 'field_label' ] === 'availability' || outputsField[ 'field_label' ] === 'gender'
-					|| outputsField[ 'field_label' ] === 'price' || outputsField[ 'field_label' ] === 'sale_price' || outputsField[ 'field_label'] === 'sale_price_effective_date' ) {
+					|| outputsField[ 'field_label' ] === 'price' || outputsField[ 'field_label' ] === 'sale_price' ) {
 
 				// only switch to the 'preset' value if no user value is set
 				if ( ! outputsField[ 'value' ] ) {

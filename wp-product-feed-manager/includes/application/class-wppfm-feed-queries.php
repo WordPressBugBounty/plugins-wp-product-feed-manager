@@ -170,6 +170,30 @@ if ( ! class_exists( 'WPPFM_Feed_Queries' ) ) :
 		}
 
 		/**
+		 * Checks if the attribute value is truthy.
+		 *
+		 * @param array $query An array with the query part of the attribute string. Element 3 contains the query value.
+		 * @param string $value The attribute value to check the query against.
+		 *
+		 * @return bool true when the attribute value is truthy.
+		 */
+		public function is_truthy_query( $query, $value ) {
+			return $this->attribute_value_is_truthy( $value );
+		}
+
+		/**
+		 * Checks if the attribute value is falsy.
+		 *
+		 * @param array $query An array with the query part of the attribute string. Element 3 contains the query value.
+		 * @param string $value The attribute value to check the query against.
+		 *
+		 * @return bool true when the attribute value is falsy.
+		 */
+		public function is_falsy_query( $query, $value ) {
+			return ! $this->attribute_value_is_truthy( $value );
+		}
+
+		/**
 		 * Checks if the attribute value is greater the query value.
 		 *
 		 * @param array $query An array with the query part of the attribute string. Element 3 contains the query value.
@@ -267,6 +291,66 @@ if ( ! class_exists( 'WPPFM_Feed_Queries' ) ) :
 			} else {
 				return true;
 			}
+		}
+
+		/**
+		 * Resolves whether a feed attribute value should be treated as truthy.
+		 *
+		 * Uses explicit boolean strings (true/false, yes/no, on/off, 1/0) so feed fields like
+		 * "_product_is_variation" with literal "false" are not misread as truthy non-empty strings.
+		 * Other non-empty strings remain truthy, matching typical PHP string semantics.
+		 *
+		 * @param mixed $value The attribute value to evaluate.
+		 *
+		 * @return bool True when the value should be considered truthy for filter conditions.
+		 */
+		private function attribute_value_is_truthy( $value ) {
+			if ( is_bool( $value ) ) {
+				return $value;
+			}
+
+			if ( is_array( $value ) ) {
+				return ! empty( $value );
+			}
+
+			if ( is_int( $value ) || is_float( $value ) ) {
+				return 0.0 !== (float) $value;
+			}
+
+			if ( null === $value ) {
+				return false;
+			}
+
+			if ( ! is_string( $value ) ) {
+				return (bool) $value;
+			}
+
+			$normalized = strtolower( trim( $value ) );
+
+			if ( '' === $normalized ) {
+				return false;
+			}
+
+			// Match common feed / form boolean strings explicitly (incl. literal "false").
+			$explicit_truthy = array( '1', 'true', 'on', 'yes' );
+			$explicit_falsy  = array( '0', 'false', 'off', 'no', 'n/a', 'null' );
+
+			if ( in_array( $normalized, $explicit_truthy, true ) ) {
+				return true;
+			}
+
+			if ( in_array( $normalized, $explicit_falsy, true ) ) {
+				return false;
+			}
+
+			$boolean_value = filter_var( $normalized, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE );
+
+			if ( null !== $boolean_value ) {
+				return $boolean_value;
+			}
+
+			// Non-boolean strings: truthy when non-empty.
+			return true;
 		}
 
 		/**

@@ -1187,6 +1187,30 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 	}
 
 	/**
+	 * Stops handle() when no batch row exists without re-running completion or marking feeds failed.
+	 *
+	 * @return false
+	 */
+	protected function abort_handle_when_batch_missing() {
+		$feed_id = $this->request_feed_id ? (string) $this->request_feed_id : '';
+
+		do_action(
+			'wppfm_feed_generation_message',
+			'' !== $feed_id ? $feed_id : 'unknown',
+			'Could not get the next batch data; aborting handle without marking the feed failed.',
+			'WARNING'
+		);
+
+		$this->unlock_process();
+
+		if ( class_exists( 'WPPFM_Feed_Controller' ) ) {
+			WPPFM_Feed_Controller::set_feed_processing_flag();
+		}
+
+		return false;
+	}
+
+	/**
 	 * Handle
 	 *
 	 * Pass each queue item to the task handler, while remaining
@@ -1219,10 +1243,7 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 			$batch = $this->get_batch();
 
 			if ( ! $batch ) { // @since 2.10.0
-				$message = 'Could not get the next batch data!';
-				do_action( 'wppfm_feed_generation_message', $this->request_feed_id, $message, 'ERROR' );
-				$this->end_batch( 'unknown', 'failed' );
-				return false;
+				return $this->abort_handle_when_batch_missing();
 			}
 
 			// Single source of truth:
@@ -1596,18 +1617,20 @@ abstract class WPPFM_Background_Process extends WPPFM_Async_Request {
 
 		$this->complete();
 
-		if ( 'failed' === $status && $feed_id ) {
+		$feed_id_for_status = absint( $feed_id );
+
+		if ( 'failed' === $status && $feed_id_for_status > 0 ) {
 			// Set the feed status to fail (6).
 			$data_class = new WPPFM_Data();
-			$data_class->update_feed_status( $feed_id, 6 );
+			$data_class->update_feed_status( (string) $feed_id_for_status, 6 );
 
 			// Log the failure.
 			$message = 'Batch ended prematurely.';
-			do_action( 'wppfm_feed_generation_message', $feed_id, $message, 'ERROR' );
+			do_action( 'wppfm_feed_generation_message', (string) $feed_id_for_status, $message, 'ERROR' );
 
 			// Terminal failure: notify immediately when running in automatic/silent mode.
 			if ( $was_running_silent && class_exists( 'WPPFM_Email' ) ) {
-				$notice_feed_id = ( 'unknown' !== (string) $feed_id && '' !== (string) $feed_id ) ? (string) $feed_id : '';
+				$notice_feed_id = (string) $feed_id_for_status;
 				if ( '' !== $notice_feed_id && function_exists( 'wppfm_cancel_deferred_feed_failure_notice' ) ) {
 					wppfm_cancel_deferred_feed_failure_notice( $notice_feed_id );
 				}

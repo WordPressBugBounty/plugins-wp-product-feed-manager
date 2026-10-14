@@ -112,9 +112,10 @@ if ( ! class_exists( 'WPPFM_Feed_Support' ) ) :
 				$current_data = $current_data[0];
 			}
 
-			$result = true;
+			$result           = true;
+			$query_condition  = isset( $query_split[2] ) ? (int) $query_split[2] : -1;
 
-			switch ( $query_split[2] ) {
+			switch ( $query_condition ) {
 				case 0: // includes
 					$result = $queries_class->includes_query( $query_split, $current_data );
 					break;
@@ -155,23 +156,31 @@ if ( ! class_exists( 'WPPFM_Feed_Support' ) ) :
 					$result = $queries_class->does_not_end_with_query( $query_split, $current_data );
 					break;
 
-				case 10: // is greater than
+				case 10: // is true — direct pass/fail; invert for legacy filter pipeline.
+					$result = ! $queries_class->is_truthy_query( $query_split, $current_data );
+					break;
+
+				case 11: // is false — direct pass/fail; invert for legacy filter pipeline.
+					$result = ! $queries_class->is_falsy_query( $query_split, $current_data );
+					break;
+
+				case 12: // is greater than
 					$result = $queries_class->is_greater_than_query( $query_split, $current_data );
 					break;
 
-				case 11: // is greater or equal to
+				case 13: // is greater or equal to
 					$result = $queries_class->is_greater_or_equal_to_query( $query_split, $current_data );
 					break;
 
-				case 12: // is smaller than
+				case 14: // is smaller than
 					$result = $queries_class->is_smaller_than_query( $query_split, $current_data );
 					break;
 
-				case 13: // is smaller or equal to
+				case 15: // is smaller or equal to
 					$result = $queries_class->is_smaller_or_equal_to_query( $query_split, $current_data );
 					break;
 
-				case 14: // is between
+				case 16: // is between
 					$result = $queries_class->is_between_query( $query_split, $current_data );
 					break;
 

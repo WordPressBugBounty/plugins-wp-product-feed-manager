@@ -52,7 +52,7 @@ if ( ! class_exists( 'WPPFM_Channel_FTP' ) ) :
 
 			// Define local file path and remote file URL.
 			$local_file      = WPPFM_CHANNEL_DATA_DIR . '/' . $channel . '.zip';
-			$remote_file_url = esc_url( WPPFM_EDD_SL_STORE_URL . 'system/wp-content/uploads/wppfm_channel_downloads/' . $code . '.zip?ts=' . time() ); // Avoid caching issues.
+			$remote_file_url = esc_url( WPPFM_EDD_SL_STORE_URL . 'wp-content/uploads/wppfm_channel_downloads/' . $code . '.zip?ts=' . time() ); // Avoid caching issues.
 
 			// Fetch the remote file using wp_remote_get.
 			$response = wp_remote_get( $remote_file_url, [

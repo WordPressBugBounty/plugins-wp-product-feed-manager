@@ -65,7 +65,14 @@ function setGoogleOutputAttributeLevels( feedHolder, targetCountry ) {
 
 				case 'item_group_id':
 
-					if ( jQuery.inArray( targetCountry, googleSpecialClothingGroupCountries() ) > - 1 ) {
+					// Standard Google Product Feeds: required when variations are included, optional otherwise.
+					if ( '1' === String( feedHolder.feedType ) ) {
+						if ( '1' === String( feedHolder.includeVariations ) ) {
+							feedHolder[ 'attributes' ][ i ][ 'fieldLevel' ] = '1';
+						} else {
+							feedHolder[ 'attributes' ][ i ][ 'fieldLevel' ] = '4';
+						}
+					} else if ( jQuery.inArray( targetCountry, googleSpecialClothingGroupCountries() ) > - 1 ) {
 						feedHolder[ 'attributes' ][ i ][ 'fieldLevel' ] = '1';
 					} else {
 						feedHolder[ 'attributes' ][ i ][ 'fieldLevel' ] = '4';
@@ -136,6 +143,29 @@ function setGoogleOutputAttributeLevels( feedHolder, targetCountry ) {
 	}
 
 	return feedHolder;
+}
+
+/**
+ * Re-applies Google dynamic attribute levels after the Include Product Variations setting changes.
+ * Only affects standard Google Product Feeds (feedType = 1).
+ *
+ * @param {object} feedHolder Feed object from the Feed Editor.
+ * @returns {object}          Updated feed object.
+ */
+function googleVariationSelectionChanged( feedHolder ) {
+	if ( '1' !== String( feedHolder.feedType ) ) {
+		return feedHolder;
+	}
+
+	for ( var i = 0; i < feedHolder.attributes.length; i ++ ) {
+		if ( 'item_group_id' === feedHolder.attributes[ i ].fieldName ) {
+			// Reset to the dynamic marker so setGoogleOutputAttributeLevels() recalculates this attribute.
+			feedHolder.attributes[ i ].fieldLevel = '0';
+			break;
+		}
+	}
+
+	return setGoogleOutputAttributeLevels( feedHolder, feedHolder.country );
 }
 
 // ALERT! Make sure that if you add or remove an attribute from this list, you also change the attribute in the wppfm_setChannelRelatedPresets() function

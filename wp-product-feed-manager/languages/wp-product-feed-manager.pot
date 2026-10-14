@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WooCommerce Product Feed Manager\n"
-"POT-Creation-Date: 2026-06-07 11:27+0200\n"
+"POT-Creation-Date: 2026-10-13 12:31+0200\n"
 "PO-Revision-Date: 2018-08-20 20:39+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -31,7 +31,7 @@ msgid "Unknown feed type"
 msgstr ""
 
 #. translators: %s: Folder where the feeds are stored
-#: includes/application/class-feed-master.php:344
+#: includes/application/class-feed-master.php:346
 #, php-format
 msgid ""
 "1430 - %s is not a writable folder. Make sure you have admin rights to this "
@@ -39,20 +39,20 @@ msgid ""
 msgstr ""
 
 #. translators: %s: Temporary feed file path
-#: includes/application/class-feed-master.php:378
+#: includes/application/class-feed-master.php:380
 #, php-format
 msgid ""
 "1431 - Could not initialize the temporary feed file (%s). Check folder "
 "permissions."
 msgstr ""
 
-#: includes/application/class-feed-master.php:812
+#: includes/application/class-feed-master.php:818
 #: includes/user-interface/class-wppfm-i18n-scripts.php:94
 msgid "Fill with a static value"
 msgstr ""
 
-#: includes/application/class-feed-master.php:813
-#: includes/application/class-feed-master.php:818
+#: includes/application/class-feed-master.php:819
+#: includes/application/class-feed-master.php:824
 msgid "Use the settings in the Merchant Center"
 msgstr ""
 
@@ -162,18 +162,18 @@ msgid ""
 "No feed file was published."
 msgstr ""
 
-#: includes/application/class-wppfm-feed-processor.php:1009
+#: includes/application/class-wppfm-feed-processor.php:1028
 msgid "Temporary feed file validation failed before publication."
 msgstr ""
 
 #. translators: %s: Temporary feed file path.
-#: includes/application/class-wppfm-feed-processor.php:1089
+#: includes/application/class-wppfm-feed-processor.php:1108
 #, php-format
 msgid "XML temporary feed validation failed: file %s is missing or empty."
 msgstr ""
 
 #. translators: %s: Temporary feed file path.
-#: includes/application/class-wppfm-feed-processor.php:1149
+#: includes/application/class-wppfm-feed-processor.php:1178
 #, php-format
 msgid ""
 "XML temporary feed validation failed: file %s does not contain the expected "
@@ -181,7 +181,7 @@ msgid ""
 msgstr ""
 
 #. translators: %s: Temporary feed file path.
-#: includes/application/class-wppfm-feed-processor.php:1151
+#: includes/application/class-wppfm-feed-processor.php:1180
 #, php-format
 msgid ""
 "XML temporary feed validation failed: file %s does not contain the expected "
@@ -189,13 +189,13 @@ msgid ""
 msgstr ""
 
 #. translators: %s: Feed title.
-#: includes/application/class-wppfm-feed-processor.php:1317
+#: includes/application/class-wppfm-feed-processor.php:1346
 #, php-format
 msgid "Product feed %s failed validation, so the previous feed remains active."
 msgstr ""
 
 #. translators: %s: Feed title.
-#: includes/application/class-wppfm-feed-processor.php:1319
+#: includes/application/class-wppfm-feed-processor.php:1348
 #, php-format
 msgid "Product feed %s failed validation, so no feed file was generated."
 msgstr ""
@@ -214,14 +214,14 @@ msgid ""
 "computed."
 msgstr ""
 
-#: includes/application/wppfm-cron-functions.php:120
+#: includes/application/wppfm-cron-functions.php:121
 #, php-format
 msgid "Every %d minute (WPPFM Feed Updates)"
 msgid_plural "Every %d minutes (WPPFM Feed Updates)"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/application/wppfm-cron-functions.php:175
+#: includes/application/wppfm-cron-functions.php:176
 #, php-format
 msgid "Every %d minute (WPPFM Feed Watchdog)"
 msgid_plural "Every %d minutes (WPPFM Feed Watchdog)"
@@ -307,7 +307,7 @@ msgid ""
 "WordPress Plugins page and than reinstall and activate it again."
 msgstr ""
 
-#: includes/data/class-wppfm-ajax-data.php:550
+#: includes/data/class-wppfm-ajax-data.php:564
 #: includes/user-interface/class-wppfm-list-table.php:143
 msgid "Feed"
 msgstr ""
@@ -435,6 +435,14 @@ msgstr ""
 msgid "Orders last N days"
 msgstr ""
 
+#: includes/data/wppfm-product-review-source-fields.php:27
+msgid "Product review count"
+msgstr ""
+
+#: includes/data/wppfm-product-review-source-fields.php:28
+msgid "Product Reviews (WooCommerce)"
+msgstr ""
+
 #. translators: %1$: plugin name, %2$: version number, %3$: link start, %4$: link end
 #: includes/libraries/wpmr_plugin_updater.php:241
 #, php-format
@@ -459,7 +467,7 @@ msgid "Error"
 msgstr ""
 
 #: includes/libraries/wppfm-background-process.php:731
-#: wp-product-feed-manager.php:412
+#: wp-product-feed-manager.php:413
 msgid "You are not allowed to do this."
 msgstr ""
 
@@ -473,14 +481,14 @@ msgstr ""
 msgid "Failed to acquire process lock"
 msgstr ""
 
-#: includes/libraries/wppfm-background-process.php:1594
+#: includes/libraries/wppfm-background-process.php:1700
 #, php-format
 msgid "Every %d minute"
 msgid_plural "Every %d minutes"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/libraries/wppfm-background-process.php:1816
+#: includes/libraries/wppfm-background-process.php:1922
 msgid ""
 "Could not schedule the cron event required to start the feed process. Please "
 "check if your wp cron is configured correctly and is running."
@@ -1606,31 +1614,44 @@ msgstr ""
 msgid "Support"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-notice.php:30
-msgid "50% Black Friday SALE!!"
+#: includes/user-interface/class-wppfm-notice.php:27
+msgid "Product Feed Manager - Black Friday: Save 35% on Premium"
+msgstr ""
+
+#: includes/user-interface/class-wppfm-notice.php:28
+msgid ""
+"Upgrade to Google Premium or go straight to Multichannel and send your "
+"products to Google, Meta, Bing and more."
+msgstr ""
+
+#: includes/user-interface/class-wppfm-notice.php:29
+msgid " Use code BLCKFD26FRMUM at checkout. Valid until November 30."
 msgstr ""
 
 #: includes/user-interface/class-wppfm-notice.php:30
-msgid "Black Friday Sale: 50% Off"
-msgstr ""
-
-#: includes/user-interface/class-wppfm-notice.php:30
-msgid "From November 29 to December 2, 2024."
-msgstr ""
-
-#: includes/user-interface/class-wppfm-notice.php:31
-msgid "Optimize your WooCommerce feed management with this limited-time offer!"
-msgstr ""
-
-#: includes/user-interface/class-wppfm-notice.php:33
-msgid "Get Your Deal Now!"
-msgstr ""
-
-#: includes/user-interface/class-wppfm-notice.php:34
-msgid "Nope, I don't like deals!"
+msgid "See The Offer!"
 msgstr ""
 
 #: includes/user-interface/class-wppfm-notice.php:39
+msgid "Product Feed Manager - Black Friday: save €30 on Multichannel"
+msgstr ""
+
+#: includes/user-interface/class-wppfm-notice.php:40
+msgid ""
+"Add Meta, Bing and more to your Google license. Upgrade to Multichannel and "
+"use code BLCKFD26DLPREMIUM to save €30. Valid until November 30."
+msgstr ""
+
+#: includes/user-interface/class-wppfm-notice.php:41
+#: includes/user-interface/class-wppfm-support-page.php:390
+msgid "Upgrade now"
+msgstr ""
+
+#: includes/user-interface/class-wppfm-notice.php:72
+msgid "Dismiss"
+msgstr ""
+
+#: includes/user-interface/class-wppfm-notice.php:77
 msgid "don't show this Black Friday offer anymore"
 msgstr ""
 
@@ -1837,165 +1858,258 @@ msgstr ""
 msgid "Feed Manager - Support"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:163
+#: includes/user-interface/class-wppfm-support-page.php:173
 msgid ""
 "Getting started with your WooCommerce Product Feed Manager is easier than "
 "you could imagine. All our customers are not feed marketeers and we want to "
 "make your life easier."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:169
+#: includes/user-interface/class-wppfm-support-page.php:179
 msgid "Getting Started With Product Feed Manager"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:180
+#: includes/user-interface/class-wppfm-support-page.php:190
 msgid ""
 "Please check the following articles to get started with your WooCommerce "
 "Product Feed Manager."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:182
+#: includes/user-interface/class-wppfm-support-page.php:192
 msgid "Create a basic product feed"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:183
+#: includes/user-interface/class-wppfm-support-page.php:193
 msgid "Navigating your plugin settings dashboard"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:184
+#: includes/user-interface/class-wppfm-support-page.php:194
 msgid "Category mapping"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:185
+#: includes/user-interface/class-wppfm-support-page.php:195
 msgid "Adding data to a product feed attribute"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:186
+#: includes/user-interface/class-wppfm-support-page.php:196
 msgid "Using the unique product identifier function"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:187
+#: includes/user-interface/class-wppfm-support-page.php:197
 msgid "How to set automatic feed updates"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:188
+#: includes/user-interface/class-wppfm-support-page.php:198
 msgid "How to use data from unsupported plugins in the feed"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:189
+#: includes/user-interface/class-wppfm-support-page.php:199
 msgid "How to create repeating fields in sub-attributes"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:190
+#: includes/user-interface/class-wppfm-support-page.php:200
 msgid "How to use the advanced product filter"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:191
+#: includes/user-interface/class-wppfm-support-page.php:201
 msgid "The Channel Manager explained"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:192
+#: includes/user-interface/class-wppfm-support-page.php:202
 msgid "Frequently asked questions"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:196
+#: includes/user-interface/class-wppfm-support-page.php:206
 msgid "User Guide"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:205
+#: includes/user-interface/class-wppfm-support-page.php:215
 msgid ""
 "Our Experts would like to assist you with your query and any help you need."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:209
+#: includes/user-interface/class-wppfm-support-page.php:219
 msgid "Need Expert Support?"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:211
+#: includes/user-interface/class-wppfm-support-page.php:221
 msgid "Contact Support"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:219
+#: includes/user-interface/class-wppfm-support-page.php:229
 msgid "Download"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:222
+#: includes/user-interface/class-wppfm-support-page.php:232
 msgid ""
 "Improve your Google shopping campaigns with proven, actionable steps from "
 "our detailed Google Product Feed checklist."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:230
+#: includes/user-interface/class-wppfm-support-page.php:240
 msgid "Free Google Shopping Checklist"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:241
+#: includes/user-interface/class-wppfm-support-page.php:251
 msgid ""
 "Thank you for requesting the Google Shopping Checklist: The Complete Guide. "
 "Please check your email for the download link."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:242
+#: includes/user-interface/class-wppfm-support-page.php:252
 msgid ""
 "If you don't see it in your inbox, kindly check your spam or junk folder."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:246
+#: includes/user-interface/class-wppfm-support-page.php:256
 msgid "Google Shopping Checklist"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:259
+#: includes/user-interface/class-wppfm-support-page.php:269
 msgid ""
 "We need your help to keep developing the plugin. Please review it and spread "
 "the love to keep us motivated."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:263
+#: includes/user-interface/class-wppfm-support-page.php:273
 msgid "Show Your Love"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:265
+#: includes/user-interface/class-wppfm-support-page.php:275
 msgid "Leave a Review"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:273
+#: includes/user-interface/class-wppfm-support-page.php:283
 msgid ""
 "Get detailed and guided instructions to level up your feeds with the "
 "necessary setup."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:277
+#: includes/user-interface/class-wppfm-support-page.php:287
 msgid "Documentation"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:279
+#: includes/user-interface/class-wppfm-support-page.php:289
 msgid "Visit Documentation"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:303
+#: includes/user-interface/class-wppfm-support-page.php:313
 msgid ""
 "Join our Facebook page for free expert marketing tips and strategies to "
 "boost your web shop sales!"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:307
+#: includes/user-interface/class-wppfm-support-page.php:317
 msgid "Join Our Facebook Page"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:309
+#: includes/user-interface/class-wppfm-support-page.php:319
 msgid "Join Facebook Page"
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:317
+#: includes/user-interface/class-wppfm-support-page.php:327
 msgid ""
 "If you need any feature on your WooCommerce Product Feed Manager that we "
 "currently do not have, please send us a request with your wishes and "
 "requirements."
 msgstr ""
 
-#: includes/user-interface/class-wppfm-support-page.php:321
-#: includes/user-interface/class-wppfm-support-page.php:323
+#: includes/user-interface/class-wppfm-support-page.php:331
+#: includes/user-interface/class-wppfm-support-page.php:333
 msgid "Request a Feature"
+msgstr ""
+
+#: includes/user-interface/class-wppfm-support-page.php:341
+msgid ""
+"From <strong>November 1</strong> to <strong>November 30</strong>, every "
+"Premium license is <strong>35% off</strong>. Pick the version that fits your "
+"store:"
+msgstr ""
+
+#: includes/user-interface/class-wppfm-support-page.php:343
+msgid "Google Only Premium: €44.85 instead of €69"
+msgstr ""
+
+#: includes/user-interface/class-wppfm-support-page.php:344
+msgid ""
+"Multichannel Premium: €64.35 instead of €99. One product feed for Google "
+"Shopping, Meta, Bing and more."
+msgstr ""
+
+#: includes/user-interface/class-wppfm-support-page.php:346
+msgid "How to claim your discount."
+msgstr ""
+
+#: includes/user-interface/class-wppfm-support-page.php:348
+msgid "Click See the offer and choose your version."
+msgstr ""
+
+#: includes/user-interface/class-wppfm-support-page.php:349
+msgid "Enter code <strong>BLCKFD26FRMUM</strong> at checkout."
+msgstr ""
+
+#: includes/user-interface/class-wppfm-support-page.php:350
+msgid "Activate your license key in the plugin."
+msgstr ""
+
+#: includes/user-interface/class-wppfm-support-page.php:352
+#: includes/user-interface/class-wppfm-support-page.php:380
+msgid "Good to know:"
+msgstr ""
+
+#: includes/user-interface/class-wppfm-support-page.php:354
+#: includes/user-interface/class-wppfm-support-page.php:382
+msgid "The code is valid from November 1 until November 30, 2026."
+msgstr ""
+
+#: includes/user-interface/class-wppfm-support-page.php:355
+msgid ""
+"Questions before you buy? Use the support form on this page and we will "
+"reply within one working day.\n"
+msgstr ""
+
+#: includes/user-interface/class-wppfm-support-page.php:361
+msgid "Black Friday: save 35% on Premium"
+msgstr ""
+
+#: includes/user-interface/class-wppfm-support-page.php:363
+msgid "See the offer"
+msgstr ""
+
+#: includes/user-interface/class-wppfm-support-page.php:373
+msgid ""
+"From <strong>November 1</strong> to <strong>November 30</strong>, upgrading "
+"from Google Only Premium to Multichannel Premium is <strong>€30 cheaper</"
+"strong>. You keep your license and your feed, and you add Meta, Bing and "
+"more on top of Google Shopping."
+msgstr ""
+
+#: includes/user-interface/class-wppfm-support-page.php:374
+msgid "How to claim your discount"
+msgstr ""
+
+#: includes/user-interface/class-wppfm-support-page.php:376
+msgid "Click Upgrade now and choose Multichannel Premium."
+msgstr ""
+
+#: includes/user-interface/class-wppfm-support-page.php:377
+msgid "Enter code <strong>BLCKFD26DLPREMIUM</strong> at checkout."
+msgstr ""
+
+#: includes/user-interface/class-wppfm-support-page.php:378
+msgid "Switch on the new channels in the plugin. Your mapping stays as it is."
+msgstr ""
+
+#: includes/user-interface/class-wppfm-support-page.php:383
+msgid ""
+"Not sure which channel to start with? Ask us through the support form on "
+"this page."
+msgstr ""
+
+#: includes/user-interface/class-wppfm-support-page.php:388
+msgid ""
+"Product Feed Manager - Black Friday: save €30 when you upgrade to "
+"Multichannel"
 msgstr ""
 
 #: includes/user-interface/elements/class-wppfm-attribute-selector-element.php:25

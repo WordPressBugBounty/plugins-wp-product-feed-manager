@@ -896,8 +896,10 @@ if ( ! class_exists( 'WPPFM_Feed_Master_Class' ) ) :
 				'wppfm_performance_tier',
 				'wppfm_performance_revenue',
 				'wppfm_performance_orders',
+				'wppfm_product_review_count',
 				'_days_after_product_update',
 				'_days_after_product_added',
+				'_product_is_variation',
 			);
 		}
 

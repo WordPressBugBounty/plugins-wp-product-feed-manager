@@ -253,7 +253,11 @@ function wppfm_handle_feed_watchdog_cron() {
 
 		$resume_feed_id = WPPFM_Feed_Controller::get_next_id_from_feed_queue();
 
-		if ( $resume_feed_id && function_exists( 'wppfm_should_resume_existing_batch' ) && wppfm_should_resume_existing_batch( $resume_feed_id ) ) {
+		if ( $resume_feed_id && wppfm_watchdog_settle_completed_feed_state( $resume_feed_id, $lock_missing_since_key ) ) {
+			return;
+		}
+
+		if ( $resume_feed_id && function_exists( 'wppfm_should_resume_existing_batch' ) && wppfm_should_resume_existing_batch( $resume_feed_id, true ) ) {
 			delete_site_transient( $lock_missing_since_key );
 
 			if ( function_exists( 'wppfm_resume_background_feed_batch' ) && wppfm_resume_background_feed_batch( $resume_feed_id, 'watchdog_queue_idle' ) ) {
@@ -312,6 +316,16 @@ function wppfm_handle_feed_watchdog_cron() {
 		}
 
 		if ( time() - intval( $missing_since ) >= $lock_timeout ) {
+			$resume_feed_id = WPPFM_Feed_Controller::get_next_id_from_feed_queue();
+
+			if ( ! $resume_feed_id ) {
+				$resume_feed_id = WPPFM_Feed_Controller::get_active_batch_feed_id();
+			}
+
+			if ( wppfm_watchdog_settle_completed_feed_state( $resume_feed_id, $lock_missing_since_key ) ) {
+				return;
+			}
+
 			do_action(
 				'wppfm_feed_generation_message',
 				'unknown',
@@ -327,9 +341,7 @@ function wppfm_handle_feed_watchdog_cron() {
 			delete_transient( 'wppfm_feed_file_size' );
 			delete_site_transient( $lock_missing_since_key );
 
-			$resume_feed_id = WPPFM_Feed_Controller::get_next_id_from_feed_queue();
-
-			if ( $resume_feed_id && wppfm_should_resume_existing_batch( $resume_feed_id ) && wppfm_resume_background_feed_batch( $resume_feed_id, 'watchdog_stale_processing_flag' ) ) {
+			if ( $resume_feed_id && wppfm_should_resume_existing_batch( $resume_feed_id, true ) && wppfm_resume_background_feed_batch( $resume_feed_id, 'watchdog_stale_processing_flag' ) ) {
 				return;
 			}
 
@@ -339,8 +351,10 @@ function wppfm_handle_feed_watchdog_cron() {
 		return;
 	}
 
-	// Reset the tracker when everything looks healthy.
-	if ( $lock_exists ) {
+	// Reset the tracker when everything looks healthy or the queue is idle.
+	WPPFM_Feed_Controller::invalidate_feed_process_state_object_cache();
+
+	if ( $lock_exists || ( ! WPPFM_Feed_Controller::feed_is_processing() && WPPFM_Feed_Controller::feed_queue_is_empty() ) ) {
 		delete_site_transient( $lock_missing_since_key );
 	}
 
@@ -349,18 +363,70 @@ function wppfm_handle_feed_watchdog_cron() {
 }
 
 /**
- * Returns true when an in-flight batch for the feed can be resumed via handle().
+ * Clears stale watchdog markers when authoritative state shows the feed already finished.
  *
- * @param string $feed_id Feed id to inspect.
+ * @param string $feed_id                  Feed id candidate for resume, may be empty.
+ * @param string $lock_missing_since_key   Transient key tracking missing process locks.
  *
- * @return bool
+ * @return bool True when recovery must not continue.
  */
-function wppfm_should_resume_existing_batch( $feed_id ) {
+function wppfm_watchdog_settle_completed_feed_state( $feed_id, $lock_missing_since_key ) {
 	if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) {
 		return false;
 	}
 
-	return WPPFM_Feed_Controller::should_resume_existing_batch( (string) $feed_id );
+	WPPFM_Feed_Controller::invalidate_feed_process_state_object_cache();
+
+	$feed_id    = (string) absint( $feed_id );
+	$batch_gone = ! WPPFM_Feed_Controller::background_batch_rows_exist();
+
+	if ( '' !== $feed_id && WPPFM_Feed_Controller::feed_has_ok_status( $feed_id ) ) {
+		WPPFM_Feed_Controller::set_feed_processing_flag();
+		delete_site_transient( $lock_missing_since_key );
+		delete_transient( 'wppfm_feed_file_size' );
+
+		do_action(
+			'wppfm_feed_generation_message',
+			$feed_id,
+			'Feed watchdog settled stale in-process state because the feed status is already OK.',
+			'WARNING'
+		);
+
+		return true;
+	}
+
+	if ( $batch_gone ) {
+		WPPFM_Feed_Controller::set_feed_processing_flag();
+		delete_site_transient( $lock_missing_since_key );
+		delete_transient( 'wppfm_feed_file_size' );
+
+		do_action(
+			'wppfm_feed_generation_message',
+			'' !== $feed_id ? $feed_id : 'unknown',
+			'Feed watchdog settled stale in-process state because no background batch rows remain.',
+			'WARNING'
+		);
+
+		return true;
+	}
+
+	return false;
+}
+
+/**
+ * Returns true when an in-flight batch for the feed can be resumed via handle().
+ *
+ * @param string $feed_id              Feed id to inspect.
+ * @param bool   $bypass_object_cache When true, bypasses cached queue/batch options before reading.
+ *
+ * @return bool
+ */
+function wppfm_should_resume_existing_batch( $feed_id, $bypass_object_cache = false ) {
+	if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) {
+		return false;
+	}
+
+	return WPPFM_Feed_Controller::should_resume_existing_batch( (string) $feed_id, (bool) $bypass_object_cache );
 }
 
 /**
@@ -432,6 +498,27 @@ function wppfm_watchdog_start_next_feed( $context = 'unknown' ) {
 add_filter( 'cron_schedules', 'wppfm_register_feed_watchdog_schedule' );
 add_action( 'init', 'wppfm_schedule_feed_watchdog_event' );
 add_action( 'wppfm_feed_watchdog_cron', 'wppfm_handle_feed_watchdog_cron' );
+
+/**
+ * Refreshes cached feed-process state after dispatch recovery is skipped for a completed feed.
+ *
+ * @param string $feed_id        Feed id.
+ * @param string $classification Dispatch outcome token.
+ * @param string $reason         Skip reason from dispatch recovery.
+ *
+ * @return void
+ */
+function wppfm_invalidate_feed_process_state_after_dispatch_skip( $feed_id, $classification, $reason ) {
+	unset( $feed_id, $classification );
+
+	if ( 'feed_status_ok' !== (string) $reason || ! class_exists( 'WPPFM_Feed_Controller' ) ) {
+		return;
+	}
+
+	WPPFM_Feed_Controller::invalidate_feed_process_state_object_cache();
+}
+
+add_action( 'wppfm_dispatch_recovery_skipped', 'wppfm_invalidate_feed_process_state_after_dispatch_skip', 10, 3 );
 
 add_filter( 'cron_schedules', 'wppfm_register_feed_update_schedule' ); // phpcs:disable WordPress.WP.CronInterval.ChangeDetected
 add_action( 'init', 'wppfm_schedule_feed_update_event' );

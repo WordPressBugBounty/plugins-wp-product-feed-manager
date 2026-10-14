@@ -713,8 +713,6 @@ function wppfm_performanceEnabledChanged() {
 		wppfm_drawAttributeMappingSection();
 		wppfm_activateSelect2SourceSelectors();
 	}
-
-	wppfm_mainInputChanged( false );
 }
 
 function wppfm_performancePeriodChanged() {
@@ -724,7 +722,6 @@ function wppfm_performancePeriodChanged() {
 	if ( _feedHolder && _feedHolder.feedId ) {
 		_feedHolder[ 'wppfm_performance_period_days' ] = String( val );
 	}
-	wppfm_mainInputChanged( false );
 }
 
 function wppfm_performanceHighPercentageChanged() {
@@ -734,7 +731,6 @@ function wppfm_performanceHighPercentageChanged() {
 	if ( _feedHolder && _feedHolder.feedId ) {
 		_feedHolder[ 'wppfm_performance_high_percentage' ] = String( val );
 	}
-	wppfm_mainInputChanged( false );
 }
 
 function wppfm_setMainInputsLayoutDependingOnFeedTypeId( channelId, feedTypeId ) {
@@ -2100,7 +2096,7 @@ function wppfm_ifConditionSelector( rowId, sourceLevel, conditionLevel, numberOf
 	htmlCode += '<input type="text" class="wppfm-condition-value" onchange="wppfm_storeCondition(' + rowId + ', ' + sourceLevel + ', ' + conditionLevel + ')" name="condition-value" id="condition-value-';
 	htmlCode += rowId + '-' + sourceLevel + '-' + conditionLevel + '" value="' + query.value + '"';
 
-	if ( queryObject.condition !== '4' && queryObject.condition !== '5' ) {
+	if ( queryObject.condition !== '4' && queryObject.condition !== '5' && queryObject.condition !== '10' && queryObject.condition !== '11' ) {
 
 		htmlCode += ' style="display:initial">';
 	} else {
@@ -2108,7 +2104,7 @@ function wppfm_ifConditionSelector( rowId, sourceLevel, conditionLevel, numberOf
 		htmlCode += ' style="display:none;">';
 	}
 
-	if ( queryObject.condition !== '14' ) {
+	if ( queryObject.condition !== '16' ) {
 
 		htmlCode += '<span id="condition-and-value-' + rowId + '-' + sourceLevel + '-' + conditionLevel
 		            + '" style="display:none;"> ' + wppfm_feed_settings_form_vars.and + ' <input type="text" name="condition-and-value" onchange="wppfm_storeCondition('
@@ -2176,12 +2172,12 @@ function wppfm_ifValueQuerySelector( rowId, sourceLevel, queryLevel, queryObject
 	htmlCode += wppfm_conditionFieldCntrl( rowId, sourceLevel, queryLevel, - 1, 'value-options-input-field-cntrl', query.source, queryValueConditionChangedFunctionString );
 	htmlCode += wppfm_conditionQueryCntrl( rowId, sourceLevel, queryLevel, 0, 'value-query-condition', 'wppfm_queryValueConditionChanged', query.condition );
 
-	if ( queryObject.condition !== '4' && queryObject.condition !== '5' ) {
+	if ( queryObject.condition !== '4' && queryObject.condition !== '5' && queryObject.condition !== '10' && queryObject.condition !== '11' ) {
 		htmlCode += '<input type="text" onchange="wppfm_storeValueCondition(' + rowId + ', ' + sourceLevel + ', ' + queryLevel + ')" name="value-options-condition-value" id="value-options-condition-value-';
 		htmlCode += rowId + '-' + sourceLevel + '-' + queryLevel + '" value="' + query.value + '" style="display:initial">';
 	}
 
-	if ( queryObject.condition !== '14' ) {
+	if ( queryObject.condition !== '16' ) {
 
 		htmlCode += '<span id="value-options-condition-and-value-' + rowId + '-' + sourceLevel + '-' + queryLevel + '" style="display:none;"> ' + wppfm_feed_settings_form_vars.and + ' ';
 		htmlCode += '<input id="value-options-condition-and-value-input-' + rowId + '-' + sourceLevel + '-' + queryLevel + '" ';
@@ -2433,13 +2429,13 @@ function wppfm_conditionCode( rowId, sourceLevel, conditionLevel, query, nrQueri
 		var conditionValue = jQuery( '#condition-value-' + rowId + '-' + sourceLevel + '-' + conditionLevel ).val();
 		var wait           = false;
 
-		if ( queryCondition !== '4' && queryCondition !== '5' && queryCondition !== '14' ) {
+		if ( queryCondition !== '4' && queryCondition !== '5' && queryCondition !== '10' && queryCondition !== '11' && queryCondition !== '16' ) {
 
 			if ( inputField === 'select' || conditionValue === '' ) {
 
 				wait = true;
 			}
-		} else if ( queryCondition === 4 || queryCondition === 5 ) {
+		} else if ( queryCondition === '4' || queryCondition === '5' || queryCondition === '10' || queryCondition === '11' ) {
 
 			if ( inputField === 'select' ) {
 
@@ -2490,13 +2486,13 @@ function wppfm_addValueQuery( rowId, sourceLevel, queryLevel, query ) {
 		var conditionValue = jQuery( '#value-options-condition-value-' + rowId + '-' + sourceLevel + '-' + queryLevel ).val();
 		var wait           = false;
 
-		if ( queryCondition !== '4' && queryCondition !== '5' && queryCondition !== '14' ) {
+		if ( queryCondition !== '4' && queryCondition !== '5' && queryCondition !== '10' && queryCondition !== '11' && queryCondition !== '16' ) {
 
 			if ( inputField === 'select' || conditionValue === '' ) {
 
 				wait = true;
 			}
-		} else if ( queryCondition === 4 || queryCondition === 5 ) {
+		} else if ( queryCondition === '4' || queryCondition === '5' || queryCondition === '10' || queryCondition === '11' ) {
 
 			if ( inputField === 'select' ) {
 
@@ -2794,13 +2790,13 @@ function wppfm_storeValueCondition( rowId, conditionLevel, queryLevel ) {
 		// get the data required to build the query string
 		var subCondition = queryLevel > 1 ? jQuery( '#value-options-sub-query-' + rowId + '-' + conditionLevel + '-' + queryLevel + ' option:selected' ).val() : '0';
 		var condition    = jQuery( '#value-query-condition-' + rowId + '-' + conditionLevel + '-' + queryLevel + '-0 option:selected' ).val();
-		var value        = condition !== '4' && condition !== '5' ? jQuery( '#value-options-condition-value-' + rowId + '-' + conditionLevel + '-' + queryLevel ).val() : '';
-		var betweenValue = condition === '14' ? jQuery( '#value-options-condition-and-value-input-' + rowId + '-' + conditionLevel + '-' + queryLevel ).val() : '';
+		var value        = condition !== '4' && condition !== '5' && condition !== '10' && condition !== '11' ? jQuery( '#value-options-condition-value-' + rowId + '-' + conditionLevel + '-' + queryLevel ).val() : '';
+		var betweenValue = condition === '16' ? jQuery( '#value-options-condition-and-value-input-' + rowId + '-' + conditionLevel + '-' + queryLevel ).val() : '';
 
-		if ( condition === '4' || condition === '5' ) {
+		if ( condition === '4' || condition === '5' || condition === '10' || condition === '11' ) {
 
 			doStore = true;
-		} else if ( condition === '14' ) {
+		} else if ( condition === '16' ) {
 
 			doStore = ! ! (
 				value && betweenValue
@@ -2850,13 +2846,13 @@ function wppfm_storeCondition( rowId, sourceLevel, conditionLevel ) {
 			// get the data from the input fields
 			var subCondition = conditionLevel > 1 ? jQuery( '#sub-condition-' + rowId + '-' + sourceLevel + '-' + conditionLevel + ' option:selected' ).val() : '0';
 			var condition    = jQuery( '#query-condition-' + rowId + '-' + sourceLevel + '-' + conditionLevel + ' option:selected' ).val();
-			var value        = condition !== '4' && condition !== '5' ? jQuery( '#condition-value-' + rowId + '-' + sourceLevel + '-' + conditionLevel ).val() : '';
-			var secondValue  = condition === '14' ? jQuery( '#condition-and-value-input-' + rowId + '-' + sourceLevel + '-' + conditionLevel ).val() : '';
+			var value        = condition !== '4' && condition !== '5' && condition !== '10' && condition !== '11' ? jQuery( '#condition-value-' + rowId + '-' + sourceLevel + '-' + conditionLevel ).val() : '';
+			var secondValue  = condition === '16' ? jQuery( '#condition-and-value-input-' + rowId + '-' + sourceLevel + '-' + conditionLevel ).val() : '';
 
-			if ( condition === '4' || condition === '5' ) {
+			if ( condition === '4' || condition === '5' || condition === '10' || condition === '11' ) {
 
 				doStore = true;
-			} else if ( condition === '14' ) { // is between condition
+			} else if ( condition === '16' ) { // is between condition
 
 				doStore = ! ! (
 					value && secondValue
@@ -3153,7 +3149,7 @@ function wppfm_queryConditionChanged( id, sourceLevel, conditionLevel ) {
 	var value = jQuery( '#query-condition-' + id + '-' + sourceLevel + '-' + conditionLevel ).val();
 
 	// if the "is empty" or "is not empty," condition is selected
-	if ( value === '4' || value === '5' ) {
+	if ( value === '4' || value === '5' || value === '10' || value === '11' ) {
 
 		jQuery( '#condition-value-' + id + '-' + sourceLevel + '-' + conditionLevel ).hide();
 	} else {
@@ -3162,7 +3158,7 @@ function wppfm_queryConditionChanged( id, sourceLevel, conditionLevel ) {
 	}
 
 	// if the "is between" condition is selected
-	if ( value === '14' ) {
+	if ( value === '16' ) {
 
 		jQuery( '#condition-value-' + id + '-' + sourceLevel + '-' + conditionLevel ).show();
 		jQuery( '#condition-and-value-' + id + '-' + sourceLevel + '-' + conditionLevel ).show();
@@ -3186,7 +3182,7 @@ function wppfm_queryValueConditionChanged( rowId, sourceLevel, queryLevel, query
 
 	var value = jQuery( '#value-query-condition-' + rowId + '-' + sourceLevel + '-' + queryLevel + '-' + querySublevel ).val();
 
-	if ( value === '4' || value === '5' ) {
+	if ( value === '4' || value === '5' || value === '10' || value === '11' ) {
 
 		jQuery( '#value-options-condition-value-' + rowId + '-' + sourceLevel + '-' + queryLevel ).hide();
 	} else {
@@ -3194,7 +3190,7 @@ function wppfm_queryValueConditionChanged( rowId, sourceLevel, queryLevel, query
 		jQuery( '#value-options-condition-value-' + rowId + '-' + sourceLevel + '-' + queryLevel ).show();
 	}
 
-	if ( value === '14' ) {
+	if ( value === '16' ) {
 
 		jQuery( '#value-options-condition-value-' + rowId + '-' + sourceLevel + '-' + queryLevel ).show();
 		jQuery( '#value-options-condition-and-value-' + rowId + '-' + sourceLevel + '-' + queryLevel ).show();
