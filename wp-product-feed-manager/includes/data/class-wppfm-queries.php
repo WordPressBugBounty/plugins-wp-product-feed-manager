@@ -1014,16 +1014,53 @@ if ( ! class_exists( 'WPPFM_Queries' ) ) :
 
 		public function clear_feed_batch_options() {
 			delete_site_option( 'wppfm_background_process_key' );
-			$this->_wpdb->query( "DELETE FROM {$this->_wpdb->options} WHERE option_name LIKE '%_batch_%'" );
-			$this->_wpdb->query( "DELETE FROM {$this->_wpdb->options} WHERE option_name LIKE 'wppfm_batch_metadata_%'" );
+
+			$batch_like = $this->_wpdb->esc_like( 'wppfm_feed_generation_process_batch_' ) . '%';
+			$meta_like  = $this->_wpdb->esc_like( 'wppfm_batch_metadata_' ) . '%';
+
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Prefix-scoped queue cleanup; no core API to delete background batch options by key pattern.
+			$this->_wpdb->query(
+				$this->_wpdb->prepare(
+					'DELETE FROM %i WHERE option_name LIKE %s',
+					$this->_wpdb->options,
+					$batch_like
+				)
+			);
+
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Prefix-scoped batch metadata cleanup during feed process reset.
+			$this->_wpdb->query(
+				$this->_wpdb->prepare(
+					'DELETE FROM %i WHERE option_name LIKE %s',
+					$this->_wpdb->options,
+					$meta_like
+				)
+			);
 		}
 
 		/**
 		 * @since 2.0.11
 		 */
 		public function clear_feed_batch_sitemeta() {
-			$this->_wpdb->query( "DELETE FROM {$this->_wpdb->sitemeta} WHERE meta_key LIKE '%_batch_%'" );
-			$this->_wpdb->query( "DELETE FROM {$this->_wpdb->sitemeta} WHERE meta_key LIKE 'wppfm_batch_metadata_%'" );
+			$batch_like = $this->_wpdb->esc_like( 'wppfm_feed_generation_process_batch_' ) . '%';
+			$meta_like  = $this->_wpdb->esc_like( 'wppfm_batch_metadata_' ) . '%';
+
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Prefix-scoped queue cleanup on multisite; matches clear_feed_batch_options().
+			$this->_wpdb->query(
+				$this->_wpdb->prepare(
+					'DELETE FROM %i WHERE meta_key LIKE %s',
+					$this->_wpdb->sitemeta,
+					$batch_like
+				)
+			);
+
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Prefix-scoped batch metadata cleanup on multisite.
+			$this->_wpdb->query(
+				$this->_wpdb->prepare(
+					'DELETE FROM %i WHERE meta_key LIKE %s',
+					$this->_wpdb->sitemeta,
+					$meta_like
+				)
+			);
 		}
 
 		public function get_own_variable_product_attributes( $variable_id ) {

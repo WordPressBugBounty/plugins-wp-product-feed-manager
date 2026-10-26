@@ -7,8 +7,8 @@
  * Author URI: https://www.wpmarketingrobot.com
  * Developer: Michel Jongbloed
  * Developer URI: https://www.wpmarketingrobot.com
- * Version: 2.24.0
- * Modified: 13-10-2026
+ * Version: 2.24.1
+ * Modified: 23-10-2026
  * WC requires at least: 8.4
  * WC tested up to: 11.2.1
  * License: GPL-3.0-or-later
@@ -54,7 +54,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		 *
 		 * @var string  Containing the version number of the plugin.
 		 */
-		public $version = '2.24.0';
+		public $version = '2.24.1';
 
 		/**
 		 * Author Name.
@@ -132,9 +132,6 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 			// keep only the mofile override so bundled translations are preferred when available.
 			// @since 3.18.0 Force premium builds to use bundled translations.
 			add_filter( 'load_textdomain_mofile', array( $this, 'prefer_bundled_translations' ), 10, 2 );
-
-			// @since 3.23.0 Prevent stale translation cache paths from causing transient include warnings.
-			add_filter( 'pre_get_language_files_from_path', array( $this, 'sanitize_cached_language_file_paths' ), 10, 2 );
 
 			// Declare compatibility with custom order tables.
 			add_action( 'before_woocommerce_init', array( $this, 'declare_compatibility_for_custom_order_tables' ) );
@@ -219,7 +216,7 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 
 			// Store the plugin title.
 			if ( ! defined( 'WPPFM_MIN_REQUIRED_WC_VERSION' ) ) {
-				define( 'WPPFM_MIN_REQUIRED_WC_VERSION', '2.24.0' );
+				define( 'WPPFM_MIN_REQUIRED_WC_VERSION', '2.25.0' );
 			}
 
 			// Store the base uploads' folder, should also work in a multi-site environment.
@@ -494,6 +491,32 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 		}
 
 		/**
+		 * Returns true when a shutdown error originated inside this plugin's directory.
+		 *
+		 * Used to avoid clearing feed batch state when an unrelated plugin or theme fatals.
+		 *
+		 * @since 3.25.0
+		 *
+		 * @param array $error Error entry from error_get_last().
+		 *
+		 * @return bool
+		 */
+		private function is_plugin_shutdown_error( $error ) {
+			if ( empty( $error['file'] ) || ! is_string( $error['file'] ) ) {
+				return false;
+			}
+
+			if ( ! defined( 'WPPFM_PLUGIN_DIR' ) ) {
+				return false;
+			}
+
+			$error_file = wp_normalize_path( $error['file'] );
+			$plugin_dir = wp_normalize_path( trailingslashit( WPPFM_PLUGIN_DIR ) );
+
+			return 0 === strpos( $error_file, $plugin_dir );
+		}
+
+		/**
 		 * Gets triggered when the plugin quits and is used to fetch fatal errors.
 		 *
 		 * @since 1.10.0
@@ -507,22 +530,24 @@ if ( ! class_exists( 'WP_Product_Feed_Manager' ) ) :
 
 				// Fetch fatal errors.
 				if ( E_ERROR === $error['type'] ) {
-					// Load the required classes if not already done yet.
-					if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) {
-						require_once __DIR__ . '/includes/application/class-wppfm-feed-controller.php';
+					if ( $this->is_plugin_shutdown_error( $error ) ) {
+						// Load the required classes if not already done yet.
+						if ( ! class_exists( 'WPPFM_Feed_Controller' ) ) {
+							require_once __DIR__ . '/includes/application/class-wppfm-feed-controller.php';
+						}
+						if ( ! class_exists( 'WPPFM_Db_Management' ) ) {
+							require_once __DIR__ . '/includes/data/class-wppfm-db-management.php';
+						}
+
+						// Clear the feed queue.
+						WPPFM_Feed_Controller::clear_feed_queue();
+
+						// The background process clearly has stopped.
+						WPPFM_Feed_Controller::set_feed_processing_flag();
+
+						// Remove plugin batch queue options (prefix-scoped inside clear_feed_batch_options()).
+						WPPFM_Db_Management::clean_options_table();
 					}
-					if ( ! class_exists( 'WPPFM_Db_Management' ) ) {
-						require_once __DIR__ . '/includes/data/class-wppfm-db-management.php';
-					}
-
-					// Clear the feed queue.
-					WPPFM_Feed_Controller::clear_feed_queue();
-
-					// The background process clearly has stopped.
-					WPPFM_Feed_Controller::set_feed_processing_flag();
-
-					// Remove all keyed option items from the option table.
-					WPPFM_Db_Management::clean_options_table();
 
 					wppfm_write_log_file(
 						sprintf(

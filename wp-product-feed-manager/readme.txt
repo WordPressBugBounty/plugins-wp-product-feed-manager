@@ -5,7 +5,7 @@ Donate link: https://wpmarketingrobot.com/
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.24.0
+Stable tag: 2.24.1
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -225,6 +225,9 @@ Notes: These calls occur only in wp-admin for the features above. If you don’t
 3. Save and generate your feed
 
 == Changelog ==
+= 2.24.1 2026-10-23 =
+Fix - Fixed a performance issue
+
 = 2.24.0 2026-10-13 =
 Added - Added an "is true" and "is false" condition filter
 Added - Added a "Product is Variation" source
@@ -496,5 +499,5 @@ Fixed an issue with a folder name with a capital letter that would cause error m
 * Added a > symbol to the selectable separator options
 
 === Upgrade Notice ===
-= 2.24.0 2026-10-13 =
+= 2.24.1 2026-10-23 =
 * Important: This update introduces additional tweaks and some bug fixes. We strongly recommend backing up your existing feeds before upgrading.
